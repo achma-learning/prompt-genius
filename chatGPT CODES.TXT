@@ -1,0 +1,129 @@
+You can use these simple prompt "codes" every day to save time and get better results than 99% of users. Here are my 5 favorites:
+
+1. ELI5 (Explain Like I'm 5)
+Let AI explain anything you don’t understand—fast, and without complicated prompts.
+Just type ELI5: [your topic] and get a simple, clear explanation.
+
+2. TL;DR (Summarize Long Text)
+Want a quick summary?
+Just write TLDR: and paste in any long text you want condensed. It’s that easy.
+
+3. Jargonize (Professional/Nerdy Tone)
+Make your writing sound smart and professional.
+Perfect for LinkedIn posts, pitch decks, whitepapers, and emails.
+Just add Jargonize: before your text.
+
+4. Humanize (Sound More Natural)
+Struggling to make AI sound human?
+No need for extra tools—just type Humanize: before your prompt and get natural, conversational responses.
+Bonus: No more cringe words like “revolutionary,” “game-changing,” or “introducing.”
+
+5. Feynman Technique (Deep Understanding)
+Go beyond basics and really understand complex topics.
+This 4-step technique breaks things down so you actually get it:
+
+Teach it to a child (ELI5)
+Identify knowledge gaps
+Simplify and clarify
+Review and repeat
+Pro tip:
+All it takes is adding 1-2 words to your prompt for amazing results. Try these out and watch your productivity soar!
+
+==============================
+
+
+  Practical Prompt / Instruction Tokens
+
+These are used in prompts to guide ChatGPT’s behavior, output style, reasoning method, or format.
+
+Token	Description
+ELI5	Explain like I’m 5 — make it very simple and beginner-friendly.
+TLDL	“Too long, didn’t read” — produce a very short summary.
+STEP-BY-STEP	Break the reasoning or instructions into sequential steps.
+CHECKLIST	Output as a checklist of actionable items.
+EXEC SUMMARY	Executive summary — concise high-level overview.
+ACT AS	Assign a specific persona or role to the model.
+BRIEFLY	Produce a short, condensed answer.
+JARGON	Use technical or field-specific language.
+AUDIENCE	Specify the target audience for the response.
+TONE	Specify emotional or stylistic tone (e.g., formal, casual).
+DEV MODE	Focus on developer/technical perspective.
+PM MODE	Focus on product management perspective.
+SWOT	Analyze strengths, weaknesses, opportunities, threats.
+FORMAT AS	Output in a specific format (table, bullet points, JSON).
+COMPARE	Provide a comparison between items or options.
+MULTI-PERSPECTIVE	Consider multiple viewpoints in reasoning.
+CONTEXT STACK	Reference accumulated context from prior messages.
+BEGIN WITH / END WITH	Constrain the response to start or end with specific text.
+ROLE: TASK: FORMAT:	Structured prompt: define role, task, and desired format.
+SCHEMA	Output according to a structured schema (e.g., JSON).
+REWRITE AS:	Rephrase text in a specific style or format.
+REFLECTIVE MODE	Encourage the model to think critically about the answer.
+SYSTEMATIC BIAS CHECK	Detect and flag potential biases in reasoning.
+DELIBERATE THINKING	Slow, careful, methodical reasoning.
+NO AUTOPILOT	Avoid default or generic responses; be attentive.
+EVAL-SELF	Self-evaluate or critique output before returning it.
+PARALLEL LENSES	Analyze the situation from multiple angles simultaneously.
+FIRST PRINCIPLES	Break problems down to fundamental concepts.
+CHAIN OF THOUGHT	Show reasoning steps explicitly.
+PITFALLS	Highlight potential risks or common errors.
+METRICS MODE	Focus on measurable outcomes or KPIs.
+GUARDRAIL	Enforce safety, ethical, or logical constraints.
+USE PRIOR / RECALL	Leverage previous context or stored information.
+DIALECTIC	Use structured debate or pros/cons reasoning.
+REQUIRES SOURCE	Cite sources or reference evidence.
+PRIORITIZE:	Emphasize certain outputs or decisions over others.
+FORCE TRACE	Make the model explicitly show reasoning paths.
+CONSTRAINT MODE	Limit output according to rules or bounds.
+FRICTION SIMULATION	Test outcomes under resistance or obstacles.
+CROSS-MODEL BLEND	Combine perspectives from multiple models or datasets.
+IF/THEN INTERACTIVE	Conditional reasoning or scenario testing.
+NO DEFAULTS	Avoid using generic assumptions.
+3-PASS ANALYSIS	Analyze the problem in three stages or iterations.
+SOCRATIC MODE	Lead through questioning rather than giving answers.
+PRE-MORTEM	Imagine failures to identify risks in advance.
+ZERO SHOT	Respond without prior examples.
+THINK IN CODE	Reason in programming logic or pseudocode.
+LAYERED INSIGHT	Provide insights at multiple abstraction levels.
+DO NOT SIMPLIFY	Retain complexity and nuance in explanation.
+**DRAFT	REVIEW
+FAILSAFE	Apply safety checks to prevent mistakes or risky outputs.
+LATENT ROLE SWITCHING	Change perspective or persona mid-response.
+TOKEN MASKING	Hide or replace sensitive terms.
+TEMPERATURE_SIM	Adjust creativity/randomness settings conceptually.
+ECHO-FREEZE	Prevent repeating prior output unintentionally.
+REASONING ANCHORS	Fix reasoning around specific key points.
+MULTI-AGENT SIMULATION	Simulate multiple agents interacting.
+PSEUDO-SCRIPTING	Generate code-like step sequences for tasks.
+EXTERNAL SIMULATION BLOCK	Model hypothetical external processes.
+INSTRUCTION COLLAPSING	Combine multiple instructions into one coherent output.
+REFLECTION PRIMING	Prompt self-reflection before producing output.
+ZERO-KNOWLEDGE PROMPTING	Produce responses without assuming prior info.
+TRUTH_GATE	Bias reasoning toward verifiable facts.
+SHADOW_PRO	Test reasoning in parallel “shadow” processes.
+Symbolic / Hypothetical / System Tokens
+
+These are mostly conceptual, experimental, or “symbolic” instructions sometimes used in research, testing, or advanced prompting experiments. They’re not standard GPT commands but useful for documenting ideas:
+
+Token	Description
+MODEL_REFLE	Reflect on model behavior or reasoning internally.
+TOKEN_OVERF	Manage token overflow or truncation scenarios.
+NULL_INJECTION	Insert neutral placeholders to test handling.
+BLACK_BOX_	Simulate opaque reasoning or hidden processes.
+ECHO_LOOP	Detect or prevent repeated looping responses.
+PRISONER_DIL	Conceptual check for stuck reasoning.
+SELF_PATCH	Hypothetical internal correction of model logic.
+TRIGGER_CHAIN	Chain reactions of prompts/responses.
+AUTO_MODULATE	Adjust style, tone, or reasoning automatically.
+FORK_CONTEXT	Split reasoning into parallel threads.
+GHOST_INJECT	Insert hidden hypothetical data.
+NO_TRACE	Avoid leaving context trails.
+THOUGHT_WIPE	Reset internal reasoning state.
+RAW_COMPILE	Process data without abstraction or simplification.
+SAFE_LATCH	Enforce safety rules.
+CRITIC_LOOP	Internal evaluation and critique loop.
+ZERO_IMPRINT	Avoid retaining prior context or assumptions.
+QUANT_CHAIN	Quantitative stepwise reasoning or calculations.
+  
+
+Let me know if you have any other favorite prompt hacks!
