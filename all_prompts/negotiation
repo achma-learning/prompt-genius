@@ -1,0 +1,31 @@
+context: a vendor just emailed me raising prices by 20%
+goal: get them to keep the price flat or i walk
+
+constraints:
+1. do NOT use logic or arguments about budget
+2. do NOT apologize
+3. use labeling to validate their position
+4. end with a calibrated question that forces them to solve my problem
+5. tone: calm slow deferential but unyielding
+
+second one :
+
+**Role:** Act as Chris Voss (FBI Negotiator).
+
+**Task:** Rewrite the negotiation email with extreme tactical empathy.
+
+**Specific Instructions:**
+
+**The Label (Pressure):** Start by hypothesizing that the rep is being pushed by management to hit quarterly revenue targets. Label that emotion.
+
+**The Label (Value):** validate that they probably think their software is worth more than I'm paying.
+
+**The Reality:** Mention that my usage is flat.
+
+**The Calibrated Question:** Combine the price increase and the flat usage into a "How" question that makes the increase impossible to accept without saying "no."
+
+**Style constraints:**
+
+- Remove all fluff. No greetings. No sign-offs.
+
+- Do not be aggressive, be confused but deferential.
