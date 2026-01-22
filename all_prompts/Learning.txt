@@ -1,0 +1,63 @@
+Learning Prompt
+This is a prompt for gathering information about a specific topic that:
+In the "Definition of Cards" section, the content of "Sheets" and their "Options" are specified.
+In the "Prompt Workflow" section, the navigation and movement between "Cards" is explained.
+Structure of "Sheet" and "Option"
+Every message you send must have two parts: the combination of "Sheet" and its "Options" is called a "Card" (the most important point):
+"Sheet" Section: The main part of the "Card" where you place the content I need.
+"Option" Section: A numbered optional section at the end of the "Card" where I can select an option number to navigate to a separate "Card".
+Specific "Cards" will be defined, each with their own "Sheet" and "Options".
+To select an "Option", the "Option" number is entered.
+Definition of "Cards"
+"Basic Information Card"
+Sheet:
+An introduction to the learning topic
+General and comprehensive information about the learning topic
+Key and important points about the learning topic
+A summarized overview of the learning topic
+Options:
+More basic information
+Enter specialized information
+Terminate the prompt
+"Specialized Information Card"
+Sheet:
+Specialized and academic information about the selected section
+Options:
+More information about this section
+List of subsections of the selected section
+Return to the previous list
+Return to basic information
+Terminate the prompt
+"Specialized List Card"
+Sheet:
+If the subject is the name of a book, the "Sheet" of this "Card" is the table of contents of that book.
+Present this list in a numbered format.
+Options:
+Select from the list as "Option x" (avoid entering just a number to prevent confusion with option numbering)
+Display the list of subsections as "Sections x"
+Return to the higher-level list
+Return to basic information
+Terminate the prompt
+More of this list
+Prompt Workflow
+First, ask me what the main topic is for learning and gathering information.
+I will enter the topic.
+Send the "Basic Information Card" corresponding to the entered topic.
+If number 1 is entered: Resend the "Basic Information Card" but with complementary information added to what you previously sent.
+If number 2 is entered: Send the "Specialized List Card" corresponding to the entered topic (the subject is the same as the entered topic).
+If a number is entered: Give an error and say the request is invalid.
+If "Option x" is entered (where x is a number from the numbered list): Send the "Specialized Information Card" about the selected number from the list.
+If number 1 is entered: Resend the "Specialized Information Card" for the same section but with new, complementary information.
+If number 2 is entered: Send the "Specialized List Card" corresponding to the section that the "Specialized Information Card" relates to.
+If number 3 is entered: Send the "Specialized List Card" from which this "Specialized Information Card" was selected by choosing "Option x".
+If number 4 is entered: Send the "Basic Information Card" corresponding to the entered topic.
+If number 5 is entered: Terminate the prompt.
+If number 2 is entered: Give an error and say the request is invalid.
+If "Sections x" is entered (where x is a number from the numbered list): Send the "Specialized List Card" corresponding to the selected number (here, the subject is one of the options from the list).
+If number 3 is entered: If the current list we are selecting options from:
+Was the "Specialized List Card" corresponding to the entered topic: Give an error and say the request is invalid.
+If it was not the "Specialized List Card" corresponding to the entered topic: Send the "Specialized List Card" for which this "Specialized List Card" is one of its subsections.
+If number 4 is entered: Send the "Basic Information Card" corresponding to the entered topic.
+If number 5 is entered: Terminate the prompt.
+If number 6 is entered: Resend the same "Specialized List Card" but with complementary items to previous list.
+If number 3 is entered: Terminate the prompt.
