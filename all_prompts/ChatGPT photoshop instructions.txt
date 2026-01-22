@@ -1,0 +1,335 @@
+﻿Free Photoshop just dropped inside ChatGPT and this is the complete guide on how to use it for image editing - with 50 simple prompts you can use for great results
+
+
+TLDR
+
+
+* You can use Photoshop inside ChatGPT by typing @ photopshop, uploading an image, and describing the edit in plain English
+* If you need to edit an image this new Photoshop feature in ChatGPT gives you great image editing control over images you take with your phone or camera.  
+* It gives you real Photoshop adjustments and effects, plus sliders for fine-tuning
+* Best for fast fixes, selective edits (subject vs background), and creative looks (halftone, duotone, glitch, grain)
+* Every edit is non-destructive and stacks like layers, so you can tweak or undo without ruining the original
+* For heavy-duty work (text, complex compositing, high-res delivery, generative features), hand off to Photoshop on the web
+
+
+**Important: you do not need a paid Photoshop license for image editing in ChatGPT**
+
+
+The in-ChatGPT Photoshop workflow does not require an active Photoshop subscription for the core edits inside ChatGPT.
+
+
+That is the whole point of why this is blowing up: it lowers the barrier to entry to near zero.
+
+
+**Photoshop in ChatGPT is real now**
+
+
+For years, Photoshop has been the gold standard… and a psychological warfare simulator for beginners.
+
+
+Now you can run a big chunk of Photoshop through ChatGPT with plain English:
+
+
+* No hunting menus
+* No remembering where that one slider lives
+* No destroying your original file with bad edits
+
+
+If you can describe the result, you can get 80–90 percent of the way there in minutes.
+
+
+**The fastest way to try it (30 seconds)**
+
+
+1. In ChatGPT, type @ photoshop
+2. Upload an image
+3. Type the edit you want
+
+
+Example:  
+@ photoshop Make the subject pop. Slightly blur the background. Keep skin tones natural. No halos.
+
+
+If @ photoshop doesn’t show up yet:
+
+
+* Settings → Apps and Connectors → connect Adobe Photoshop
+* Refresh and start a new chat
+
+
+**What this is (and what it isn’t)**
+
+
+Think of this as Photoshop with a translator:  
+You talk in outcomes, it routes you to the right tools.
+
+
+**What it’s great at**
+
+
+Core adjustments
+
+
+* Exposure, contrast, highlights/shadows
+* White balance, vibrance/saturation, grayscale
+* Quick cleanup and consistent “this looks better” edits
+
+
+Creative effects
+
+
+* Halftone, duotone/tritone
+* Glitch, grain, bloom
+* Motion blur, mosaic, pixelate, photocopy-style looks
+
+
+Selective edits
+
+
+* Edit just the subject or just the background
+* Blur background, keep subject sharp
+* Make background black and white while subject stays in color
+
+
+Non-destructive workflow
+
+
+* Each request becomes its own adjustable step
+* You can dial it back instead of starting over
+
+
+**What it’s not (so you don’t rage quit)**
+
+
+* Not full desktop Photoshop inside the chat
+* If you need precise masking, heavy retouching, text, complex compositing, print-grade delivery, or advanced generative features, you’ll likely finish in full Photoshop (handoff is the point where you can go to web version of photoshop for more advanced edits)
+
+
+Also: In my testing, export resolution can feel capped compared to full Photoshop. If you need high-res, use the handoff.
+
+
+**The only prompt formula you need**
+
+
+Most people fail because they give vibes instead of direction.
+
+
+Use this every time:
+
+
+* Target: subject, background, sky, face, product, etc
+* Action: brighten, blur, add grain, reduce highlights, etc
+* Guardrails: keep it natural, protect skin tones, no halos, subtle
+
+
+Copy/paste template:  
+@ photoshop: subject. Action: make it pop with subtle contrast and exposure. Guardrails: keep skin tones natural, preserve texture, no harsh sharpening, no halos.
+
+
+**Beginner pack (always works)**
+
+
+Use one prompt at a time. Stack edits in passes.
+
+
+* @ photoshop Fix exposure and white balance. Keep it natural.
+* @ photoshop Brighten the shadows slightly, reduce harsh highlights.
+* @ photoshop Increase contrast a little, but don’t crush blacks.
+* @ photoshop Boost vibrance gently. Protect skin tones.
+* @ photoshop Convert to black and white with strong midtone contrast.
+
+
+**One-word quick hits (surprisingly useful)**
+
+
+* Brighten
+* Darken
+* Warmer
+* Cooler
+* Sharper (use sparingly)
+* Softer
+
+
+**Intermediate pack: selective edits (this is where it gets good)**
+
+
+* @ photoshop Make the subject pop from the background. Keep it realistic.
+* @ photoshop Blur the background, keep the subject sharp. No cutout edges.
+* @ photoshop Make the background black and white, keep the subject in color. Feather transitions.
+* @ photoshop Brighten only the face. Keep skin texture.
+* @ photoshop Add glow only to the light sources. Keep it subtle.
+* @ photoshop Apply halftone to the background only, not the subject.
+
+
+**The slider rule most people miss**
+
+
+After an edit, open the sliders and tune it.
+
+
+The default intensity is often too strong.  
+If something looks fake, reduce it until you almost can’t tell… then bring it back slightly.
+
+
+That’s the difference between:
+
+
+* looks edited
+* looks expensive
+
+
+**Advanced workflow: the 4-pass method (pro results, repeatable)**
+
+
+Run every image through this exact sequence:
+
+
+Pass 1: Fix reality
+
+
+* @ photoshop Correct exposure and white balance. Keep it natural.
+
+
+Pass 2: Separate subject
+
+
+* @ photoshop Make the subject pop with subtle contrast and background separation. No halos.
+
+
+Pass 3: Polish locally
+
+
+* @ photoshop Brighten the face slightly and soften harsh shadows. Preserve texture.
+
+
+Pass 4: Finish
+
+
+* @ photoshop Add subtle grain for a photographic feel. No heavy filters.
+
+
+5 real-world workflows you’ll actually use
+
+
+**1) LinkedIn headshot**
+
+
+* @ photoshop Make the subject pop. Keep it clean and natural.
+* @ photoshop Reduce harsh highlights on the face. Preserve texture.
+* @ photoshopBoost vibrance slightly. Protect skin tones.
+* Optional: @ photoshop Add subtle grain.
+
+
+**2) Product photo for e-commerce**
+
+
+* @ photoshop Make the product the clear focus. Clean, neutral look.
+* @ photoshop Blur the background slightly.
+* @ photoshop Increase brightness and contrast on the product only.
+
+
+**3) Cinematic social post**
+
+
+* @ photoshop Create a cinematic look with controlled highlights and deeper shadows.
+* @ photoshop Add subtle grain.
+* @ photoshop Slightly cool the shadows, keep skin natural.
+
+
+**4) Retro poster**
+
+
+* @ photoshop Apply a halftone color effect.
+* @ photoshop Increase contrast slightly.
+* @ photoshop Add grain to unify the look.
+
+
+**5) Tech glitch aesthetic**
+
+
+* @ photoshop Apply glitch effect subtly.
+* @ photoshop Add lens distortion or noise lightly.
+* @ photoshop Keep subject readable and not destroyed.
+
+
+**Common mistakes that ruin results**
+
+
+* Using saturation on portraits (turns skin orange) Fix: use vibrance first
+* Doing everything in one prompt Fix: one edit per prompt, stack in passes
+* Accepting default intensity Fix: always touch the sliders
+* Forgetting selective edits Fix: say only on the subject or only on the background
+* Treating this as full Photoshop Fix: use it for speed, then hand off when you need precision
+
+
+# 40 prompt pack (cleaned and upgraded)
+
+
+**Basic corrections**
+
+
+1. @ photoshop Fix the exposure and white balance. Keep it natural.
+2. @ photoshop Reduce highlights and lift shadows slightly.
+3. @ photoshop Add a little contrast without crushing blacks.
+4. @ photoshop Remove color cast and keep whites neutral.
+5. @ photoshop Boost vibrance gently. Protect skin tones.
+6. @ photoshop Make colors more natural and less muddy.
+7. @ photoshop Sharpen slightly, avoid crunchy edges.
+8. @ photoshop Convert to black and white with rich midtones.
+
+
+**Portrait**  
+9. @ photoshop Make the subject pop from the background. No halos.  
+10. @ photoshop Brighten the face slightly. Preserve texture.  
+11. @ photoshop Soften harsh shadows on the face without flattening.  
+12. @ photoshop Reduce shine on forehead/cheeks, keep realistic skin.  
+13. @ photoshop Add subtle glow, keep it understated.  
+14. @ photoshop Blur the background slightly, keep subject sharp.
+
+
+**Creative effects**  
+15. @ photoshop Apply halftone color effect.  
+16. @ photoshop Apply duotone effect with a clean modern palette.  
+17. @ photoshop Apply tritone effect for richer grading.  
+18. @ photoshop Add film grain subtly for texture.  
+19. @ photoshop Apply bloom softly for a dreamy look.  
+20. @ photoshop Apply glitch effect lightly, keep subject readable.  
+21. @ photoshop Add motion blur to background only for speed.  
+22. @ photoshop Apply photocopy-style threshold look for zine aesthetic.  
+23. @ photoshop Pixelate the background only, keep subject clear.  
+24. @ photoshop Apply mosaic effect selectively for abstraction.
+
+
+**Selective edits**  
+25. @ photoshop Make the background black and white, subject in color.  
+26. @ photoshop Blur everything except the main subject.  
+27. @ photoshop Darken the background slightly to push focus forward.  
+28. @ photoshop Increase brightness only on the subject.  
+29. @ photoshop Add glow only to lights, not faces.  
+30. @ photoshop Increase saturation only in the sky, keep ground natural.
+
+
+**Mood and atmosphere**  
+31. @ photoshop Make it feel like golden hour. Keep it believable.  
+32. @ photoshop Create a moody cinematic look. No heavy filters.  
+33. @ photoshop Make it warmer overall, protect skin tones.  
+34. @ photoshop Make it cooler overall, keep whites neutral.  
+35. @ photoshop Add a nostalgic film feel, subtle grain, softer contrast.  
+36. @ photoshop Create a clean professional look for a brand site.
+
+
+**Utility**  
+37. @ photoshop Make this Instagram-ready with crisp subject separation.  
+38. @ photoshop Enhance for LinkedIn: natural, clean, professional.  
+39. @ photoshop Create 3 variations: subtle, medium, bold.  
+40. @ photoshop Undo the last edit or remove the glow layer.
+
+
+Photoshop isn’t getting simpler.  
+The interface is still a spaceship cockpit.
+
+
+But now you can drive it in English.
+
+
+And you get a pretty powerful free version of photoshop in ChatGPT.
