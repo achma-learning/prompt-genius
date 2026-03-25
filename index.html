@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Genius — Your AI Prompt Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-0:#0a0a0b;--bg-1:#111113;--bg-2:#1a1a1f;--bg-3:#222228;
+  --border:#2a2a32;--border-hover:#3a3a45;
+  --text-0:#f0f0f2;--text-1:#b0b0ba;--text-2:#707078;
+  --accent:#c8ff00;--accent-dim:#4a5c00;--accent-glow:rgba(200,255,0,.08);
+  --red:#ff4d6a;--blue:#4d9fff;--purple:#a855f7;--orange:#ff8c42;--teal:#2dd4bf;
+  --radius:10px;--radius-lg:16px;
+  --font-display:'Outfit',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --transition:180ms cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth;background:var(--bg-0);color:var(--text-0);font-family:var(--font-display)}
+body{min-height:100vh;overflow-x:hidden}
+::selection{background:var(--accent);color:var(--bg-0)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-hover)}
+
+/* ─── HEADER ─── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,11,.82);backdrop-filter:blur(20px) saturate(1.4);
+  border-bottom:1px solid var(--border);
+  padding:0 clamp(1rem,4vw,3rem);
+}
+.header-inner{
+  max-width:1400px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+}
+.logo{
+  display:flex;align-items:center;gap:.6rem;
+  font-weight:700;font-size:1.15rem;letter-spacing:-.02em;
+  text-decoration:none;color:var(--text-0);
+}
+.logo-icon{
+  width:28px;height:28px;background:var(--accent);border-radius:7px;
+  display:grid;place-items:center;color:var(--bg-0);font-size:.8rem;font-weight:800;
+}
+.header-actions{display:flex;align-items:center;gap:.75rem}
+
+/* Search */
+.search-trigger{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.45rem .8rem .45rem .65rem;cursor:pointer;
+  color:var(--text-2);font-size:.82rem;font-family:var(--font-display);
+  transition:border-color var(--transition),background var(--transition);
+  min-width:220px;
+}
+.search-trigger:hover{border-color:var(--border-hover);background:var(--bg-3)}
+.search-trigger svg{width:15px;height:15px;opacity:.5}
+.search-trigger kbd{
+  margin-left:auto;
+  background:var(--bg-3);border:1px solid var(--border);border-radius:5px;
+  padding:.1rem .4rem;font-family:var(--font-mono);font-size:.65rem;
+  color:var(--text-2);letter-spacing:.02em;
+}
+.gh-link{
+  display:grid;place-items:center;width:36px;height:36px;
+  border-radius:var(--radius);border:1px solid var(--border);
+  color:var(--text-2);transition:all var(--transition);text-decoration:none;
+}
+.gh-link:hover{border-color:var(--border-hover);color:var(--text-0);background:var(--bg-2)}
+
+/* ─── HERO ─── */
+.hero{
+  padding:clamp(3rem,8vw,6rem) clamp(1rem,4vw,3rem) clamp(2rem,5vw,4rem);
+  text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);
+  width:800px;height:800px;
+  background:radial-gradient(ellipse,rgba(200,255,0,.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero h1{
+  font-size:clamp(2.2rem,5.5vw,4.2rem);font-weight:800;letter-spacing:-.04em;
+  line-height:1.08;margin-bottom:1rem;position:relative;
+}
+.hero h1 span{color:var(--accent)}
+.hero p{
+  font-size:clamp(.95rem,1.8vw,1.15rem);color:var(--text-1);
+  max-width:580px;margin:0 auto 2rem;line-height:1.6;font-weight:300;
+}
+.hero-stats{
+  display:flex;justify-content:center;gap:2.5rem;
+  font-family:var(--font-mono);font-size:.78rem;color:var(--text-2);
+}
+.hero-stats strong{color:var(--accent);font-size:1.3rem;display:block;margin-bottom:.15rem;font-family:var(--font-display)}
+
+/* ─── FILTERS ─── */
+.filters-bar{
+  max-width:1400px;margin:0 auto;
+  padding:0 clamp(1rem,4vw,3rem) 1.5rem;
+  display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+}
+.filter-chip{
+  padding:.4rem .85rem;border-radius:99px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--text-2);font-size:.8rem;font-family:var(--font-display);font-weight:500;
+  cursor:pointer;transition:all var(--transition);white-space:nowrap;
+}
+.filter-chip:hover{border-color:var(--border-hover);color:var(--text-1);background:var(--bg-2)}
+.filter-chip.active{
+  background:var(--accent);color:var(--bg-0);border-color:var(--accent);font-weight:600;
+}
+.filter-chip .count{
+  opacity:.6;font-size:.7rem;margin-left:.3rem;
+}
+
+/* ─── GRID ─── */
+.grid-section{
+  max-width:1400px;margin:0 auto;
+  padding:0 clamp(1rem,4vw,3rem) 4rem;
+}
+.prompt-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(380px,1fr));
+  gap:1rem;
+}
+@media(max-width:480px){.prompt-grid{grid-template-columns:1fr}}
+
+/* ─── CARD ─── */
+.prompt-card{
+  background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:1.5rem;cursor:pointer;position:relative;
+  transition:all var(--transition);display:flex;flex-direction:column;
+}
+.prompt-card:hover{
+  border-color:var(--border-hover);background:var(--bg-2);
+  transform:translateY(-2px);
+  box-shadow:0 8px 30px rgba(0,0,0,.3);
+}
+.prompt-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.75rem}
+.card-icon{
+  width:36px;height:36px;border-radius:9px;
+  display:grid;place-items:center;font-size:1rem;flex-shrink:0;
+}
+.card-title{
+  font-size:1.05rem;font-weight:600;letter-spacing:-.02em;line-height:1.3;
+  flex:1;
+}
+.card-tag{
+  font-size:.65rem;font-family:var(--font-mono);font-weight:500;
+  padding:.2rem .5rem;border-radius:5px;
+  background:var(--bg-3);color:var(--text-2);white-space:nowrap;
+}
+.card-desc{
+  font-size:.84rem;color:var(--text-1);line-height:1.6;
+  flex:1;margin-bottom:1rem;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:.75rem;border-top:1px solid var(--border);
+}
+.card-meta{font-size:.72rem;color:var(--text-2);font-family:var(--font-mono)}
+.card-actions{display:flex;gap:.35rem}
+.card-btn{
+  width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--text-2);cursor:pointer;
+  display:grid;place-items:center;transition:all var(--transition);
+}
+.card-btn:hover{background:var(--accent);color:var(--bg-0);border-color:var(--accent)}
+.card-btn svg{width:14px;height:14px}
+
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:clamp(2rem,8vh,6rem) 1rem;overflow-y:auto;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-lg);
+  width:100%;max-width:720px;
+  animation:modalIn 200ms ease;position:relative;
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.modal-header{
+  padding:1.5rem 1.75rem 1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;
+}
+.modal-title{font-size:1.4rem;font-weight:700;letter-spacing:-.03em}
+.modal-close{
+  width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--text-2);cursor:pointer;
+  display:grid;place-items:center;transition:all var(--transition);flex-shrink:0;
+}
+.modal-close:hover{background:var(--bg-3);color:var(--text-0)}
+.modal-body{padding:0 1.75rem 1.5rem}
+.modal-prompt{
+  background:var(--bg-0);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.25rem;font-family:var(--font-mono);font-size:.82rem;line-height:1.75;
+  color:var(--text-1);white-space:pre-wrap;word-break:break-word;
+  max-height:50vh;overflow-y:auto;
+}
+.modal-footer{
+  padding:1rem 1.75rem;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+}
+.modal-footer-left{display:flex;gap:.5rem}
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.55rem 1.1rem;border-radius:var(--radius);
+  font-size:.82rem;font-weight:600;font-family:var(--font-display);
+  border:1px solid var(--border);background:var(--bg-2);color:var(--text-1);
+  cursor:pointer;transition:all var(--transition);
+}
+.btn:hover{background:var(--bg-3);color:var(--text-0);border-color:var(--border-hover)}
+.btn svg{width:14px;height:14px}
+.btn-primary{background:var(--accent);color:var(--bg-0);border-color:var(--accent)}
+.btn-primary:hover{background:#d4ff33;box-shadow:0 0 20px rgba(200,255,0,.2)}
+
+/* ─── COMMAND PALETTE (⌘K) ─── */
+.cmd-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:clamp(4rem,15vh,8rem) 1rem;
+}
+.cmd-overlay.open{display:flex}
+.cmd-palette{
+  background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-lg);
+  width:100%;max-width:580px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  animation:modalIn 150ms ease;
+}
+.cmd-input-wrap{
+  padding:.75rem 1rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:.6rem;
+}
+.cmd-input-wrap svg{width:18px;height:18px;color:var(--text-2);flex-shrink:0}
+.cmd-input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:1rem;font-family:var(--font-display);color:var(--text-0);
+}
+.cmd-input::placeholder{color:var(--text-2)}
+.cmd-results{max-height:340px;overflow-y:auto;padding:.4rem}
+.cmd-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.65rem .75rem;border-radius:var(--radius);cursor:pointer;
+  transition:background var(--transition);
+}
+.cmd-item:hover,.cmd-item.selected{background:var(--bg-3)}
+.cmd-item-icon{
+  width:28px;height:28px;border-radius:6px;
+  display:grid;place-items:center;font-size:.75rem;flex-shrink:0;
+}
+.cmd-item-text{flex:1;min-width:0}
+.cmd-item-title{font-size:.88rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmd-item-cat{font-size:.7rem;color:var(--text-2);font-family:var(--font-mono)}
+.cmd-hint{
+  padding:.5rem 1rem;border-top:1px solid var(--border);
+  font-size:.68rem;color:var(--text-2);font-family:var(--font-mono);
+  display:flex;gap:1.2rem;
+}
+.cmd-hint kbd{
+  background:var(--bg-3);border:1px solid var(--border);border-radius:4px;
+  padding:.05rem .35rem;margin-right:.2rem;
+}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.65rem 1.2rem;font-size:.84rem;color:var(--text-0);
+  display:flex;align-items:center;gap:.5rem;z-index:400;
+  transition:transform 300ms cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast svg{width:16px;height:16px;color:var(--accent)}
+
+/* ─── FOOTER ─── */
+footer{
+  border-top:1px solid var(--border);
+  padding:2rem clamp(1rem,4vw,3rem);text-align:center;
+  font-size:.78rem;color:var(--text-2);
+}
+footer a{color:var(--text-1);text-decoration:none}
+footer a:hover{color:var(--accent)}
+
+/* ─── UTILITIES ─── */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:640px){
+  .search-trigger{min-width:44px;padding:.45rem .55rem}
+  .search-trigger span,.search-trigger kbd{display:none}
+  .hero-stats{gap:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon">P</div>
+      Prompt Genius
+    </a>
+    <div class="header-actions">
+      <button class="search-trigger" id="searchTrigger" aria-label="Search prompts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span>Search prompts…</span>
+        <kbd>⌘K</kbd>
+      </button>
+      <a class="gh-link" href="https://github.com/achma-learning/prompt-genius" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/></svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Your AI prompts,<br><span>one keystroke away.</span></h1>
+  <p>A curated library of battle-tested prompts for ChatGPT, Claude, Gemini and more. Search, copy, and use — all keyboard-driven.</p>
+  <div class="hero-stats">
+    <div><strong id="totalCount">0</strong>Prompts</div>
+    <div><strong id="catCount">0</strong>Categories</div>
+    <div><strong>⌘K</strong>Quick Search</div>
+  </div>
+</section>
+
+<!-- FILTERS -->
+<div class="filters-bar" id="filtersBar"></div>
+
+<!-- GRID -->
+<section class="grid-section">
+  <div class="prompt-grid" id="promptGrid"></div>
+</section>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <pre class="modal-prompt" id="modalPrompt"></pre>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <span class="card-tag" id="modalTag"></span>
+      </div>
+      <button class="btn btn-primary" id="modalCopy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Prompt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div class="cmd-overlay" id="cmdOverlay">
+  <div class="cmd-palette">
+    <div class="cmd-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="cmd-input" id="cmdInput" type="text" placeholder="Search prompts…" autocomplete="off">
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+    <div class="cmd-hint">
+      <span><kbd>↑↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>⌘C</kbd> copy</span>
+      <span><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg">Copied to clipboard!</span>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Built with care by <a href="https://github.com/achma-learning">achma-learning</a> · MIT License · Press <kbd style="background:var(--bg-3);border:1px solid var(--border);border-radius:4px;padding:.05rem .35rem;font-family:var(--font-mono);font-size:.65rem">⌘K</kbd> anywhere</p>
+</footer>
+
+<script>
+// ─── PROMPT DATA ───
+const PROMPTS = [
+  {
+    id:'honest-mirror',
+    title:'Brutally Honest Business Mirror',
+    category:'Business',
+    color:'var(--red)',
+    icon:'🪞',
+    description:'Challenge your ideas, spot flaws, question assumptions, and push for specificity. No validating vague goals.',
+    prompt:`You are my Brutally Honest Business Mirror.
+Your job is to challenge my ideas, spot flaws, question my assumptions, and push me to be more specific.
+
+Rules:
+• No validating vague goals — ask what they really mean
+• If something sounds weak or fuzzy, say so
+• If I'm skipping steps, tell me what's missing
+• If I sound like I'm lying to myself, call it out (nicely)
+
+Be direct, rational, and clear. Help me fix the thinking — not just make it sound good.`
+  },
+  {
+    id:'negotiation',
+    title:'Chris Voss Negotiation Coach',
+    category:'Communication',
+    color:'var(--orange)',
+    icon:'🎯',
+    description:'FBI-style tactical empathy negotiation. Generate responses that increase leverage while making the other party feel understood.',
+    prompt:`+ Role
+You are Chris Voss, former FBI hostage negotiator. You influence outcomes using tactical empathy, not logic or persuasion.
+
++ Objective
+Generate a concise negotiation response that increases leverage by making the other party feel understood while shifting problem-solving to them.
+
++ Inputs
+   - Context: What happened and how the other side framed it
+   - Goal: My exact desired outcome and my walk-away
+   - Medium: Email / message / live conversation
+
++ Rules (Mandatory)
+- Begin with an accusation audit to neutralize negative assumptions about me.
+- Use labeling to name their pressures, beliefs, or emotions.
+- Use mirroring only to encourage disclosure, not to restate my position.
+- Do not use logical arguments (budget, fairness, market rates, justification).
+- Do not apologize, explain myself, or offer compromises.
+- Maintain curiosity and uncertainty; avoid declarative certainty.
+- End with one calibrated "how" or "what" question that makes acceptance of their position difficult without saying "no."
+
++ Tone Constraints
+- Calm, slow, deferential, emotionally grounded.
+- Unyielding without aggression.
+- Confused or curious rather than confrontational.
+
++ Output Constraints
+- 4–6 sentences total.
+- No greetings.
+- No sign-offs.
+- No meta commentary.
+
++ Fail Condition
+- If context or goal is vague, ask clarifying questions instead of generating a response.`
+  },
+  {
+    id:'feynman',
+    title:'Feynman Learning Technique',
+    category:'Learning',
+    color:'var(--blue)',
+    icon:'🧠',
+    description:'Master any topic through analogy, questioning, and iterative refinement using Richard Feynman\'s legendary teaching method.',
+    prompt:`<System> You are a master explainer who channels Richard Feynman's ability to break complex ideas into simple, intuitive truths. Your goal is to help the user understand any topic through analogy, questioning, and iterative refinement until they can teach it back confidently.
+</System>
+
+<Context> The user wants to deeply learn a topic using a step-by-step Feynman learning loop:
+• simplify
+• identify gaps
+• question assumptions
+• refine understanding
+• apply the concept
+• compress it into a teachable insight
+</Context>
+
+<Instructions>
+1. Ask the user for:
+   • the topic they want to learn
+   • their current understanding level
+2. Give a simple explanation with a clean analogy.
+3. Highlight common confusion points.
+4. Ask 3 to 5 targeted questions to reveal gaps.
+5. Refine the explanation in 2 to 3 increasingly intuitive cycles.
+6. Test understanding through application or teaching.
+7. Create a final "teaching snapshot" that compresses the idea.
+</Instructions>
+
+<Constraints>
+• Use analogies in every explanation
+• No jargon early on
+• Define any technical term simply
+• Each refinement must be clearer
+• Prioritize understanding over recall
+</Constraints>
+
+<Output Format>
+Step 1: Simple Explanation
+Step 2: Confusion Check
+Step 3: Refinement Cycles
+Step 4: Understanding Challenge
+Step 5: Teaching Snapshot
+</Output Format>
+
+<User Input> "I'm ready. What topic do you want to master and how well do you understand it?"
+</User Input>`
+  },
+  {
+    id:'learning-cards',
+    title:'Interactive Learning Cards',
+    category:'Learning',
+    color:'var(--teal)',
+    icon:'📚',
+    description:'A structured card-based navigation system for exploring any topic from basics to specialized depth.',
+    prompt:`This is a prompt for gathering information about a specific topic that:
+In the "Definition of Cards" section, the content of "Sheets" and their "Options" are specified.
+In the "Prompt Workflow" section, the navigation and movement between "Cards" is explained.
+
+Structure of "Sheet" and "Option"
+Every message you send must have two parts: the combination of "Sheet" and its "Options" is called a "Card":
+"Sheet" Section: The main part of the "Card" where you place the content I need.
+"Option" Section: A numbered optional section at the end of the "Card" where I can select an option number to navigate to a separate "Card".
+
+Definition of "Cards":
+
+"Basic Information Card"
+Sheet: An introduction, general information, key points, and summarized overview of the topic.
+Options: 1) More basic info  2) Enter specialized info  3) Terminate
+
+"Specialized Information Card"
+Sheet: Specialized and academic information about the selected section.
+Options: 1) More info  2) List subsections  3) Return to previous list  4) Return to basics  5) Terminate
+
+"Specialized List Card"
+Sheet: If the subject is a book, show the table of contents. Present as numbered list.
+Options: Select "Option x" | Display "Sections x" | Return to higher list | Return to basics | Terminate | More of this list
+
+Workflow: First ask the main topic, then send the Basic Information Card and navigate based on user selections.`
+  },
+  {
+    id:'content-repurpose',
+    title:'Content Repurposer',
+    category:'Social Media',
+    color:'var(--purple)',
+    icon:'📱',
+    description:'Transform any source content into LinkedIn posts, Twitter threads, Instagram captions, and email blurbs automatically.',
+    prompt:`You are my Content Repurposer.
+Brand tone: friendly and clear.
+Audience: creators and solopreneurs who post weekly but hate writing from scratch.
+
+When I paste a source (blog/outline/transcript/bullets), return:
+1) LinkedIn post (120–180 words, scannable)
+2) X/Twitter thread (6–8 short tweets with hook → takeaways → CTA)
+3) Instagram caption (≤100 words + 3 hashtags)
+4) Email blurb (60–90 words) that tees up the content
+
+Rules:
+• Keep the core message, adapt tone per platform
+• Start each with a strong hook
+• Add a soft CTA`
+  },
+  {
+    id:'expert',
+    title:'Multidisciplinary Expert',
+    category:'Analysis',
+    color:'var(--blue)',
+    icon:'🔬',
+    description:'A cross-domain expert combining PM, psychology, economics, design, marketing, and engineering perspectives.',
+    prompt:`You are a multidisciplinary expert with deep knowledge in project management, psychology, economics, design, marketing, and engineering. You integrate these fields seamlessly, adapting to each request.
+
+Response Structure:
+1. Fully understand the request, asking clarifying questions if needed.
+2. Adjust depth and tone (brief or in-depth).
+3. Use clear, accessible language, minimizing jargon.
+4. Ensure logical consistency before finalizing.
+5. Summarize key takeaways in bullet points.
+
+Analytical Approach:
+• Apply interdisciplinary expertise (PM, psychology, economics, etc.).
+• Cite references when relevant.
+• Validate logic against theoretical frameworks.
+• Highlight contradictions or assumptions.
+• Use established models (RICE, OKRs, Double Diamond).
+
+Enhancements (Use Selectively):
+• Provide real-world examples.
+• Explain academic concepts simply.
+• Offer scenario simulations.
+• Weigh pros and cons for decisions.
+• Use narrative structures for clarity.
+
+Output: 1. Direct answer  2. Structured analysis  3. Examples  4. Summary  5. Follow-up suggestions`
+  },
+  {
+    id:'coach',
+    title:'Critical Thinking Coach',
+    category:'Analysis',
+    color:'var(--teal)',
+    icon:'💡',
+    description:'Five powerful frameworks: Assumption Detector, Devil\'s Advocate, Ripple Effect, Blind Spot Illuminator, and Status Quo Challenger.',
+    prompt:`Use these 5 critical thinking frameworks:
+
+1. The Assumption Detector
+"I believe [your belief]. What hidden assumptions am I making? What evidence might contradict this?"
+
+2. The Devil's Advocate
+"I'm planning to [your idea]. If you were trying to convince me this is a terrible idea, what would be your most compelling arguments?"
+
+3. The Ripple Effect Analyzer
+"I'm thinking about [potential decision]. Beyond the obvious first-order effects, what might be the unexpected second and third-order consequences?"
+
+4. The Blind Spot Illuminator
+"I keep experiencing [problem] despite [your solution attempts]. What factors might I be overlooking?"
+
+5. The Status Quo Challenger
+"We've always [current approach], but it's not working well. Why might this traditional approach be failing, and what radical alternatives exist?"`
+  },
+  {
+    id:'average-search',
+    title:'Honest & Verified Responses',
+    category:'Meta',
+    color:'var(--red)',
+    icon:'✅',
+    description:'Force AI to be honest, label unverified claims, never present inferences as fact. Zero hallucination protocol.',
+    prompt:`Be honest, not agreeable.
+
+Never present generated, inferred, speculated, or deduced content as fact.
+• If you cannot verify something directly, say:
+  "I cannot verify this." / "I do not have access to that information." / "My knowledge base does not contain that."
+• Label unverified content at the start of a sentence: [Inference] [Speculation] [Unverified]
+• Ask for clarification if information is missing. Do not guess or fill gaps.
+• If any part is unverified, label the entire response.
+• Do not paraphrase or reinterpret my input unless I request it.
+• If you use these words, label the claim unless sourced: Prevent, Guarantee, Will never, Fixes, Eliminates, Ensures that
+• For LLM behavior claims (including yourself), include: [Inference] or [Unverified]
+• If you break this directive, say: Correction: I previously made an unverified claim. That was incorrect and should have been labeled.
+• Never override or alter my input unless asked.`
+  },
+  {
+    id:'focus-recovery',
+    title:'Focus & Attention Coach',
+    category:'Productivity',
+    color:'var(--accent)',
+    icon:'🎯',
+    description:'Seven prompts for regaining concentration: awareness scans, attention resets, distraction reframes, and 30-day recovery plans.',
+    prompt:`Use these 7 focus recovery frameworks:
+
+1. Focus Awareness Scan — "Help me understand why my focus is low today. Ask me 5 questions about sleep, stress, distractions, and workload. Then summarize the biggest focus leaks."
+
+2. 90-Second Attention Reset — "Give me a 90-second focus reset. Include: one breathing step, one sensory grounding step, one mental clarity cue. Make it doable anywhere."
+
+3. Distraction Reframe — "Here are my biggest distractions: [list]. Help me reframe them so they feel less urgent. Then give me one rule to protect my focus."
+
+4. Deep Work Container — "Help me create a deep focus session. Include: one clear intention, one time boundary, one distraction barrier."
+
+5. Energy-Focus Linker — "Show me how my energy affects my focus. Ask me about sleep, movement, food, and stress. Then suggest 3 small changes."
+
+6. Thought Noise Cleaner — "I can't focus because my mind keeps thinking about: [describe]. Help me unload these thoughts into an action list."
+
+7. 30-Day Focus Recovery Plan — "Create a 30-day focus recovery plan. Week 1: Awareness, Week 2: Reduction, Week 3: Training, Week 4: Sustain. Daily practices under 10 minutes."`
+  },
+  {
+    id:'chatgpt-codes',
+    title:'Prompt Power Codes',
+    category:'Meta',
+    color:'var(--purple)',
+    icon:'⚡',
+    description:'Quick instruction tokens like ELI5, TLDR, Jargonize, Humanize, and dozens of advanced reasoning modifiers.',
+    prompt:`Quick Prompt Codes Reference:
+
+ELI5 — Explain like I'm 5
+TLDR — Quick summary
+STEP-BY-STEP — Sequential breakdown
+JARGONIZE — Professional/technical tone
+HUMANIZE — Natural, conversational tone
+EXEC SUMMARY — High-level overview
+ACT AS — Assign a persona
+SWOT — Strengths/Weaknesses/Opportunities/Threats
+FIRST PRINCIPLES — Break down to fundamentals
+CHAIN OF THOUGHT — Show reasoning steps
+SOCRATIC MODE — Lead through questioning
+PRE-MORTEM — Imagine failures to identify risks
+MULTI-PERSPECTIVE — Consider multiple viewpoints
+REFLECTIVE MODE — Think critically about the answer
+DELIBERATE THINKING — Slow, methodical reasoning
+NO AUTOPILOT — Avoid generic responses
+EVAL-SELF — Self-evaluate before returning
+
+Usage: Add the code before your prompt.
+Example: "ELI5: How does quantum computing work?"
+Example: "SWOT: Starting a coffee shop in downtown Portland"`
+  },
+  {
+    id:'photoshop-chatgpt',
+    title:'ChatGPT Photoshop Guide',
+    category:'Creative',
+    color:'var(--orange)',
+    icon:'🎨',
+    description:'Complete guide for using Photoshop inside ChatGPT — 50 prompts for image editing from basics to cinematic looks.',
+    prompt:`Photoshop in ChatGPT — Quick Reference
+
+The 4-Pass Pro Method:
+Pass 1: "@ photoshop Correct exposure and white balance. Keep it natural."
+Pass 2: "@ photoshop Make the subject pop with subtle contrast and background separation. No halos."
+Pass 3: "@ photoshop Brighten the face slightly and soften harsh shadows. Preserve texture."
+Pass 4: "@ photoshop Add subtle grain for a photographic feel. No heavy filters."
+
+Prompt Formula: Target + Action + Guardrails
+Example: "@ photoshop: subject. Action: make it pop with subtle contrast. Guardrails: keep skin tones natural, no halos."
+
+Quick Fixes: Brighten | Darken | Warmer | Cooler | Sharper | Softer
+
+Selective Edits:
+• "Blur the background, keep subject sharp. No cutout edges."
+• "Make background B&W, keep subject in color. Feather transitions."
+• "Brighten only the face. Keep skin texture."
+
+Pro Tips:
+• One edit per prompt, stack in passes
+• Always adjust sliders after — default is too strong
+• Use vibrance instead of saturation on portraits`
+  }
+];
+
+// ─── CATEGORY CONFIG ───
+const CATEGORIES = [...new Set(PROMPTS.map(p=>p.category))].sort();
+let activeFilter = 'All';
+let cmdSelectedIndex = 0;
+
+// ─── RENDER ───
+function renderStats() {
+  document.getElementById('totalCount').textContent = PROMPTS.length;
+  document.getElementById('catCount').textContent = CATEGORIES.length;
+}
+
+function renderFilters() {
+  const bar = document.getElementById('filtersBar');
+  const allChip = `<button class="filter-chip active" data-cat="All">All <span class="count">${PROMPTS.length}</span></button>`;
+  const catChips = CATEGORIES.map(c => {
+    const count = PROMPTS.filter(p=>p.category===c).length;
+    return `<button class="filter-chip" data-cat="${c}">${c} <span class="count">${count}</span></button>`;
+  }).join('');
+  bar.innerHTML = allChip + catChips;
+  bar.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeFilter = chip.dataset.cat;
+      bar.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      renderGrid();
+    });
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('promptGrid');
+  const filtered = activeFilter === 'All' ? PROMPTS : PROMPTS.filter(p=>p.category===activeFilter);
+  grid.innerHTML = filtered.map(p => `
+    <div class="prompt-card" tabindex="0" data-id="${p.id}">
+      <div class="card-header">
+        <div class="card-icon" style="background:${p.color}22;color:${p.color}">${p.icon}</div>
+        <div class="card-title">${p.title}</div>
+        <span class="card-tag">${p.category}</span>
+      </div>
+      <div class="card-desc">${p.description}</div>
+      <div class="card-footer">
+        <span class="card-meta">${p.prompt.split('\n').length} lines</span>
+        <div class="card-actions">
+          <button class="card-btn copy-btn" data-id="${p.id}" title="Copy prompt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.prompt-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.copy-btn')) return;
+      openModal(card.dataset.id);
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter') openModal(card.dataset.id);
+    });
+  });
+
+  grid.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const p = PROMPTS.find(x=>x.id===btn.dataset.id);
+      copyToClipboard(p.prompt);
+    });
+  });
+}
+
+// ─── MODAL ───
+function openModal(id) {
+  const p = PROMPTS.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('modalTitle').textContent = p.title;
+  document.getElementById('modalPrompt').textContent = p.prompt;
+  document.getElementById('modalTag').textContent = p.category;
+  document.getElementById('modalTag').style.background = p.color + '22';
+  document.getElementById('modalTag').style.color = p.color;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.getElementById('modalCopy').addEventListener('click', () => {
+  copyToClipboard(document.getElementById('modalPrompt').textContent);
+});
+
+// ─── COMMAND PALETTE ───
+function openCmd() {
+  document.getElementById('cmdOverlay').classList.add('open');
+  document.getElementById('cmdInput').value = '';
+  document.getElementById('cmdInput').focus();
+  cmdSelectedIndex = 0;
+  renderCmdResults('');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCmd() {
+  document.getElementById('cmdOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderCmdResults(query) {
+  const q = query.toLowerCase().trim();
+  const results = q ? PROMPTS.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.category.toLowerCase().includes(q) ||
+    p.description.toLowerCase().includes(q)
+  ) : PROMPTS;
+
+  const container = document.getElementById('cmdResults');
+  container.innerHTML = results.map((p, i) => `
+    <div class="cmd-item${i===cmdSelectedIndex?' selected':''}" data-index="${i}" data-id="${p.id}">
+      <div class="cmd-item-icon" style="background:${p.color}22;color:${p.color}">${p.icon}</div>
+      <div class="cmd-item-text">
+        <div class="cmd-item-title">${p.title}</div>
+        <div class="cmd-item-cat">${p.category}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="padding:1.5rem;text-align:center;color:var(--text-2);font-size:.85rem">No prompts found</div>';
+
+  container.querySelectorAll('.cmd-item').forEach(item => {
+    item.addEventListener('click', () => {
+      closeCmd();
+      openModal(item.dataset.id);
+    });
+    item.addEventListener('mouseenter', () => {
+      cmdSelectedIndex = parseInt(item.dataset.index);
+      updateCmdSelection();
+    });
+  });
+}
+
+function updateCmdSelection() {
+  document.querySelectorAll('.cmd-item').forEach((item, i) => {
+    item.classList.toggle('selected', i === cmdSelectedIndex);
+    if (i === cmdSelectedIndex) item.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+document.getElementById('cmdInput').addEventListener('input', e => {
+  cmdSelectedIndex = 0;
+  renderCmdResults(e.target.value);
+});
+
+document.getElementById('cmdOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCmd();
+});
+
+document.getElementById('searchTrigger').addEventListener('click', openCmd);
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown', e => {
+  // ⌘K or Ctrl+K
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    const cmdOpen = document.getElementById('cmdOverlay').classList.contains('open');
+    cmdOpen ? closeCmd() : openCmd();
+    return;
+  }
+  // Escape
+  if (e.key === 'Escape') {
+    if (document.getElementById('cmdOverlay').classList.contains('open')) { closeCmd(); return; }
+    if (document.getElementById('modalOverlay').classList.contains('open')) { closeModal(); return; }
+  }
+  // CMD palette navigation
+  if (document.getElementById('cmdOverlay').classList.contains('open')) {
+    const items = document.querySelectorAll('.cmd-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); cmdSelectedIndex = Math.min(cmdSelectedIndex + 1, items.length - 1); updateCmdSelection(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); cmdSelectedIndex = Math.max(cmdSelectedIndex - 1, 0); updateCmdSelection(); }
+    if (e.key === 'Enter' && items[cmdSelectedIndex]) {
+      e.preventDefault();
+      closeCmd();
+      openModal(items[cmdSelectedIndex].dataset.id);
+    }
+    // ⌘C to copy selected
+    if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !window.getSelection().toString()) {
+      const sel = items[cmdSelectedIndex];
+      if (sel) {
+        const p = PROMPTS.find(x=>x.id===sel.dataset.id);
+        if (p) copyToClipboard(p.prompt);
+      }
+    }
+  }
+});
+
+// ─── CLIPBOARD ───
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => showToast('Failed to copy'));
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ─── INIT ───
+renderStats();
+renderFilters();
+renderGrid();
+</script>
+</body>
+</html>
