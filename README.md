@@ -1,6 +1,6 @@
 # prompt-genius
 here i take prompt i find useful , and try to have a backup copy :
-
++ how and don't forget to use the userscript with a trampermonkey or similar extension
 # after make a website
 
 # wiki
