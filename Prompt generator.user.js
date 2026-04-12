@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Prompt Genius — AI Prompt Injector
 // @namespace    https://github.com/achma-learning/prompt-genius
-// @version      1.2.0
+// @version      1.3.0
 // @description  ⌘⇧P to open a command palette of curated prompts on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot)
 // @author       achma-learning
 // @match        https://chatgpt.com/*
@@ -108,7 +108,7 @@
   const provider = PROVIDERS[host] || { name:'Unknown', sel:'textarea, [contenteditable="true"]', type:'auto' };
 
   // ═══════════════════════════════════════════════════════════
-  //  STYLES
+  //  STYLES (updated with manager modal)
   // ═══════════════════════════════════════════════════════════
   const CSS = `
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap');
@@ -231,6 +231,24 @@
       white-space: nowrap;
     }
 
+    /* Manage button */
+    #pg-manage-btn {
+      background: none;
+      border: none;
+      color: var(--pg-text3);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 16px;
+      line-height: 1;
+      transition: all 120ms;
+      margin-left: 4px;
+    }
+    #pg-manage-btn:hover {
+      background: var(--pg-bg3);
+      color: var(--pg-text);
+    }
+
     /* Results */
     #pg-results {
       max-height: 320px;
@@ -329,6 +347,143 @@
     }
     #pg-toast.pg-show { transform: translateX(0); }
     #pg-toast svg { width: 14px; height: 14px; color: var(--pg-accent); }
+
+    /* Manager Modal */
+    .pg-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483643;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .pg-modal-card {
+      background: var(--pg-bg);
+      border: 1px solid var(--pg-border);
+      border-radius: var(--pg-radius);
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--pg-shadow);
+    }
+    .pg-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--pg-border);
+    }
+    .pg-modal-header h3 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--pg-text);
+    }
+    .pg-modal-close {
+      background: none;
+      border: none;
+      color: var(--pg-text3);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .pg-modal-close:hover { color: var(--pg-text); }
+    .pg-modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .pg-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--pg-text2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pg-custom-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--pg-border);
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+    .pg-custom-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--pg-border);
+    }
+    .pg-custom-item:last-child { border-bottom: none; }
+    .pg-custom-info { display: flex; align-items: center; gap: 8px; }
+    .pg-custom-actions button {
+      background: none;
+      border: none;
+      color: var(--pg-text3);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .pg-custom-actions button:hover { background: var(--pg-bg3); color: var(--pg-text); }
+    .pg-form-group {
+      margin-bottom: 16px;
+    }
+    .pg-form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--pg-text2);
+      margin-bottom: 4px;
+    }
+    .pg-form-group input, .pg-form-group textarea, .pg-form-group select {
+      width: 100%;
+      background: var(--pg-bg2);
+      border: 1px solid var(--pg-border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: var(--pg-font);
+      font-size: 13px;
+      color: var(--pg-text);
+      outline: none;
+      resize: vertical;
+    }
+    .pg-form-group input:focus, .pg-form-group textarea:focus { border-color: var(--pg-accent); }
+    .pg-btn {
+      background: var(--pg-bg3);
+      border: 1px solid var(--pg-border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: var(--pg-font);
+      font-size: 13px;
+      color: var(--pg-text);
+      cursor: pointer;
+      transition: all 120ms;
+    }
+    .pg-btn:hover { background: var(--pg-bg2); border-color: var(--pg-accent); }
+    .pg-btn-primary {
+      background: var(--pg-accent);
+      border-color: var(--pg-accent);
+      color: #000;
+      font-weight: 500;
+    }
+    .pg-btn-primary:hover { opacity: 0.9; }
+    .pg-file-input {
+      display: block;
+      margin-top: 8px;
+    }
+    .pg-divider {
+      margin: 20px 0;
+      border-top: 1px solid var(--pg-border);
+    }
   `;
 
   GM_addStyle(CSS);
@@ -338,6 +493,9 @@
   // ═══════════════════════════════════════════════════════════
   function getCustomPrompts() {
     try { return JSON.parse(GM_getValue('pg_custom_prompts', '[]')); } catch { return []; }
+  }
+  function saveCustomPrompts(prompts) {
+    GM_setValue('pg_custom_prompts', JSON.stringify(prompts));
   }
   function getAllPrompts() {
     return [...BUILTIN_PROMPTS, ...getCustomPrompts()];
@@ -362,6 +520,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input id="pg-search" type="text" placeholder="Search prompts…" autocomplete="off" spellcheck="false">
         <span class="pg-provider-badge">${provider.name}</span>
+        <button id="pg-manage-btn" title="Manage custom prompts">⚙️</button>
       </div>
       <div id="pg-results"></div>
       <div class="pg-hints">
@@ -382,6 +541,7 @@
 
   const searchInput = document.getElementById('pg-search');
   const resultsDiv  = document.getElementById('pg-results');
+  const manageBtn   = document.getElementById('pg-manage-btn');
   let selIndex = 0;
   let currentResults = [];
 
@@ -442,10 +602,8 @@
   //  TEXT INJECTION — multi-provider support
   // ═══════════════════════════════════════════════════════════
   function findInput() {
-    // Try provider-specific selector first, then generic fallbacks
     let el = document.querySelector(provider.sel);
     if (el) return el;
-    // Generic fallbacks
     for (const sel of ['textarea', 'div[contenteditable="true"]', '[role="textbox"]']) {
       el = document.querySelector(sel);
       if (el) return el;
@@ -460,7 +618,6 @@
     el.focus();
 
     if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
-      // Standard textarea — use native setter to trigger React/Vue
       const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set
                         || Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
       if (nativeSetter) nativeSetter.call(el, text);
@@ -468,14 +625,7 @@
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
-      // ContentEditable / ProseMirror
-      // Try execCommand first (works for most)
       el.focus();
-      // Clear existing
-      if (el.innerText.trim() === '' || el.textContent.trim() === '') {
-        // empty, just set
-      }
-      // Use clipboard API for ProseMirror (Claude) compatibility
       const dt = new DataTransfer();
       dt.setData('text/plain', text);
       const pasteEvent = new ClipboardEvent('paste', {
@@ -485,13 +635,11 @@
       });
       const handled = !el.dispatchEvent(pasteEvent);
       if (!handled) {
-        // Fallback: direct DOM manipulation
         el.textContent = text;
         el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
       }
     }
 
-    // Move cursor to end
     try {
       const range = document.createRange();
       const selection = window.getSelection();
@@ -499,7 +647,7 @@
       range.collapse(false);
       selection.removeAllRanges();
       selection.addRange(range);
-    } catch (e) { /* some providers don't support this */ }
+    } catch (e) {}
 
     return true;
   }
@@ -553,12 +701,261 @@
   }
 
   // ═══════════════════════════════════════════════════════════
+  //  CUSTOM PROMPT MANAGER (NEW FEATURE)
+  // ═══════════════════════════════════════════════════════════
+  let managerModal = null;
+
+  function openManager() {
+    if (managerModal) managerModal.remove();
+
+    const customPrompts = getCustomPrompts();
+
+    const modal = document.createElement('div');
+    modal.className = 'pg-modal';
+    modal.innerHTML = `
+      <div class="pg-modal-card">
+        <div class="pg-modal-header">
+          <h3>⚙️ Manage Custom Prompts</h3>
+          <button class="pg-modal-close">&times;</button>
+        </div>
+        <div class="pg-modal-body">
+          <div class="pg-section-title">Your Custom Prompts</div>
+          <div class="pg-custom-list" id="pg-custom-list"></div>
+
+          <div class="pg-section-title">Add New Prompt</div>
+          <div class="pg-form-group">
+            <label>Title</label>
+            <input type="text" id="pg-new-title" placeholder="e.g., My Prompt" maxlength="50">
+          </div>
+          <div class="pg-form-group">
+            <label>Category</label>
+            <input type="text" id="pg-new-cat" placeholder="e.g., Custom" value="Custom">
+          </div>
+          <div class="pg-form-group">
+            <label>Icon (emoji)</label>
+            <input type="text" id="pg-new-icon" placeholder="📌" maxlength="2" value="📌">
+          </div>
+          <div class="pg-form-group">
+            <label>Color (hex)</label>
+            <input type="text" id="pg-new-color" placeholder="#c8ff00" value="#c8ff00">
+          </div>
+          <div class="pg-form-group">
+            <label>Prompt Text</label>
+            <textarea id="pg-new-prompt" rows="5" placeholder="Your prompt content..."></textarea>
+          </div>
+          <button class="pg-btn pg-btn-primary" id="pg-add-prompt">Add Prompt</button>
+
+          <div class="pg-divider"></div>
+
+          <div class="pg-section-title">Import / Export</div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="pg-btn" id="pg-export-json">Export as JSON</button>
+            <label class="pg-btn" style="cursor:pointer;">
+              Import from File
+              <input type="file" id="pg-import-file" accept=".txt,.md,.json,.csv,text/plain,application/json,text/csv" style="display:none;">
+            </label>
+          </div>
+          <p style="font-size:11px; color:var(--pg-text3); margin-top:10px;">
+            Supported: .txt, .md, .json, .csv. <br>
+            JSON: array of prompt objects. CSV: columns "title,category,icon,color,prompt".<br>
+            Plain text files become a single prompt with filename as title.<br>
+            <strong>Note:</strong> .docx is not supported.
+          </p>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    managerModal = modal;
+
+    const closeBtn = modal.querySelector('.pg-modal-close');
+    const listDiv = modal.querySelector('#pg-custom-list');
+    const addBtn = modal.querySelector('#pg-add-prompt');
+    const exportBtn = modal.querySelector('#pg-export-json');
+    const fileInput = modal.querySelector('#pg-import-file');
+
+    function renderCustomList() {
+      const prompts = getCustomPrompts();
+      if (prompts.length === 0) {
+        listDiv.innerHTML = `<div class="pg-empty" style="padding:16px;">No custom prompts yet.</div>`;
+        return;
+      }
+      listDiv.innerHTML = prompts.map((p, idx) => `
+        <div class="pg-custom-item">
+          <div class="pg-custom-info">
+            <span style="font-size:18px;">${escapeHtml(p.icon)}</span>
+            <span style="font-weight:500;">${escapeHtml(p.title)}</span>
+            <span style="font-size:11px;color:var(--pg-text3);">${escapeHtml(p.cat)}</span>
+          </div>
+          <div class="pg-custom-actions">
+            <button class="pg-delete-btn" data-idx="${idx}" title="Delete">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+      listDiv.querySelectorAll('.pg-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.idx);
+          const prompts = getCustomPrompts();
+          prompts.splice(idx, 1);
+          saveCustomPrompts(prompts);
+          renderCustomList();
+          render(searchInput.value); // refresh main palette
+          showToast('Prompt deleted');
+        });
+      });
+    }
+    renderCustomList();
+
+    // Add prompt
+    addBtn.addEventListener('click', () => {
+      const title = modal.querySelector('#pg-new-title').value.trim();
+      const cat = modal.querySelector('#pg-new-cat').value.trim() || 'Custom';
+      const icon = modal.querySelector('#pg-new-icon').value.trim() || '📌';
+      const color = modal.querySelector('#pg-new-color').value.trim() || '#c8ff00';
+      const promptText = modal.querySelector('#pg-new-prompt').value.trim();
+
+      if (!title || !promptText) {
+        alert('Title and prompt text are required.');
+        return;
+      }
+
+      const newPrompt = {
+        id: 'custom-' + Date.now(),
+        title,
+        cat,
+        icon,
+        color,
+        prompt: promptText
+      };
+
+      const prompts = getCustomPrompts();
+      prompts.push(newPrompt);
+      saveCustomPrompts(prompts);
+      renderCustomList();
+      render(searchInput.value);
+      showToast(`✓ Added "${title}"`);
+
+      // Clear form
+      modal.querySelector('#pg-new-title').value = '';
+      modal.querySelector('#pg-new-prompt').value = '';
+      modal.querySelector('#pg-new-cat').value = 'Custom';
+      modal.querySelector('#pg-new-icon').value = '📌';
+      modal.querySelector('#pg-new-color').value = '#c8ff00';
+    });
+
+    // Export JSON
+    exportBtn.addEventListener('click', () => {
+      const prompts = getCustomPrompts();
+      const json = JSON.stringify(prompts, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'prompt-genius-custom.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported custom prompts');
+    });
+
+    // Import file
+    fileInput.addEventListener('change', (e) => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const content = ev.target.result;
+        const ext = file.name.split('.').pop().toLowerCase();
+        let imported = [];
+
+        try {
+          if (ext === 'json') {
+            imported = JSON.parse(content);
+          } else if (ext === 'csv') {
+            // Simple CSV parser (assumes header row)
+            const lines = content.split(/\r?\n/).filter(l => l.trim());
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            for (let i = 1; i < lines.length; i++) {
+              const values = lines[i].split(',').map(v => v.trim());
+              const obj = {};
+              headers.forEach((h, idx) => { obj[h] = values[idx] || ''; });
+              if (obj.title && obj.prompt) {
+                imported.push({
+                  id: 'custom-csv-' + Date.now() + i,
+                  title: obj.title,
+                  cat: obj.category || obj.cat || 'Custom',
+                  icon: obj.icon || '📄',
+                  color: obj.color || '#c8ff00',
+                  prompt: obj.prompt
+                });
+              }
+            }
+          } else {
+            // Plain text / markdown -> single prompt
+            const title = file.name.replace(/\.[^/.]+$/, '');
+            imported.push({
+              id: 'custom-file-' + Date.now(),
+              title: title || 'Imported Prompt',
+              cat: 'Imported',
+              icon: '📄',
+              color: '#c8ff00',
+              prompt: content
+            });
+          }
+
+          if (Array.isArray(imported) && imported.length) {
+            const existing = getCustomPrompts();
+            const merged = existing.concat(imported);
+            saveCustomPrompts(merged);
+            renderCustomList();
+            render(searchInput.value);
+            showToast(`Imported ${imported.length} prompt(s)`);
+          } else {
+            alert('No valid prompts found in file.');
+          }
+        } catch (err) {
+          alert('Failed to parse file: ' + err.message);
+        }
+        fileInput.value = ''; // allow re-upload same file
+      };
+      reader.readAsText(file);
+    });
+
+    // Close modal on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeManager();
+    });
+    closeBtn.addEventListener('click', closeManager);
+    document.addEventListener('keydown', handleManagerKey);
+  }
+
+  function closeManager() {
+    if (managerModal) {
+      managerModal.remove();
+      managerModal = null;
+      document.removeEventListener('keydown', handleManagerKey);
+    }
+  }
+
+  function handleManagerKey(e) {
+    if (e.key === 'Escape' && managerModal) {
+      e.preventDefault();
+      closeManager();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
   //  EVENT LISTENERS
   // ═══════════════════════════════════════════════════════════
   trigger.addEventListener('click', togglePalette);
 
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closePalette();
+  });
+
+  manageBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closePalette(); // close palette before opening manager
+    openManager();
   });
 
   searchInput.addEventListener('input', () => {
