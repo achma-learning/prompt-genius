@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Prompt Genius — AI Prompt Injector
 // @namespace    https://github.com/achma-learning/prompt-genius
-// @version      1.0.0
+// @version      1.1.0
 // @description  ⌘⇧P to open a command palette of curated prompts on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot)
 // @author       achma-learning
 // @match        https://chatgpt.com/*
@@ -23,6 +23,8 @@
 // @grant        GM_setValue
 // @run-at       document-idle
 // @license      MIT
+// @downloadURL  https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/Prompt%20generator.user.js
+// @updateURL    https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/Prompt%20generator.user.js
 // ==/UserScript==
 
 (function () {
@@ -71,6 +73,10 @@
     {
       id:'prompt-codes', title:'Prompt Power Codes', cat:'Meta', icon:'⚡', color:'#a855f7',
       prompt:`Quick Prompt Codes — add before your prompt:\n\nELI5 — Explain simply\nTLDR — Quick summary\nSTEP-BY-STEP — Sequential breakdown\nJARGONIZE — Professional tone\nHUMANIZE — Natural tone\nSWOT — Strengths/Weaknesses/Opportunities/Threats\nFIRST PRINCIPLES — Fundamental breakdown\nCHAIN OF THOUGHT — Show reasoning\nSOCRATIC MODE — Lead through questions\nPRE-MORTEM — Identify risks by imagining failure\nMULTI-PERSPECTIVE — Multiple viewpoints\nEVAL-SELF — Self-evaluate before answering\n\nExample: "ELI5: How does quantum computing work?"\nExample: "SWOT: Starting a coffee shop downtown"`
+    },
+    {
+      id:'userscript-engineer', title:'Senior Userscript Engineer', cat:'Development', icon:'🛠️', color:'#ff8c42',
+      prompt:`You are a senior Tampermonkey/Violentmonkey/Greasemonkey userscript engineer with deep expertise in browser scripting, DOM manipulation, and web automation.\n\nCore Principles:\n• 'use strict' + IIFE wrapper: (() => { 'use strict'; ... })();\n• Never use document.write, eval, or innerHTML on user-controlled content.\n• Inspect the real DOM before writing selectors.\n• When a task is ambiguous, ask one clarifying question before writing code.\n\nMetadata Block:\n• Complete ==UserScript== with @name, @namespace, @version (semver), @description, @match, @grant, @run-at\n• Only @grant APIs actually used; @grant none only if no GM_* needed\n• @connect for every GM_xmlhttpRequest domain; @run-at document-idle by default\n\nSelectors (preference order): #id > data-*/aria-*/role > stable class combos > never auto-generated classes (CSS Module hashes)\n\nDynamic Content: Use MutationObserver (not setInterval). Disconnect after one-time injections.\nwaitForElement pattern: check querySelector first, then observe with MutationObserver (childList + subtree).\n\nSPA Detection: Listen for site events (yt-navigate-finish), patch history.pushState/replaceState, or URL-polling MutationObserver as last resort.\n\nGM_* Storage: JSON.stringify for objects, always provide defaults, single key for large state. Support both sync (GM_getValue) and async (GM.getValue).\n\nNetwork: GM_xmlhttpRequest with Promise wrapper, handle onerror + ontimeout, @connect every domain.\n\nUI Injection: Check for existing injection before inserting (getElementById). Use insertAdjacentElement when position matters. Clean up on SPA navigation.\n\nSecurity Checklist:\n• No innerHTML with user content — use textContent or createElement\n• No eval(), new Function(), setTimeout(string)\n• @connect all XHR domains\n• No hardcoded secrets or plain-text sensitive data in GM_setValue\n• Disconnect unused observers\n• Handle missing DOM elements gracefully\n\nPerformance: document-idle default, debounce MutationObserver callbacks (150ms), cache querySelectorAll results, requestAnimationFrame for visual updates.\n\nOutput: Complete .user.js file with full metadata block, comment block explaining approach, inline comments on non-obvious logic. Never guess selectors for unfamiliar pages — ask for HTML/URL/description first.`
     }
   ];
 
@@ -378,6 +384,10 @@
   // ═══════════════════════════════════════════════════════════
   //  RENDER
   // ═══════════════════════════════════════════════════════════
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   function render(query = '') {
     const q = query.toLowerCase().trim();
     const all = getAllPrompts();
@@ -386,16 +396,16 @@
       : all;
 
     if (!currentResults.length) {
-      resultsDiv.innerHTML = `<div class="pg-empty">No prompts match "${query}"</div>`;
+      resultsDiv.innerHTML = `<div class="pg-empty">No prompts match "${escapeHtml(query)}"</div>`;
       return;
     }
 
     resultsDiv.innerHTML = currentResults.map((p, i) => `
       <div class="pg-item${i === selIndex ? ' pg-sel' : ''}" data-i="${i}">
-        <div class="pg-item-icon" style="background:${p.color}1a;color:${p.color}">${p.icon}</div>
+        <div class="pg-item-icon" style="background:${escapeHtml(p.color)}1a;color:${escapeHtml(p.color)}">${escapeHtml(p.icon)}</div>
         <div class="pg-item-body">
           <div class="pg-item-title">${highlight(p.title, q)}</div>
-          <div class="pg-item-cat">${p.cat}</div>
+          <div class="pg-item-cat">${escapeHtml(p.cat)}</div>
         </div>
         <span class="pg-item-action">↵ insert</span>
       </div>
@@ -411,10 +421,10 @@
   }
 
   function highlight(text, q) {
-    if (!q) return text;
+    if (!q) return escapeHtml(text);
     const idx = text.toLowerCase().indexOf(q);
-    if (idx === -1) return text;
-    return text.slice(0, idx) + `<mark style="background:var(--pg-accent);color:#000;border-radius:2px;padding:0 1px">${text.slice(idx, idx + q.length)}</mark>` + text.slice(idx + q.length);
+    if (idx === -1) return escapeHtml(text);
+    return escapeHtml(text.slice(0, idx)) + `<mark style="background:var(--pg-accent);color:#000;border-radius:2px;padding:0 1px">${escapeHtml(text.slice(idx, idx + q.length))}</mark>` + escapeHtml(text.slice(idx + q.length));
   }
 
   function updateSel() {
