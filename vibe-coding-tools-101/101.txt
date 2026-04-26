@@ -1,0 +1,75 @@
+Concrete recommendation for your toolbox v1
+Build prompts in this order, because each unlocks the next:
+
+DECISIONS.md — biggest gap, highest leverage, reuses the same workflow shape (Phase 0 discovery → Phase 1 analysis → Phase 2 synthesis) you already have working.
+ROADMAP.md — short, but the "Killed" lane makes it uniquely valuable for AI handoff.
+README.md — different audience, so different prompt entirely. The vibe-coder version is shorter and more honest than the corporate one.
+TROUBLESHOOTING.md — fills the "I fixed this before, what was it?" gap.
+PROMPTS.md — the recursive one. Document the prompts that built the project, including the prompts in this toolbox.
+
+---
+draft : "The four memory dimensions. Every persistent file in a repo answers one of four questions:
+
+Question	File	You have it?
+What is this & how does it work?	CONTEXT.md	✅
+What changed & when?	CHANGELOG.md	✅
+Why did I choose this over alternatives?	DECISIONS.md	❌
+Where is this going?	ROADMAP.md	❌
+You have past + present covered. You're missing rationale (why-not, not just why) and future (what's queued and why it's not done yet). Those are the highest-leverage adds.
+
+Then there's a second layer: files that aren't AI memory but are AI workflow — prompts, troubleshooting, glossaries. These don't answer questions about the project; they accelerate working on the project.
+
+Tier 1 — Add this next: DECISIONS.md
+This is the single biggest gap in your toolbox. CHANGELOG.md records what changed; DECISIONS.md records what you considered and rejected. Without it, future-you (and future-AI) will repeatedly re-litigate decisions you already made.
+
+The format is called an ADR (Architecture Decision Record) — short entries, one per decision, with: context, options considered, choice, and consequences. Why this matters specifically for vibe coders:
+
+AI assistants love to suggest "improvements" you already rejected for good reasons. ADRs let you say "no, we tried that — see DECISIONS.md#0007."
+3 months from now, you won't remember why you picked Vite over Webpack, or chose .user.js over a browser extension, or ditched localStorage for IndexedDB. ADRs preserve the reasoning, not just the outcome.
+For your medical-school skills work specifically (FMPC plan types, the 8 official structures), this is where you'd document why you chose those exact 8 over alternatives.
+The prompt structure mirrors what we built for CONTEXT.md and CHANGELOG.md: discovery phase (read existing decisions, scan recent code/conversation for choice-points), forensic phase (identify the alternatives that were considered), synthesis phase (write the ADR entry with the standard 5-part structure). Numbered files (0001-use-vite.md) or single-file format both work — single-file is friendlier for vibe coders.
+
+Tier 1 — Add this too: ROADMAP.md
+Different from CHANGELOG's "Next up" section. Changelog is journal; roadmap is plan. The crucial vibe-coder twist: roadmap entries need an "abandoned" lane, not just "todo / doing / done." Half your roadmap will become things you decided not to build, and that's information future-AI needs ("don't suggest this, we explicitly chose not to do it"). Three buckets: Cooking (active), Backlog (idea, not started), Killed (considered, decided against, with reason). The killed lane is what makes it a real roadmap and not a wishlist.
+
+Tier 2 — Worth adding once you have a few projects
+README.md — yes, separately from CONTEXT.md. Different audience. README is for humans landing on the GitHub page (and search engines, and recruiters, and your future self showing the repo to someone). CONTEXT is for AI. They overlap maybe 30%. The vibe-coder twist on README: lead with a screenshot or GIF, then 3 lines of plain-English what-it-does, then install/run, then a single "why I built this" paragraph. Skip the badges-and-tables-of-contents bloat.
+
+TROUBLESHOOTING.md — when "it worked yesterday" happens. Format: Symptom → Cause → Fix, sorted by frequency. The killer feature for AI handoff: each entry includes the exact error message verbatim, so when future-AI hits the same error and you paste it, semantic search finds the entry instantly. This is the file you wish existed every time you debug something at midnight and realize you fixed this exact thing 4 months ago.
+
+PROMPTS.md — meta but genuinely useful for vibe coding specifically. The prompts you used to build this repo. When you come back in 6 months and want to extend it, you can re-prime an AI with the same prompts that produced the original code, getting consistent style. Especially valuable for your toolbox itself — PROMPTS.md is basically your toolbox in repo form.
+
+Tier 3 — Only when the project warrants it
+TESTING.md — the manual QA checklist for projects without automated tests (most vibe-coded projects). "Before pushing, click these 5 things and verify they work." Critical for userscripts especially, where there's no CI pipeline catching regressions.
+
+SECURITY.md — only matters if the project handles auth, user data, or runs in someone else's browser. For your userscripts: yes, because they have DOM access and run on third-party sites. Document threat model, what data you touch, what you don't store.
+
+GLOSSARY.md — for projects with domain jargon. Your medical skills project absolutely needs this (TDD, EBM, internat, résidanat, FMPC, the 8 plan types — these are opaque to AI assistants without context). For a userscript that scrapes a site, much less needed.
+
+STACK.md — only if your stack is genuinely unusual. Most projects don't need this; it's already in CONTEXT.md §3. But for a self-hosted setup like your n8n + USB modem + DNS-over-TLS rig, a dedicated stack file with the physical infrastructure (which device, which port, which IP) is gold for future-you.
+
+What I'd skip — and why
+A few that look tempting but aren't worth the maintenance burden for solo vibe-coded projects:
+
+CONTRIBUTING.md — no contributors = no point. Add only if a project goes public and gets traction.
+CODE_OF_CONDUCT.md — same logic. GitHub will nag you for it on public repos; ignore unless community emerges.
+API.md — if your code has an API surface, document it inline (JSDoc, docstrings) where it lives, not in a separate file that immediately drifts.
+STYLE.md — fold style rules into CONTEXT.md §5 (Rules For Editing). Separate file = duplicate state = drift.
+TODO.md — this is what ROADMAP.md is for. Don't have both.
+The pattern: every separate file is a sync surface. If two files cover overlapping ground, they will drift. The minimum viable toolbox is CONTEXT + CHANGELOG + DECISIONS + ROADMAP, with README as the public face. Everything else is opt-in based on the specific project's needs.
+
+Concrete recommendation for your toolbox v1
+Build prompts in this order, because each unlocks the next:
+
+DECISIONS.md — biggest gap, highest leverage, reuses the same workflow shape (Phase 0 discovery → Phase 1 analysis → Phase 2 synthesis) you already have working.
+ROADMAP.md — short, but the "Killed" lane makes it uniquely valuable for AI handoff.
+README.md — different audience, so different prompt entirely. The vibe-coder version is shorter and more honest than the corporate one.
+TROUBLESHOOTING.md — fills the "I fixed this before, what was it?" gap.
+PROMPTS.md — the recursive one. Document the prompts that built the project, including the prompts in this toolbox.
+After those five, your toolbox covers ~90% of what a solo vibe-coded GitHub repo actually needs. The rest is project-specific judgment.
+
+Want me to draft the DECISIONS.md prompt next? It's the most structurally different from the two you already have — the others (ROADMAP, README, TROUBLESHOOTING) are closer adaptations of the CONTEXT/CHANGELOG pattern, but ADR-style decision records have their own shape worth getting right.
+
+
+
+"
