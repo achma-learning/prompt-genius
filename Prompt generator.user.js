@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Prompt Genius — AI Prompt Injector
 // @namespace    https://github.com/achma-learning/prompt-genius
-// @version      1.4.0
-// @description  ⌘⇧P to open a command palette of curated prompts on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot)
+// @version      1.5.0
+// @description  ⌘⇧P to open a command palette of curated prompts on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot) and on Google Labs / Flow
 // @author       achma-learning
 // @match        https://chatgpt.com/*
 // @match        https://chat.openai.com/*
 // @match        https://claude.ai/*
 // @match        https://gemini.google.com/*
+// @match        https://labs.google/*
 // @match        https://deepseek.com/*
 // @match        https://chat.deepseek.com/*
 // @match        https://labs.perplexity.ai/*
@@ -906,6 +907,121 @@ Cross-cutting rules that show up in most prompts. New prompts should respect the
 Execute Phase 0, 1, 2 and output \`PROMPTS.md\`.
 `
     },
+    {
+      id:'flow-restore-bw', title:'Photo Restoration — B&W to B&W', cat:'Image Restoration', icon:'🖼️', color:'#b0b0ba',
+      prompt:`Professional archival restoration and upscale of the attached vintage black-and-white photograph. The result must stay monochrome.
+
+PRESERVE (highest priority)
+- The exact identity of every person: face geometry, bone structure, eye shape and spacing, nose, mouth, jawline, apparent age, expression, hairline. Do not beautify, slim, de-age, or re-imagine anyone.
+- Original framing, aspect ratio, pose, composition, clothing, objects and background. Add nothing and remove no one.
+- The authentic photographic character of the era: real film grain structure, period lens rendering, natural depth of field.
+
+REPAIR
+- Remove scratches, dust, specks, cracks, creases, folds, tape marks, water stains, mold spots and emulsion damage.
+- Reconstruct torn, missing or bleached regions from surrounding context so the repair is invisible and anatomically correct.
+- Recover detail lost in blown highlights and crushed shadows.
+
+ENHANCE
+- Increase true optical sharpness and micro-detail, prioritizing eyes, irises, eyelashes, skin pores, hair strands, fabric weave and any lettering.
+- Rebuild the tonal range: deep neutral blacks, clean unclipped highlights, smooth mid-tone gradation, balanced contrast and exposure.
+- Reduce heavy grain and scanner noise only where it reads as damage; keep fine natural grain so the image still reads as a photograph.
+- Upscale to the maximum available resolution with clean, artifact-free edges.
+
+AVOID
+- Plastic or waxy skin, airbrushed smoothing, HDR halos, over-sharpening ringing, posterization or banding.
+- Any added text, watermark, border, frame or signature.
+- Any sepia, duotone, tint or partial colorization. The output stays neutral black and white.
+
+OUTPUT: a single high-resolution, archival-quality monochrome photograph, historically faithful to the original.`
+    },
+    {
+      id:'flow-colorize', title:'Photo Restoration — B&W to Color', cat:'Image Restoration', icon:'🎨', color:'#ff8c42',
+      prompt:`Full restoration and natural colorization of the attached old black-and-white photograph. Restore first, colorize second.
+
+STEP 1 — RESTORE
+- Remove scratches, dust, cracks, folds, stains, mold and emulsion damage; reconstruct torn or missing areas from surrounding context.
+- Recover detail in blown highlights and blocked shadows, and sharpen genuine detail: eyes, irises, hair strands, skin texture, fabric weave, lettering.
+- Upscale to the maximum available resolution with clean, artifact-free edges.
+
+STEP 2 — COLORIZE
+- Accurate, believable skin tones with natural subsurface variation: warmer cheeks, ears, lips, knuckles; cooler shadow tones. No orange, gray or mask-like faces.
+- Period-plausible colors for clothing, uniforms, dyes, paint, vehicles, signage and interiors, consistent with the apparent decade of the photograph.
+- Natural environment color: sky, foliage, wood, stone, water rendered as they would look under the light actually present in the frame.
+- One consistent light source and white balance across the whole image; shadows keep a cool tint, highlights a warm one, never fully saturated.
+- Restrained, film-like grading with muted saturation, as if shot on color negative of that era.
+
+PRESERVE
+- Every face's exact identity, geometry, age and expression. Do not beautify, de-age or restyle anyone.
+- Original framing, aspect ratio, pose, composition and background. Add nothing, remove no one.
+- Natural photographic texture and fine grain.
+
+AVOID
+- Oversaturated, neon or candy colors; uniform flat color fills; color bleeding across edges.
+- Modern-looking dyes, fabrics or materials that did not exist when the photo was taken.
+- Plastic skin, airbrushed smoothing, HDR halos, over-sharpening ringing, added text, watermarks or borders.
+
+OUTPUT: a single high-resolution color photograph that looks as if it had originally been shot in color, on film, in its own era.`
+    },
+    {
+      id:'flow-revive-color', title:'Photo Restoration — Revive Faded Color', cat:'Image Restoration', icon:'🌈', color:'#2dd4bf',
+      prompt:`Advanced restoration of the attached faded, discolored or damaged color photograph. Bring it back to how it looked the day it was printed.
+
+CORRECT THE COLOR
+- Neutralize the age cast: remove yellowing, magenta or cyan shift, and any overall tint from faded dye layers.
+- Rebuild an accurate white balance using neutral references in the frame (whites, grays, teeth, paper, concrete).
+- Restore rich, natural, believable color and full saturation without pushing past what the scene really contained.
+- Return skin tones to natural, healthy values with warm and cool variation; no orange, red or gray faces.
+
+REPAIR AND RECOVER
+- Remove scratches, dust, specks, creases, fingerprints, water stains, chromatic noise and JPEG or scanner artifacts.
+- Reconstruct damaged, torn or missing areas realistically from surrounding context.
+- Recover detail lost in blown highlights and blocked shadows, and rebuild contrast with deep blacks and clean whites.
+
+ENHANCE
+- Increase real optical sharpness and micro-detail: eyes, hair, skin texture, fabric weave, foliage, lettering. Correct mild softness or lens haze.
+- Reduce grain and noise only where it reads as damage; keep the natural film texture.
+- Upscale to the maximum available resolution with clean, artifact-free edges.
+
+PRESERVE
+- Every face's exact identity, geometry, age and expression. Do not beautify, slim, de-age or restyle anyone.
+- Original framing, aspect ratio, composition, clothing and background. Add nothing, remove no one.
+
+AVOID
+- Over-processing: HDR halos, crunchy over-sharpening, plastic or waxy skin, airbrushed smoothing, posterization or banding.
+- Heavy stylized grading, teal-and-orange looks, added text, watermarks or borders.
+
+OUTPUT: a single clean, high-definition color photograph with revitalized color and natural photographic texture.`
+    },
+    {
+      id:'flow-upscale-free', title:'Max-Res Creative Upscale (no fidelity lock)', cat:'Image Restoration', icon:'🔍', color:'#a855f7',
+      prompt:`Reconstruct and upscale the attached low-quality photograph into a maximum-resolution, high-end photographic image. Prioritize final image quality over strict fidelity to the degraded source — you are allowed to reinterpret and invent detail that the original no longer contains.
+
+CREATIVE LICENSE (this prompt is deliberately not fidelity-locked)
+- Treat the source as a reference for subject, pose, framing, lighting and mood, not as pixel truth.
+- Freely synthesize plausible detail wherever the original is destroyed: skin texture and pores, individual hair strands, eyelashes, fabric weave and stitching, wood grain, foliage, architecture, background objects.
+- Redraw soft, smeared, pixelated, compressed or half-missing regions as clean, sharp, physically coherent structure.
+- Re-light and re-grade for a professional result: natural depth of field, believable specular highlights, clean subject separation, refined color and contrast.
+
+RESOLUTION AND QUALITY
+- Upscale to the maximum available resolution, keeping the original aspect ratio and framing.
+- Remove all degradation: blur, JPEG blocking, banding, chroma noise, halos, upscaling artifacts, scratches, dust and stains.
+- Deliver crisp, artifact-free edges and rich micro-contrast throughout.
+- Final look: sharp, modern, high-end photography — as if shot on a full-frame camera with a fast prime lens, then finished professionally.
+
+STAY COHERENT
+- Keep the same subject, count of people, pose, expression, gaze direction, clothing type, era and scene. Do not change what the photograph is of.
+- Keep human anatomy, hands, teeth, eyes and perspective physically correct.
+- Keep one consistent light direction, color temperature and depth of field across the whole frame.
+
+AVOID
+- Plastic or waxy skin, airbrushed smoothing, uncanny doll faces, HDR halos, over-sharpening ringing, posterization.
+- Cartoon, illustration, painterly, 3D-render or AI-glossy looks. The output must read as a real photograph.
+- Added text, watermarks, borders, frames, signatures or extra people.
+
+NOTE: this prompt invents detail the original does not contain, faces included. Use the fidelity-locked restoration prompts instead for archival, legal, journalistic or identification work.
+
+OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebuilt to modern photographic quality.`
+    },
   ];
 
   // ═══════════════════════════════════════════════════════════
@@ -916,6 +1032,9 @@ Execute Phase 0, 1, 2 and output \`PROMPTS.md\`.
     'chat.openai.com':   { name:'ChatGPT',    sel:'#prompt-textarea, div[contenteditable="true"][id="prompt-textarea"]', type:'contenteditable' },
     'claude.ai':         { name:'Claude',      sel:'div.ProseMirror[contenteditable="true"]', type:'prosemirror' },
     'gemini.google.com': { name:'Gemini',      sel:'div.ql-editor[contenteditable="true"], rich-textarea .ql-editor', type:'contenteditable' },
+    // Google Labs (Flow, Whisk, ImageFX…) — the prompt box is a plain textarea, but the
+    // page also carries hidden/offscreen textareas, so findInput() prefers a visible one.
+    'labs.google':       { name:'Google Labs', sel:'textarea[placeholder], textarea, div[contenteditable="true"]', type:'textarea' },
     'chat.deepseek.com': { name:'DeepSeek',    sel:'textarea#chat-input, textarea', type:'textarea' },
     'deepseek.com':      { name:'DeepSeek',    sel:'textarea#chat-input, textarea', type:'textarea' },
     'www.perplexity.ai': { name:'Perplexity',  sel:'textarea', type:'textarea' },
@@ -1425,14 +1544,29 @@ Execute Phase 0, 1, 2 and output \`PROMPTS.md\`.
   // ═══════════════════════════════════════════════════════════
   //  TEXT INJECTION — multi-provider support
   // ═══════════════════════════════════════════════════════════
+  // An element is only worth typing into if it is enabled, writable and actually
+  // rendered. Google Labs (Flow) keeps hidden textareas in the DOM, and picking
+  // the first match in document order lands in one of those instead of the prompt box.
+  function isUsableInput(el) {
+    if (!el || el.disabled || el.readOnly) return false;
+    if (el.getAttribute('aria-hidden') === 'true') return false;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+
   function findInput() {
-    let el = document.querySelector(provider.sel);
-    if (el) return el;
-    for (const sel of ['textarea', 'div[contenteditable="true"]', '[role="textbox"]']) {
-      el = document.querySelector(sel);
-      if (el) return el;
+    // provider.sel is a comma-separated list in priority order; querySelector would
+    // resolve it in document order instead, so walk the selectors one at a time.
+    const selectors = provider.sel.split(',').map(s => s.trim()).filter(Boolean)
+      .concat(['textarea', 'div[contenteditable="true"]', '[role="textbox"]']);
+    let fallback = null;
+    for (const sel of selectors) {
+      for (const el of document.querySelectorAll(sel)) {
+        if (isUsableInput(el)) return el;
+        if (!fallback) fallback = el;
+      }
     }
-    return null;
+    return fallback;
   }
 
   function injectText(text) {

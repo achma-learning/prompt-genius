@@ -17,11 +17,11 @@ _Last synced: 2026-04-27 @ 99e6e50_
 - **Language + runtime:** Plain ES2020 JavaScript, runs in the browser via Tampermonkey. No Node, no transpiler. No `.nvmrc`, no `package.json`.
 - **Framework / key libraries:** None. Vanilla DOM. Userscript uses `GM_addStyle`, `GM_getValue`, `GM_setValue` (`Prompt generator.user.js:21-23`). Fonts pulled from Google Fonts CDN (Outfit + JetBrains Mono).
 - **What kind of project:** Userscript (Tampermonkey/Violentmonkey/Greasemonkey) + a sibling static HTML showcase page. The repo also doubles as a curated prompt library — raw `.txt`/`.md` files under `all_prompts/` and `vibe-coding-tools-101/`.
-- **External services:** Only the AI chat hosts the script targets — ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot, You.com, Poe (`Prompt generator.user.js:914-929`). No backend, no analytics, no telemetry.
+- **External services:** Only the AI hosts the script targets — ChatGPT, Claude, Gemini, Google Labs (Flow/Whisk/ImageFX), DeepSeek, Perplexity, Mistral, Grok, Copilot, You.com, Poe (`PROVIDERS` in `Prompt generator.user.js`). No backend, no analytics, no telemetry.
 
 ## 4. Code Map (The Important Files Only)
 - `Prompt generator.user.js` — The whole product. ~1840 lines, single IIFE. Contains the prompt database, provider map, palette UI, and custom-prompt manager. Open this first.
-  - `BUILTIN_PROMPTS` array (line 36) — all 18 shipped prompts, inline as JS strings.
+  - `BUILTIN_PROMPTS` array (line 36) — all 22 shipped prompts, inline as JS strings.
   - `PROVIDERS` map (line 914) — hostname → input selector + injection strategy. Add new chat sites here.
   - `injectText()` (line 1438) — the magic. Three code paths: native value setter for textareas, synthetic paste event for contenteditable (Claude's ProseMirror, Gemini's Quill), fallback to `textContent`.
   - `openManager()` (line 1532) — the "⚙️ Manage Custom Prompts" modal: add/delete/import/export user prompts, persisted under `GM_setValue('pg_custom_prompts', …)` (line 1322).
@@ -45,7 +45,7 @@ _Last synced: 2026-04-27 @ 99e6e50_
 - **The landing page `PROMPTS` array is a separate copy** from the userscript's `BUILTIN_PROMPTS`. If you only update one, you create drift (you already have — see §6).
 
 ## 6. Fragile Bits & Landmines
-- **Two prompt lists, one truth.** `Prompt generator.user.js` has 18 prompts (`BUILTIN_PROMPTS`); `index.html` has 11 (`PROMPTS`, line 401) and includes three that *aren't* in the userscript (`average-search`, `chatgpt-codes`, `photoshop-chatgpt`). The website is behind. Adding a prompt to one without the other is the default failure mode — there's no shared source.
+- **Two prompt lists, one truth.** `Prompt generator.user.js` has 22 prompts (`BUILTIN_PROMPTS`); `index.html` has 15 (`PROMPTS`, line 401) and includes three that *aren't* in the userscript (`average-search`, `chatgpt-codes`, `photoshop-chatgpt`). The website is behind. Adding a prompt to one without the other is the default failure mode — there's no shared source.
 - **`injectText()` for contenteditable is duct tape.** It dispatches a synthetic `ClipboardEvent('paste')` with a `DataTransfer` payload because directly setting `textContent` doesn't notify React/ProseMirror/Quill of the change. If a target site stops honoring synthetic paste, the fallback (`textContent` + `InputEvent`) leaves the editor in an inconsistent state on some sites. Original symptom: prompt appeared visually but Send button stayed disabled because the framework's internal state was empty. (`Prompt generator.user.js:1451-1465`)
 - **Provider selectors rot.** `chatgpt.com` uses `#prompt-textarea`, Claude uses `div.ProseMirror[contenteditable="true"]`, Gemini uses `div.ql-editor` (`Prompt generator.user.js:915-928`). These break whenever the host site reships their editor. The fallback chain in `findInput()` (line 1428) catches most regressions, but specific sites need targeted fixes.
 - **`@match https://x.com/i/grok*`** (line 17) — Grok-on-X has moved before; if Grok stops working there first, suspect this match pattern, not the selector.
@@ -56,11 +56,12 @@ _Last synced: 2026-04-27 @ 99e6e50_
 - **`chatGPT CODES.TXT`** at the repo root is the source for the "Prompt Power Codes" prompt. Filename has a space and uppercase — fine, just don't auto-rename.
 
 ## 7. Current State
-- **Last shipped:** PR #5 (`1a66963`) — added three Vibe Coding prompts (`vc-readme`, `vc-troubleshooting`, `vc-prompts-codex`) and wired all six vibe-coding prompts into the palette. Userscript is at `v1.4.0`.
-- **Working on now:** Adding this `CONTEXT.md` (branch `claude/add-context-documentation-pwpwX`) so future AI assistants can pick up the project cold.
+- **Last shipped:** PR #5 (`1a66963`) — added three Vibe Coding prompts (`vc-readme`, `vc-troubleshooting`, `vc-prompts-codex`) and wired all six vibe-coding prompts into the palette.
+- **Working on now:** `v1.5.0` — four `Image Restoration` prompts for Google Labs Flow, `labs.google` added to `@match` + `PROVIDERS`, and a `findInput()` rewrite that prefers a visible, writable input (Flow keeps hidden textareas around). Long-form bilingual source in `all_prompts/google-labs-flow-photo-restoration.md`.
 - **Next up:**
   1. Reconcile `index.html`'s prompt list with `BUILTIN_PROMPTS` (or extract a shared JSON both can read).
   2. Decide whether the landing page goes live on GitHub Pages.
+  3. Confirm the real Flow prompt-box selector against the live DOM — the current entry is a deliberately generic textarea chain, not an inspected selector.
 
 ## 8. Update Protocol (Verbatim)
 > **For the AI Assistant:** When asked to "Update CONTEXT.md":
