@@ -24,8 +24,8 @@
 // @grant        GM_setValue
 // @run-at       document-idle
 // @license      MIT
-// @downloadURL  https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/Prompt%20generator.user.js
-// @updateURL    https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/Prompt%20generator.user.js
+// @downloadURL  https://update.greasyfork.org/scripts/571159/Prompt%20Genius%20%E2%80%94%20AI%20Prompt%20Injector.user.js
+// @updateURL    https://update.greasyfork.org/scripts/571159/Prompt%20Genius%20%E2%80%94%20AI%20Prompt%20Injector.meta.js
 // ==/UserScript==
 
 (function () {

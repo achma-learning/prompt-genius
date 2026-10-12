@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Prompt Genius — Médical (FMPM)
 // @namespace    https://github.com/mohamed-aymane/prompt-genius-medical
-// @version      3.0.0
-// @description  ⌘⇧P pour ouvrir une palette de commandes de 226 prompts médicaux et paramédicaux (21 métiers de santé). Remplissage des variables de contexte 100% clavier, injection directe. Basé sur le catalogue Lonasanté « 226 Prompts IA Santé ».
+// @version      3.1.0
+// @description  Alt+M ouvre une palette de 226 prompts médicaux et paramédicaux (21 métiers de santé) : recherche sans accents, favoris, aperçu, formulaire de contexte au clavier, et réglages pour activer/désactiver des catégories ou des prompts. Basé sur le catalogue Lonasanté « 226 Prompts IA Santé ».
 // @author       Mohamed-aymane
 // @match        https://chatgpt.com/*
 // @match        https://chat.openai.com/*
@@ -22,9 +22,18 @@
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_setClipboard
+// @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // @license      MIT
+// @downloadURL  https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/prompt-med.user.js
+// @updateURL    https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/prompt-med.user.js
 // ==/UserScript==
+
+// Keep @name and @namespace unchanged: the userscript manager identifies the script by them,
+// and changing either one would install a second copy that cannot see the saved custom prompts,
+// favourites and settings of the first.
+
 
 (function () {
   'use strict';
@@ -7820,6 +7829,17 @@ Structure la communication descendante et ascendante, en adaptant le format au m
   ];
 
   // ═══════════════════════════════════════════════════════════
+  //  DATA EXPORT — index.html reuses this exact prompt list.
+  //  The landing page defines window.__PGM_EXPORT__ and loads this
+  //  file as a plain <script>. Inside a userscript manager
+  //  GM_addStyle exists, so this branch never runs there.
+  // ═══════════════════════════════════════════════════════════
+  if (typeof GM_addStyle === 'undefined' && typeof window.__PGM_EXPORT__ === 'function') {
+    window.__PGM_EXPORT__({ cats: CATS.filter(c => c.key !== 'all'), prompts: BUILTIN_PROMPTS });
+    return;
+  }
+
+  // ═══════════════════════════════════════════════════════════
   //  PROVIDER DETECTION — maps hostname to input strategy
   // ═══════════════════════════════════════════════════════════
   const PROVIDERS = {
@@ -7842,163 +7862,186 @@ Structure la communication descendante et ascendante, en adaptant le format au m
 
   const host = location.hostname;
   const provider = PROVIDERS[host]
-    || PROVIDERS[Object.keys(PROVIDERS).find(h => host.includes(h))]
+    || PROVIDERS[Object.keys(PROVIDERS).find(h => host.endsWith('.' + h))]
     || { name:'Inconnu', sel:'textarea, [contenteditable="true"]', type:'auto' };
 
   // ═══════════════════════════════════════════════════════════
-  //  STYLES
+  //  SETTINGS — one GM key, JSON. Custom prompts keep their
+  //  original key (pg_med_custom_prompts) so v3.0 data survives.
   // ═══════════════════════════════════════════════════════════
-  const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap');
+  const IS_MAC = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '');
+  const ALT = IS_MAC ? '⌥' : 'Alt+';
 
-    :root {
-      --pg-bg: #111113;
-      --pg-bg2: #1a1a1f;
-      --pg-bg3: #222228;
-      --pg-border: #2a2a32;
-      --pg-text: #f0f0f2;
-      --pg-text2: #b0b0ba;
-      --pg-text3: #707078;
-      --pg-accent: #c8ff00;
-      --pg-radius: 12px;
-      --pg-font: 'Outfit', system-ui, -apple-system, sans-serif;
-      --pg-mono: 'JetBrains Mono', monospace;
-      --pg-shadow: 0 20px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06);
-    }
+  // Ctrl+Shift+P is what the main Prompt Genius script uses; with both installed it would open
+  // two palettes at once, hence the Alt+M default.
+  const HOTKEYS = {
+    'alt+m':       { mod: false, alt: true,  shift: false, key: 'm', label: IS_MAC ? '⌥M' : 'Alt+M' },
+    'alt+p':       { mod: false, alt: true,  shift: false, key: 'p', label: IS_MAC ? '⌥P' : 'Alt+P' },
+    'mod+shift+m': { mod: true,  alt: false, shift: true,  key: 'm', label: IS_MAC ? '⌘⇧M' : 'Ctrl+Shift+M' },
+    'mod+shift+p': { mod: true,  alt: false, shift: true,  key: 'p', label: IS_MAC ? '⌘⇧P' : 'Ctrl+Shift+P' },
+  };
 
-    #pg-trigger {
-      position: fixed; bottom: 20px; right: 20px; z-index: 2147483640;
-      width: 44px; height: 44px; border-radius: 12px; background: var(--pg-bg);
-      border: 1px solid var(--pg-border); color: var(--pg-accent); cursor: pointer;
-      display: grid; place-items: center; font-size: 17px; font-family: var(--pg-font);
-      font-weight: 700; box-shadow: var(--pg-shadow); transition: all 150ms ease; user-select: none;
-    }
-    #pg-trigger:hover { transform: scale(1.08); border-color: var(--pg-accent); box-shadow: 0 0 20px rgba(200,255,0,.15), var(--pg-shadow); }
-    #pg-trigger .pg-kbd {
-      position: absolute; top: -8px; right: -8px; background: var(--pg-bg3); border: 1px solid var(--pg-border);
-      border-radius: 5px; padding: 1px 5px; font-size: 9px; font-family: var(--pg-mono); color: var(--pg-text3); pointer-events: none;
-    }
+  const DEFAULT_SETTINGS = {
+    hotkey: 'alt+m',
+    disabledCats: [],
+    disabledIds: [],
+    favs: [],
+    recents: [],
+    showTrigger: true,
+    showPreview: true,
+    rememberFields: false,
+    filters: [],       // « Mes filtres » : [{ id, name, icon, cats: [catKey], ids: [promptId] }]
+    startCat: 'all',   // category the palette opens on: 'all' | 'fav' | 'recent' | 'flt:<id>'
+  };
 
-    #pg-overlay {
-      position: fixed; inset: 0; z-index: 2147483641; background: rgba(0,0,0,.55);
-      backdrop-filter: blur(6px); display: none; align-items: flex-start; justify-content: center;
-      padding: min(10vh, 90px) 16px; font-family: var(--pg-font);
-    }
-    #pg-overlay.pg-open { display: flex; }
-
-    #pg-palette {
-      background: var(--pg-bg); border: 1px solid var(--pg-border); border-radius: var(--pg-radius);
-      width: 100%; max-width: 640px; box-shadow: var(--pg-shadow); overflow: hidden; animation: pgSlideIn 150ms ease;
-      display: flex; flex-direction: column; max-height: 85vh;
-    }
-    @keyframes pgSlideIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
-
-    .pg-input-row { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--pg-border); flex: 0 0 auto; }
-    .pg-input-row svg { width: 18px; height: 18px; color: var(--pg-text3); flex-shrink: 0; }
-    #pg-search { flex: 1; background: none; border: none; outline: none; font-size: 15px; font-family: var(--pg-font); color: var(--pg-text); caret-color: var(--pg-accent); }
-    #pg-search::placeholder { color: var(--pg-text3); }
-    .pg-provider-badge { font-size: 10px; font-family: var(--pg-mono); font-weight: 500; padding: 2px 8px; border-radius: 6px; background: var(--pg-bg3); color: var(--pg-text3); white-space: nowrap; }
-    #pg-manage-btn { background: none; border: none; color: var(--pg-text3); cursor: pointer; padding: 4px 8px; border-radius: 6px; font-size: 16px; line-height: 1; transition: all 120ms; margin-left: 4px; }
-    #pg-manage-btn:hover { background: var(--pg-bg3); color: var(--pg-text); }
-
-    #pg-cats { display: flex; gap: 5px; padding: 8px 12px; border-bottom: 1px solid var(--pg-border); flex: 0 0 auto; flex-wrap: wrap; max-height: 120px; overflow-y: auto; }
-    .pg-cat-pill {
-      display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--pg-border);
-      background: var(--pg-bg2); color: var(--pg-text3); font-size: 11px; cursor: pointer; user-select: none; white-space: nowrap;
-    }
-    .pg-cat-pill.pg-cat-active { background: var(--pg-accent); color: #000; border-color: var(--pg-accent); font-weight: 600; }
-    .pg-cat-hint { margin-left: auto; font-size: 10px; font-family: var(--pg-mono); color: var(--pg-text3); align-self: center; }
-
-    #pg-banner {
-      margin: 8px 12px 0; padding: 7px 10px; border-radius: 8px; background: #1a1608; border: 1px solid #3a2f0d;
-      color: #e0c76a; font-size: 11px; line-height: 1.4; flex: 0 0 auto;
-    }
-
-    #pg-results { max-height: 380px; overflow-y: auto; padding: 4px; flex: 1 1 auto; }
-    #pg-results::-webkit-scrollbar { width: 5px; }
-    #pg-results::-webkit-scrollbar-thumb { background: var(--pg-border); border-radius: 3px; }
-    .pg-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; transition: background 120ms ease; }
-    .pg-item:hover, .pg-item.pg-sel { background: var(--pg-bg3); }
-    .pg-item-icon { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 13px; flex-shrink: 0; }
-    .pg-item-body { flex: 1; min-width: 0; }
-    .pg-item-title { font-size: 13.5px; font-weight: 500; color: var(--pg-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pg-item-cat { font-size: 10.5px; font-family: var(--pg-mono); color: var(--pg-text3); }
-    .pg-item-action { font-size: 10px; font-family: var(--pg-mono); color: var(--pg-text3); opacity: 0; transition: opacity 120ms; }
-    .pg-item:hover .pg-item-action, .pg-item.pg-sel .pg-item-action { opacity: 1; }
-    .pg-empty { padding: 24px; text-align: center; color: var(--pg-text3); font-size: 13px; }
-
-    .pg-hints { padding: 8px 14px; border-top: 1px solid var(--pg-border); display: flex; gap: 14px; font-size: 10.5px; font-family: var(--pg-mono); color: var(--pg-text3); flex: 0 0 auto; flex-wrap: wrap; }
-    .pg-hints kbd { display: inline-block; background: var(--pg-bg3); border: 1px solid var(--pg-border); border-radius: 4px; padding: 0 4px; margin-right: 3px; font-size: 10px; }
-
-    #pg-fill { padding: 10px 14px 14px; }
-    #pg-fill-back { display: inline-flex; align-items: center; gap: 5px; color: var(--pg-text3); cursor: pointer; font-size: 11.5px; font-family: var(--pg-mono); margin-bottom: 8px; background: none; border: none; padding: 0; }
-    #pg-fill-back:hover { color: var(--pg-accent); }
-    #pg-fill-title { font-size: 14px; font-weight: 600; color: var(--pg-text); margin-bottom: 10px; }
-    .pg-field { margin-bottom: 9px; }
-    .pg-field label { display: block; font-size: 10.5px; color: var(--pg-text3); margin-bottom: 3px; font-family: var(--pg-mono); }
-    .pg-field input[type=text], .pg-field select, .pg-field textarea {
-      width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--pg-border);
-      background: var(--pg-bg2); color: var(--pg-text); font-size: 12.5px; outline: none; font-family: var(--pg-font);
-    }
-    .pg-field textarea { resize: vertical; min-height: 44px; font-family: var(--pg-font); }
-    .pg-field input:focus, .pg-field select:focus, .pg-field textarea:focus { border-color: var(--pg-accent); }
-    #pg-fill-preview {
-      width: 100%; box-sizing: border-box; min-height: 190px; border-radius: 9px; border: 1px solid var(--pg-border);
-      background: #0d0d10; color: var(--pg-text2); padding: 10px; font-size: 11.5px; line-height: 1.5;
-      font-family: var(--pg-mono); white-space: pre-wrap; margin-top: 6px;
-    }
-    #pg-fill-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .pg-btn2 {
-      flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--pg-border); background: var(--pg-bg2);
-      color: var(--pg-text); font-size: 12.5px; font-weight: 600; cursor: pointer; text-align: center; font-family: var(--pg-font);
-    }
-    .pg-btn2:hover { border-color: var(--pg-accent); color: var(--pg-accent); }
-    .pg-btn2.pg-primary { background: var(--pg-accent); color: #000; border-color: var(--pg-accent); }
-    .pg-btn2.pg-primary:hover { filter: brightness(1.05); color:#000; }
-
-    #pg-toast {
-      position: fixed; bottom: 80px; right: 20px; z-index: 2147483642; background: var(--pg-bg2); border: 1px solid var(--pg-border);
-      border-radius: 8px; padding: 8px 14px; font-family: var(--pg-font); font-size: 13px; color: var(--pg-text);
-      display: flex; align-items: center; gap: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.4);
-      transform: translateX(200%); transition: transform 250ms cubic-bezier(.34,1.56,.64,1);
-    }
-    #pg-toast.pg-show { transform: translateX(0); }
-    #pg-toast svg { width: 14px; height: 14px; color: var(--pg-accent); }
-
-    .pg-modal { position: fixed; inset: 0; z-index: 2147483643; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; font-family: var(--pg-font); }
-    .pg-modal-card { background: var(--pg-bg); border: 1px solid var(--pg-border); border-radius: var(--pg-radius); width: 100%; max-width: 600px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--pg-shadow); }
-    .pg-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--pg-border); }
-    .pg-modal-header h3 { margin: 0; font-weight: 600; font-size: 16px; color: var(--pg-text); }
-    .pg-modal-close { background: none; border: none; color: var(--pg-text3); font-size: 24px; cursor: pointer; padding: 0 4px; line-height: 1; }
-    .pg-modal-close:hover { color: var(--pg-text); }
-    .pg-modal-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
-    .pg-section-title { font-size: 13px; font-weight: 600; margin: 0 0 10px 0; color: var(--pg-text2); text-transform: uppercase; letter-spacing: 0.5px; }
-    .pg-custom-list { max-height: 200px; overflow-y: auto; border: 1px solid var(--pg-border); border-radius: 8px; margin-bottom: 18px; }
-    .pg-custom-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--pg-border); }
-    .pg-custom-item:last-child { border-bottom: none; }
-    .pg-custom-info { display: flex; align-items: center; gap: 8px; }
-    .pg-custom-actions button { background: none; border: none; color: var(--pg-text3); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; }
-    .pg-custom-actions button:hover { background: var(--pg-bg3); color: var(--pg-text); }
-    .pg-form-group { margin-bottom: 16px; }
-    .pg-form-group label { display: block; font-size: 12px; font-weight: 500; color: var(--pg-text2); margin-bottom: 4px; }
-    .pg-form-group input, .pg-form-group textarea, .pg-form-group select { width: 100%; background: var(--pg-bg2); border: 1px solid var(--pg-border); border-radius: 6px; padding: 8px 10px; font-family: var(--pg-font); font-size: 13px; color: var(--pg-text); outline: none; resize: vertical; }
-    .pg-form-group input:focus, .pg-form-group textarea:focus { border-color: var(--pg-accent); }
-    .pg-btn { background: var(--pg-bg3); border: 1px solid var(--pg-border); border-radius: 6px; padding: 6px 12px; font-family: var(--pg-font); font-size: 13px; color: var(--pg-text); cursor: pointer; transition: all 120ms; }
-    .pg-btn:hover { background: var(--pg-bg2); border-color: var(--pg-accent); }
-    .pg-btn-primary { background: var(--pg-accent); border-color: var(--pg-accent); color: #000; font-weight: 500; }
-    .pg-btn-primary:hover { opacity: 0.9; }
-    .pg-divider { margin: 20px 0; border-top: 1px solid var(--pg-border); }
-  `;
-
-  GM_addStyle(CSS);
-
-  // ═══════════════════════════════════════════════════════════
-  //  UTILS
-  // ═══════════════════════════════════════════════════════════
-  function escapeHtml(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  function loadJSON(key, fallback) {
+    try {
+      const v = JSON.parse(GM_getValue(key, 'null'));
+      return v === null || v === undefined ? fallback : v;
+    } catch { return fallback; }
   }
 
+  const settings = Object.assign({}, DEFAULT_SETTINGS, loadJSON('pgm_settings', {}));
+  for (const k of ['disabledCats', 'disabledIds', 'favs', 'recents', 'filters']) if (!Array.isArray(settings[k])) settings[k] = [];
+  settings.filters = settings.filters.filter(f => f && f.id && Array.isArray(f.cats) && Array.isArray(f.ids));
+  if (!HOTKEYS[settings.hotkey]) settings.hotkey = DEFAULT_SETTINGS.hotkey;
+
+  function saveSettings() { GM_setValue('pgm_settings', JSON.stringify(settings)); }
+  function hotkeyLabel() { return HOTKEYS[settings.hotkey].label; }
+
+  let fieldMemory = loadJSON('pgm_field_memory', {});
+  if (typeof fieldMemory !== 'object' || Array.isArray(fieldMemory)) fieldMemory = {};
+
+  // ═══════════════════════════════════════════════════════════
+  //  PROMPTS — custom list cached in memory; the search index
+  //  only holds enabled prompts and is rebuilt on any change.
+  // ═══════════════════════════════════════════════════════════
+  const CUSTOM_CAT = { key: 'custom', label: 'Mes prompts', icon: '📌', color: '#c8ff00' };
+  let customCache = null;
+  let indexCache = null;
+
+  function isValidPrompt(p) {
+    return !!p && typeof p.title === 'string' && p.title.trim() !== '' && typeof p.prompt === 'string' && p.prompt.trim() !== '';
+  }
+  function safeColor(c) { return /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : '#c8ff00'; }
+  function normalizeCustom(p, i) {
+    return {
+      id: String(p.id || ('custom-' + Date.now() + '-' + i)),
+      title: p.title.trim(),
+      cat: String(p.cat || p.category || CUSTOM_CAT.label),
+      catKey: 'custom',
+      icon: String(p.icon || '📌'),
+      color: safeColor(p.color),
+      prompt: p.prompt,
+    };
+  }
+  function getCustomPrompts() {
+    if (!customCache) {
+      const raw = loadJSON('pg_med_custom_prompts', []);
+      customCache = Array.isArray(raw) ? raw.filter(isValidPrompt).map(normalizeCustom) : [];
+    }
+    return customCache;
+  }
+  function saveCustomPrompts(list) {
+    customCache = list;
+    GM_setValue('pg_med_custom_prompts', JSON.stringify(list));
+    invalidate();
+  }
+  function invalidate() { indexCache = null; }
+
+  // Accent- and case-insensitive: "medecin" finds "Médecin".
+  function fold(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+
+  function getIndex() {
+    if (!indexCache) {
+      const offCats = new Set(settings.disabledCats);
+      const offIds = new Set(settings.disabledIds);
+      indexCache = BUILTIN_PROMPTS
+        .filter(p => !offCats.has(p.catKey) && !offIds.has(p.id))
+        .concat(getCustomPrompts())
+        .map(p => ({ p, t: fold(p.title), c: fold(p.cat || ''), b: null }));
+    }
+    return indexCache;
+  }
+
+  function search(query, catKey) {
+    const idx = getIndex();
+    let pool;
+    if (catKey === 'fav' || catKey === 'recent') {
+      const byId = new Map(idx.map(x => [x.p.id, x]));
+      pool = (catKey === 'fav' ? settings.favs : settings.recents).map(id => byId.get(id)).filter(Boolean);
+    } else if (catKey.startsWith('flt:')) {
+      const f = getFilter(catKey);
+      pool = f ? idx.filter(x => inFilter(f, x.p)) : [];
+    } else {
+      pool = catKey === 'all' ? idx : idx.filter(x => x.p.catKey === catKey);
+    }
+    const terms = fold(query).split(/\s+/).filter(Boolean);
+    if (!terms.length) return pool.map(x => x.p);
+
+    const scored = [];
+    for (const x of pool) {
+      let score = 0;
+      let ok = true;
+      for (const t of terms) {
+        if (x.t.startsWith(t) || x.t.includes(' ' + t)) score += 30;
+        else if (x.t.includes(t)) score += 20;
+        else if (x.c.includes(t)) score += 8;
+        else {
+          if (x.b === null) x.b = fold(x.p.prompt); // full text folded on first need only
+          if (x.b.includes(t)) score += 1;
+          else { ok = false; break; }
+        }
+      }
+      if (ok) scored.push({ score, p: x.p });
+    }
+    scored.sort((a, b) => b.score - a.score); // stable: ties keep catalogue order
+    return scored.map(s => s.p);
+  }
+
+  // ── Mes filtres: a role (or several) plus hand-picked prompts from other roles ──
+  function getFilter(key) { return settings.filters.find(f => 'flt:' + f.id === key) || null; }
+  function inFilter(f, p) { return f.cats.includes(p.catKey) || f.ids.includes(p.id); }
+  function filterSummary(f) {
+    const roles = f.cats.map(k => (CAT_BY_KEY[k] || {}).label).filter(Boolean);
+    const extra = f.ids.filter(id => !BUILTIN_PROMPTS.some(p => p.id === id && f.cats.includes(p.catKey))).length;
+    return [roles.join(' + ') || 'aucun rôle de base', extra ? `+ ${extra} prompt${extra > 1 ? 's' : ''} d'autres rôles` : ''].filter(Boolean).join(' ');
+  }
+
+  function sideCats() {
+    const idx = getIndex();
+    const counts = {};
+    idx.forEach(x => { counts[x.p.catKey] = (counts[x.p.catKey] || 0) + 1; });
+    const enabled = new Set(idx.map(x => x.p.id));
+    const list = [{ key: 'all', label: 'Tous', icon: '✦', color: '#c8ff00', n: idx.length }];
+    list.push({ key: 'fav', label: 'Favoris', icon: '★', color: '#fbbf24', n: settings.favs.filter(id => enabled.has(id)).length });
+    const nRecent = settings.recents.filter(id => enabled.has(id)).length;
+    if (nRecent) list.push({ key: 'recent', label: 'Récents', icon: '🕘', color: '#94a3b8', n: nRecent });
+    settings.filters.forEach(f => list.push({ key: 'flt:' + f.id, label: f.name, icon: f.icon || '🎯', color: '#2dd4bf', n: idx.filter(x => inFilter(f, x.p)).length }));
+    CATS.forEach(c => { if (c.key !== 'all' && counts[c.key]) list.push({ ...c, n: counts[c.key] }); });
+    if (counts.custom) list.push({ ...CUSTOM_CAT, n: counts.custom });
+    return list;
+  }
+
+  function isFav(id) { return settings.favs.includes(id); }
+  function toggleFav(p) {
+    if (!p) return;
+    const i = settings.favs.indexOf(p.id);
+    if (i === -1) settings.favs.unshift(p.id); else settings.favs.splice(i, 1);
+    saveSettings();
+    showToast(i === -1 ? `★ « ${p.title} » ajouté aux favoris` : `☆ « ${p.title} » retiré des favoris`);
+  }
+  function pushRecent(p) {
+    if (!p) return;
+    settings.recents = [p.id, ...settings.recents.filter(id => id !== p.id)].slice(0, 15);
+    saveSettings();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  CONTEXT FIELDS — each [placeholder] occurrence in the
+  //  « MON CONTEXTE » block becomes its own field, labelled from
+  //  its line ("Patient (anonymisé) — âge ▢ ans").
+  // ═══════════════════════════════════════════════════════════
   function splitContext(body) {
     const marker = '**MON CONTEXTE**';
     const si = body.indexOf(marker);
@@ -8009,251 +8052,718 @@ Structure la communication descendante et ascendante, en adaptant le format au m
     return { pre: body.slice(0, afterStart), ctx: body.slice(afterStart, end), post: body.slice(end) };
   }
 
-  function extractPlaceholders(ctx) {
-    const seen = [];
-    const re = /\[([^\]\n]+)\]/g;
-    let m;
-    while ((m = re.exec(ctx))) if (!seen.includes(m[1])) seen.push(m[1]);
-    return seen;
+  // The comma-separated chunk of `line` that holds index `at`, ignoring commas inside [...].
+  function chunkAround(line, at, from) {
+    let depth = 0;
+    let start = from;
+    for (let i = from; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '[') depth++;
+      else if (ch === ']') depth--;
+      else if (ch === ',' && depth === 0) {
+        if (i > at) return [start, i];
+        start = i + 1;
+      }
+    }
+    return [start, line.length];
+  }
+
+  const fieldCache = new WeakMap();
+  function parseFields(p) {
+    if (fieldCache.has(p)) return fieldCache.get(p);
+    const split = splitContext(p.prompt);
+    let result = null;
+    if (split) {
+      const fields = [];
+      let offset = 0;
+      for (const line of split.ctx.split('\n')) {
+        // "- Label : rest" — group 1 is the label, everything after " : " is the value part.
+        const lm = line.match(/^\s*[-•*]?\s*([^:\[\]]+?)\s*:\s/);
+        const label = lm ? lm[1].trim() : '';
+        const valueFrom = lm ? lm[0].length : 0;
+        const re = /\[([^\]\n]+)\]/g;
+        let m;
+        while ((m = re.exec(line))) {
+          const [s, e] = chunkAround(line, m.index, valueFrom);
+          const chunk = line.slice(s, e);
+          const rel = m.index - s;
+          const hint = (chunk.slice(0, rel) + '▢' + chunk.slice(rel + m[0].length)).trim();
+          fields.push({
+            start: offset + m.index,
+            end: offset + m.index + m[0].length,
+            ph: m[1].trim(),
+            label: label || (hint !== '▢' ? hint : m[1].trim()),
+            hint: hint === '▢' || !label ? '' : hint,
+          });
+        }
+        offset += line.length + 1;
+      }
+      if (fields.length) result = { split, fields };
+    }
+    fieldCache.set(p, result);
+    return result;
   }
 
   function fieldKind(ph) {
     const parts = ph.split(/\s*\/\s*/).filter(Boolean);
-    if (parts.length >= 2 && parts.length <= 10 && parts.every(p => p.length <= 32)) return { type: 'select', options: parts };
-    if (ph.length > 42 || ph.includes(',')) return { type: 'textarea' };
+    if (parts.length >= 2 && parts.length <= 12 && parts.every(x => x.length <= 40)) return { type: 'choice', options: parts };
+    if (ph.length > 42 || ph.includes(',') || /^(liste|lister|résumé|\.\.\.)$/i.test(ph)) return { type: 'textarea' };
     return { type: 'text' };
   }
 
-  function fillContext(ctx, values) {
-    let out = ctx;
-    for (const ph of Object.keys(values)) {
-      const val = values[ph];
-      if (!val) continue;
-      out = out.split('[' + ph + ']').join(val);
+  function buildFilled(parsed, values) {
+    const { split, fields } = parsed;
+    let out = '';
+    let pos = 0;
+    fields.forEach((f, i) => {
+      const v = (values[i] || '').trim();
+      out += split.ctx.slice(pos, f.start) + (v || split.ctx.slice(f.start, f.end)); // empty → keep [placeholder]
+      pos = f.end;
+    });
+    return split.pre + out + split.ctx.slice(pos) + split.post;
+  }
+
+  function memoryKey(f) { return fold(f.label + '|' + f.hint + '|' + f.ph); }
+
+  // ═══════════════════════════════════════════════════════════
+  //  STYLES — every selector is prefixed pgm- so this script can
+  //  run next to the main Prompt Genius (which owns pg-*).
+  //  System fonts only: no network request on every chat page.
+  // ═══════════════════════════════════════════════════════════
+  const BASE_CSS = `
+    .pgm-scope {
+      --pgm-bg: #111113; --pgm-bg2: #18181d; --pgm-bg3: #23232a; --pgm-border: #2c2c35; --pgm-border2: #3a3a46;
+      --pgm-text: #f0f0f2; --pgm-text2: #b4b4be; --pgm-text3: #7c7c86; --pgm-accent: #c8ff00;
+      --pgm-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --pgm-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      --pgm-shadow: 0 24px 70px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+      font-family: var(--pgm-font); color: var(--pgm-text); line-height: 1.4; letter-spacing: normal; text-align: left;
     }
-    return out;
+    .pgm-scope *, .pgm-scope *::before, .pgm-scope *::after { box-sizing: border-box; }
+    #pgm-trigger {
+      position: fixed; bottom: 76px; right: 20px; z-index: 2147483640; width: 44px; height: 44px; border-radius: 12px;
+      background: var(--pgm-bg); border: 1px solid var(--pgm-border); cursor: pointer; display: grid; place-items: center;
+      font-size: 18px; box-shadow: var(--pgm-shadow); transition: transform 150ms ease, border-color 150ms ease; padding: 0;
+    }
+    #pgm-trigger:hover { transform: scale(1.08); border-color: var(--pgm-accent); }
+    #pgm-trigger .pgm-kbd {
+      position: absolute; top: -9px; right: -10px; background: var(--pgm-bg3); border: 1px solid var(--pgm-border);
+      border-radius: 5px; padding: 1px 5px; font: 500 9px var(--pgm-mono); color: var(--pgm-text2); pointer-events: none; white-space: nowrap;
+    }
+    #pgm-toast {
+      position: fixed; bottom: 80px; right: 76px; z-index: 2147483646; background: var(--pgm-bg2); border: 1px solid var(--pgm-border);
+      border-radius: 9px; padding: 9px 14px; font-size: 13px; max-width: 420px; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+      opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity 180ms ease, transform 180ms ease;
+    }
+    #pgm-toast.pgm-show { opacity: 1; transform: none; }
+  `;
+
+  const UI_CSS = `
+    #pgm-overlay {
+      position: fixed; inset: 0; z-index: 2147483641; background: rgba(0,0,0,.55); backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center; padding: 3vh 16px;
+    }
+    #pgm-overlay.pgm-open { display: flex; }
+    #pgm-palette {
+      background: var(--pgm-bg); border: 1px solid var(--pgm-border); border-radius: 14px; box-shadow: var(--pgm-shadow);
+      width: 100%; max-width: 1120px; height: min(780px, 92vh); display: flex; flex-direction: column; overflow: hidden;
+      animation: pgmIn 140ms ease;
+    }
+    @keyframes pgmIn { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+
+    .pgm-top { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--pgm-border); }
+    .pgm-top svg { width: 18px; height: 18px; color: var(--pgm-text3); flex-shrink: 0; }
+    #pgm-search {
+      flex: 1; min-width: 0; background: none; border: 0; outline: 0; font: 16px var(--pgm-font); color: var(--pgm-text);
+      caret-color: var(--pgm-accent); padding: 4px 0; box-shadow: none;
+    }
+    #pgm-search::placeholder { color: var(--pgm-text3); }
+    .pgm-badge { font: 500 10.5px var(--pgm-mono); padding: 3px 8px; border-radius: 6px; background: var(--pgm-bg3); color: var(--pgm-text3); white-space: nowrap; }
+    .pgm-iconbtn {
+      background: var(--pgm-bg2); border: 1px solid var(--pgm-border); color: var(--pgm-text2); cursor: pointer; border-radius: 8px;
+      padding: 6px 10px; font: 500 12.5px var(--pgm-font); white-space: nowrap;
+    }
+    .pgm-iconbtn:hover { border-color: var(--pgm-border2); color: var(--pgm-text); background: var(--pgm-bg3); }
+
+    .pgm-banner { padding: 6px 14px; background: #19160a; border-bottom: 1px solid #3a2f0d; color: #e0c76a; font-size: 11.5px; }
+
+    #pgm-main { flex: 1; min-height: 0; display: grid; grid-template-columns: 210px minmax(280px, 1fr) minmax(320px, 1.15fr); }
+    #pgm-palette.pgm-nopreview #pgm-main { grid-template-columns: 210px 1fr; }
+    #pgm-palette.pgm-nopreview #pgm-preview { display: none; }
+    #pgm-palette.pgm-mode-fill #pgm-main { grid-template-columns: 1fr; }
+    #pgm-palette.pgm-mode-fill #pgm-side, #pgm-palette.pgm-mode-fill #pgm-list, #pgm-palette.pgm-mode-fill #pgm-preview { display: none; }
+    #pgm-fill { display: none; min-height: 0; }
+    #pgm-palette.pgm-mode-fill #pgm-fill { display: grid; }
+
+    #pgm-side { border-right: 1px solid var(--pgm-border); overflow-y: auto; padding: 8px; }
+    .pgm-cat {
+      display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border-radius: 7px; border: 0; background: none;
+      color: var(--pgm-text2); font: 13px var(--pgm-font); cursor: pointer; text-align: left;
+    }
+    .pgm-cat:hover { background: var(--pgm-bg2); color: var(--pgm-text); }
+    .pgm-cat.pgm-active { background: var(--pgm-bg3); color: var(--pgm-text); box-shadow: inset 2px 0 0 var(--pgm-accent); }
+    .pgm-cat-ico { width: 20px; text-align: center; flex-shrink: 0; }
+    .pgm-cat-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pgm-cat-n { font: 10.5px var(--pgm-mono); color: var(--pgm-text3); }
+    .pgm-side-sep { height: 1px; background: var(--pgm-border); margin: 6px 4px; }
+
+    #pgm-list { overflow-y: auto; padding: 6px; border-right: 1px solid var(--pgm-border); }
+    .pgm-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+    .pgm-item.pgm-sel { background: var(--pgm-bg3); }
+    .pgm-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .pgm-body { flex: 1; min-width: 0; }
+    .pgm-title { font-size: 13.5px; font-weight: 500; color: var(--pgm-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pgm-title mark { background: var(--pgm-accent); color: #000; border-radius: 2px; padding: 0 1px; }
+    .pgm-sub { font: 10.5px var(--pgm-mono); color: var(--pgm-text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pgm-fav-mini { color: #fbbf24; font-size: 12px; }
+    .pgm-key { font: 10px var(--pgm-mono); color: var(--pgm-text3); border: 1px solid var(--pgm-border); border-radius: 4px; padding: 0 4px; }
+    .pgm-empty { padding: 28px 16px; text-align: center; color: var(--pgm-text3); font-size: 13px; line-height: 1.6; }
+
+    #pgm-preview { overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .pgm-pv-head { display: flex; align-items: flex-start; gap: 10px; }
+    .pgm-pv-title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+    .pgm-pv-cat { font: 11px var(--pgm-mono); color: var(--pgm-text3); margin-top: 2px; }
+    .pgm-star { margin-left: auto; background: none; border: 1px solid var(--pgm-border); color: var(--pgm-text3); border-radius: 8px; padding: 4px 9px; cursor: pointer; font-size: 15px; }
+    .pgm-star.pgm-on { color: #fbbf24; border-color: #5c4a12; }
+    .pgm-pv-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pgm-pv-text {
+      margin: 0; padding: 12px; border-radius: 10px; background: #0c0c0f; border: 1px solid var(--pgm-border);
+      font: 12px/1.55 var(--pgm-mono); color: var(--pgm-text2); white-space: pre-wrap; word-break: break-word;
+    }
+    .pgm-pv-text .pgm-ph { color: #0b0b0b; background: #e0c76a; border-radius: 3px; padding: 0 2px; }
+    .pgm-pv-note { font-size: 11.5px; color: var(--pgm-text3); }
+
+    .pgm-btn {
+      padding: 8px 12px; border-radius: 8px; border: 1px solid var(--pgm-border); background: var(--pgm-bg2); color: var(--pgm-text);
+      font: 600 12.5px var(--pgm-font); cursor: pointer; white-space: nowrap;
+    }
+    .pgm-btn:hover { border-color: var(--pgm-accent); }
+    .pgm-btn.pgm-primary { background: var(--pgm-accent); color: #000; border-color: var(--pgm-accent); }
+    .pgm-btn.pgm-primary:hover { filter: brightness(1.06); }
+    .pgm-btn.pgm-danger:hover { border-color: #ef4444; color: #ef4444; }
+    .pgm-btn kbd { font: 10px var(--pgm-mono); opacity: .7; margin-left: 4px; }
+
+    #pgm-fill { grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr); }
+    .pgm-fill-left { overflow-y: auto; padding: 14px 16px; border-right: 1px solid var(--pgm-border); }
+    .pgm-fill-right { display: flex; flex-direction: column; min-height: 0; padding: 14px 16px; gap: 10px; }
+    .pgm-back { background: none; border: 0; color: var(--pgm-text3); cursor: pointer; font: 12px var(--pgm-mono); padding: 0; margin-bottom: 8px; }
+    .pgm-back:hover { color: var(--pgm-accent); }
+    .pgm-fill-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .pgm-fill-progress { font-size: 11.5px; color: var(--pgm-text3); margin-bottom: 12px; }
+    .pgm-field { margin-bottom: 11px; }
+    .pgm-field label { display: block; font-size: 12.5px; color: var(--pgm-text); margin-bottom: 4px; font-weight: 500; }
+    .pgm-field label .pgm-hint { color: var(--pgm-text3); font-weight: 400; }
+    .pgm-field input, .pgm-field textarea {
+      width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--pgm-border); background: var(--pgm-bg2);
+      color: var(--pgm-text); font: 13px var(--pgm-font); outline: none; box-shadow: none; margin: 0;
+    }
+    .pgm-field textarea { resize: vertical; min-height: 56px; }
+    .pgm-field input:focus, .pgm-field textarea:focus { border-color: var(--pgm-accent); }
+    .pgm-field input::placeholder, .pgm-field textarea::placeholder { color: var(--pgm-text3); }
+    .pgm-field.pgm-filled label::after { content: ' ✓'; color: var(--pgm-accent); }
+    #pgm-fill-preview {
+      flex: 1; min-height: 0; width: 100%; resize: none; border-radius: 10px; border: 1px solid var(--pgm-border); background: #0c0c0f;
+      color: var(--pgm-text2); padding: 12px; font: 12px/1.55 var(--pgm-mono); outline: none;
+    }
+    .pgm-fill-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+    .pgm-hints { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 14px; border-top: 1px solid var(--pgm-border); font: 11px var(--pgm-mono); color: var(--pgm-text3); }
+    .pgm-hints kbd { background: var(--pgm-bg3); border: 1px solid var(--pgm-border); border-radius: 4px; padding: 0 4px; margin-right: 4px; font: inherit; color: var(--pgm-text2); }
+
+    @media (max-width: 900px) {
+      #pgm-main { grid-template-columns: 1fr !important; grid-template-rows: auto 1fr; }
+      #pgm-side { display: flex; gap: 4px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--pgm-border); padding: 6px; }
+      .pgm-cat { width: auto; flex-shrink: 0; }
+      .pgm-side-sep { display: none; }
+      #pgm-preview { display: none; }
+      #pgm-list { border-right: 0; }
+      #pgm-fill { grid-template-columns: 1fr; overflow-y: auto; }
+      .pgm-fill-left { border-right: 0; overflow: visible; }
+      #pgm-fill-preview { min-height: 220px; }
+    }
+
+    /* Settings */
+    .pgm-modal { position: fixed; inset: 0; z-index: 2147483645; background: rgba(0,0,0,.65); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .pgm-modal-card { background: var(--pgm-bg); border: 1px solid var(--pgm-border); border-radius: 14px; width: 100%; max-width: 760px; height: min(720px, 90vh); display: flex; flex-direction: column; box-shadow: var(--pgm-shadow); overflow: hidden; }
+    .pgm-modal-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--pgm-border); }
+    .pgm-modal-head h3 { margin: 0; font-size: 16px; font-weight: 600; flex: 1; color: var(--pgm-text); }
+    .pgm-tabs { display: flex; gap: 4px; padding: 8px 16px 0; border-bottom: 1px solid var(--pgm-border); }
+    .pgm-tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--pgm-text3); padding: 8px 12px; font: 600 13px var(--pgm-font); cursor: pointer; }
+    .pgm-tab.pgm-active { color: var(--pgm-text); border-bottom-color: var(--pgm-accent); }
+    .pgm-tabbody { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; font-size: 13px; color: var(--pgm-text2); }
+    .pgm-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .pgm-input { background: var(--pgm-bg2); border: 1px solid var(--pgm-border); border-radius: 8px; padding: 7px 10px; color: var(--pgm-text); font: 13px var(--pgm-font); outline: none; }
+    .pgm-input:focus { border-color: var(--pgm-accent); }
+    .pgm-note { font-size: 12px; color: var(--pgm-text3); line-height: 1.5; margin: 0 0 12px; }
+    .pgm-count { margin-left: auto; font: 12px var(--pgm-mono); color: var(--pgm-text2); }
+    .pgm-setcat { border: 1px solid var(--pgm-border); border-radius: 9px; margin-bottom: 6px; }
+    .pgm-setcat-head { display: flex; align-items: center; gap: 8px; padding: 7px 10px; }
+    .pgm-setcat-head .pgm-cat-label { color: var(--pgm-text); }
+    .pgm-expand { background: none; border: 0; color: var(--pgm-text3); cursor: pointer; font: 12px var(--pgm-mono); padding: 2px 6px; }
+    .pgm-expand:hover { color: var(--pgm-text); }
+    .pgm-setitems { border-top: 1px solid var(--pgm-border); padding: 6px 10px 8px 36px; display: grid; gap: 2px; }
+    .pgm-check { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 3px 0; color: var(--pgm-text2); }
+    .pgm-check input { accent-color: #9acb00; width: 15px; height: 15px; margin: 0; flex-shrink: 0; }
+    .pgm-check.pgm-dim { opacity: .45; }
+    .pgm-custom-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--pgm-border); }
+    .pgm-custom-item:last-child { border-bottom: 0; }
+    .pgm-box { border: 1px solid var(--pgm-border); border-radius: 9px; margin-bottom: 14px; max-height: 220px; overflow-y: auto; }
+    .pgm-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .pgm-form label { display: grid; gap: 4px; font-size: 12px; color: var(--pgm-text2); }
+    .pgm-form .pgm-wide { grid-column: 1 / -1; }
+    .pgm-form textarea { min-height: 120px; resize: vertical; }
+    .pgm-h { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--pgm-text2); margin: 4px 0 10px; }
+    .pgm-sep { border-top: 1px solid var(--pgm-border); margin: 16px 0; }
+  `;
+
+  GM_addStyle(BASE_CSS);
+
+  // ═══════════════════════════════════════════════════════════
+  //  UTILS
+  // ═══════════════════════════════════════════════════════════
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function highlight(text, query) {
+    const terms = fold(query).split(/\s+/).filter(Boolean);
+    const f = fold(text);
+    if (!terms.length || f.length !== text.length) return escapeHtml(text); // folding changed length: skip marks
+    const hits = new Array(text.length).fill(false);
+    for (const t of terms) {
+      let i = f.indexOf(t);
+      while (i !== -1) { for (let k = i; k < i + t.length; k++) hits[k] = true; i = f.indexOf(t, i + t.length); }
+    }
+    let out = '';
+    let open = false;
+    for (let i = 0; i < text.length; i++) {
+      if (hits[i] && !open) { out += '<mark>'; open = true; }
+      if (!hits[i] && open) { out += '</mark>'; open = false; }
+      out += escapeHtml(text[i]);
+    }
+    return out + (open ? '</mark>' : '');
+  }
+
+  function el(tag, attrs, children) {
+    const node = document.createElement(tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'text') node.textContent = v;
+      else if (k === 'class') node.className = v;
+      else node.setAttribute(k, v);
+    }
+    if (children) node.append(...children);
+    return node;
+  }
+
+  function hasTextSelection() {
+    const a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && typeof a.selectionStart === 'number' && a.selectionStart !== a.selectionEnd) return true;
+    return !!window.getSelection().toString();
   }
 
   // ═══════════════════════════════════════════════════════════
-  //  CUSTOM PROMPTS
+  //  TRIGGER + TOAST — the only DOM created at page load.
+  //  The palette itself is built on first open.
   // ═══════════════════════════════════════════════════════════
-  function getCustomPrompts() {
-    try { return JSON.parse(GM_getValue('pg_med_custom_prompts', '[]')); } catch { return []; }
+  const trigger = el('button', { id: 'pgm-trigger', class: 'pgm-scope', type: 'button' });
+  function refreshTrigger() {
+    trigger.textContent = '💊';
+    trigger.append(el('span', { class: 'pgm-kbd', text: hotkeyLabel() }));
+    trigger.title = `Prompt Genius — Médical (${hotkeyLabel()})`;
+    trigger.style.display = settings.showTrigger ? '' : 'none';
   }
-  function saveCustomPrompts(prompts) { GM_setValue('pg_med_custom_prompts', JSON.stringify(prompts)); }
-  function getAllPrompts() { return [...BUILTIN_PROMPTS, ...getCustomPrompts()]; }
-
-  // ═══════════════════════════════════════════════════════════
-  //  DOM CONSTRUCTION
-  // ═══════════════════════════════════════════════════════════
-  const trigger = document.createElement('button');
-  trigger.id = 'pg-trigger';
-  trigger.innerHTML = `💊<span class="pg-kbd">⌘⇧P</span>`;
-  trigger.title = `Prompt Genius — Médical (⌘⇧P) — ${BUILTIN_PROMPTS.length} prompts`;
+  refreshTrigger();
   document.body.appendChild(trigger);
 
-  const overlay = document.createElement('div');
-  overlay.id = 'pg-overlay';
-  overlay.innerHTML = `
-    <div id="pg-palette">
-      <div class="pg-input-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input id="pg-search" type="text" placeholder="Rechercher parmi ${BUILTIN_PROMPTS.length} prompts…" autocomplete="off" spellcheck="false">
-        <span class="pg-provider-badge">${escapeHtml(provider.name)}</span>
-        <button id="pg-manage-btn" title="Gérer les prompts personnalisés">⚙️</button>
-      </div>
-      <div id="pg-cats"></div>
-      <div id="pg-banner">⚠️ Ne collez jamais de données patient identifiantes (nom, prénom, date de naissance, n° de sécurité sociale). Les textes générés sont des aides à la rédaction, à relire et valider avant usage.</div>
-      <div id="pg-results"></div>
-      <div class="pg-hints" id="pg-hints-list">
-        <span><kbd>↑↓</kbd>naviguer</span>
-        <span><kbd>↵</kbd>ouvrir/insérer</span>
-        <span><kbd>⇥</kbd>catégorie</span>
-        <span><kbd>⌥1-9</kbd>insertion rapide</span>
-        <span><kbd>⌘C</kbd>copier</span>
-        <span><kbd>Esc</kbd>fermer</span>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  const toast = document.createElement('div');
-  toast.id = 'pg-toast';
-  toast.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span></span>`;
+  const toast = el('div', { id: 'pgm-toast', class: 'pgm-scope', role: 'status' });
   document.body.appendChild(toast);
-
-  const searchInput = document.getElementById('pg-search');
-  const resultsDiv  = document.getElementById('pg-results');
-  const catsDiv     = document.getElementById('pg-cats');
-  const hintsList   = document.getElementById('pg-hints-list');
-  const manageBtn   = document.getElementById('pg-manage-btn');
-
-  const state = { mode: 'list', selIndex: 0, catIndex: 0, results: [], fillPrompt: null, fillCtx: null, fillValues: {} };
-
-  // ═══════════════════════════════════════════════════════════
-  //  RENDER — LIST MODE
-  // ═══════════════════════════════════════════════════════════
-  function highlight(text, q) {
-    if (!q) return escapeHtml(text);
-    const idx = text.toLowerCase().indexOf(q);
-    if (idx === -1) return escapeHtml(text);
-    return escapeHtml(text.slice(0, idx))
-      + `<mark style="background:var(--pg-accent);color:#000;border-radius:2px;padding:0 1px">${escapeHtml(text.slice(idx, idx + q.length))}</mark>`
-      + escapeHtml(text.slice(idx + q.length));
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('pgm-show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('pgm-show'), 2400);
   }
 
-  function renderCats() {
-    catsDiv.innerHTML = CATS.map((c, i) => `
-      <div class="pg-cat-pill${i === state.catIndex ? ' pg-cat-active' : ''}" data-i="${i}">${c.icon} ${escapeHtml(c.label)}</div>
-    `).join('') + `<span class="pg-cat-hint">⇥ pour changer</span>`;
-    catsDiv.querySelectorAll('.pg-cat-pill').forEach(el => {
-      el.addEventListener('click', () => { state.catIndex = parseInt(el.dataset.i); state.selIndex = 0; renderList(); });
+  // ═══════════════════════════════════════════════════════════
+  //  PALETTE
+  // ═══════════════════════════════════════════════════════════
+  const state = { mode: 'list', cat: settings.startCat || 'all', sel: 0, results: [], fill: null };
+  let ui = null;
+  let searchTimer = 0;
+
+  function ensureUI() {
+    if (ui) return ui;
+    GM_addStyle(UI_CSS);
+    const overlay = el('div', { id: 'pgm-overlay', class: 'pgm-scope' });
+    overlay.innerHTML = `
+      <div id="pgm-palette" role="dialog" aria-modal="true" aria-label="Prompt Genius Médical">
+        <div class="pgm-top">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="pgm-search" type="text" autocomplete="off" spellcheck="false" aria-label="Rechercher un prompt">
+          <span class="pgm-badge">${escapeHtml(provider.name)}</span>
+          <button type="button" class="pgm-iconbtn" id="pgm-open-settings" title="Activer/désactiver des prompts, raccourci, prompts perso">⚙️ Réglages</button>
+          <button type="button" class="pgm-iconbtn" id="pgm-close" title="Fermer (Esc)">✕</button>
+        </div>
+        <div class="pgm-banner">⚠️ Ne collez jamais de données patient identifiantes (nom, prénom, date de naissance, n° de sécurité sociale). Les textes générés sont des aides à la rédaction, à relire et valider avant usage.</div>
+        <div id="pgm-main">
+          <nav id="pgm-side" aria-label="Catégories"></nav>
+          <div id="pgm-list" role="listbox" aria-label="Prompts"></div>
+          <section id="pgm-preview" aria-live="polite"></section>
+          <div id="pgm-fill"></div>
+        </div>
+        <div class="pgm-hints" id="pgm-hints"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    ui = {
+      overlay,
+      palette: overlay.querySelector('#pgm-palette'),
+      search: overlay.querySelector('#pgm-search'),
+      side: overlay.querySelector('#pgm-side'),
+      list: overlay.querySelector('#pgm-list'),
+      preview: overlay.querySelector('#pgm-preview'),
+      fill: overlay.querySelector('#pgm-fill'),
+      hints: overlay.querySelector('#pgm-hints'),
+    };
+
+    // Keep keystrokes typed in the palette away from the host page's own shortcuts.
+    for (const type of ['keydown', 'keyup', 'keypress']) overlay.addEventListener(type, e => e.stopPropagation());
+
+    overlay.addEventListener('mousedown', e => { if (e.target === overlay) closePalette(); });
+    overlay.querySelector('#pgm-close').addEventListener('click', closePalette);
+    overlay.querySelector('#pgm-open-settings').addEventListener('click', () => openSettings());
+
+    ui.search.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { state.sel = 0; renderList(); }, 60);
     });
+
+    ui.side.addEventListener('click', e => {
+      const b = e.target.closest('.pgm-cat');
+      if (!b) return;
+      setCat(b.dataset.key);
+      ui.search.focus();
+    });
+
+    ui.list.addEventListener('click', e => {
+      const row = e.target.closest('.pgm-item');
+      if (row) openPrompt(Number(row.dataset.i));
+    });
+    ui.list.addEventListener('mousemove', e => {
+      const row = e.target.closest('.pgm-item');
+      if (row && Number(row.dataset.i) !== state.sel) setSel(Number(row.dataset.i), false);
+    });
+
+    ui.preview.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const p = state.results[state.sel];
+      if (!p) return;
+      if (b.dataset.act === 'open') openPrompt(state.sel);
+      if (b.dataset.act === 'raw') finalizeInsert(p.prompt, p);
+      if (b.dataset.act === 'copy') copyPrompt(p.prompt, p);
+      if (b.dataset.act === 'fav') { toggleFav(p); renderSide(); renderPreview(); markFavInList(); }
+    });
+    ui.preview.addEventListener('change', e => {
+      if (!e.target.matches('[data-filter-pick]')) return;
+      const f = settings.filters.find(x => x.id === e.target.value);
+      const p = state.results[state.sel];
+      if (!f || !p) return;
+      if (f.cats.includes(p.catKey)) showToast(`« ${p.title} » fait déjà partie de « ${f.name} » (rôle inclus)`);
+      else if (f.ids.includes(p.id)) { f.ids = f.ids.filter(id => id !== p.id); saveSettings(); showToast(`Retiré de « ${f.name} »`); }
+      else { f.ids.push(p.id); saveSettings(); showToast(`🎯 Ajouté à « ${f.name} »`); }
+      renderSide();
+      renderPreview();
+    });
+
+    return ui;
+  }
+
+  function isOpen() { return !!ui && ui.overlay.classList.contains('pgm-open'); }
+
+  function openPalette() {
+    ensureUI();
+    exitFill(false);
+    ui.palette.classList.toggle('pgm-nopreview', !settings.showPreview);
+    ui.search.value = '';
+    ui.search.placeholder = `Rechercher parmi ${getIndex().length} prompts… (sans accents : « medecin », « ordonnance »)`;
+    state.sel = 0;
+    if (!sideCats().some(c => c.key === state.cat)) state.cat = 'all';
+    renderSide();
+    renderList();
+    ui.overlay.classList.add('pgm-open');
+    requestAnimationFrame(() => ui.search.focus());
+  }
+  function closePalette() {
+    if (!ui) return;
+    ui.overlay.classList.remove('pgm-open');
+    exitFill(false);
+  }
+  function togglePalette() { isOpen() ? closePalette() : openPalette(); }
+
+  function setCat(key) {
+    state.cat = key;
+    state.sel = 0;
+    renderSide();
+    renderList();
+  }
+
+  function renderSide() {
+    const cats = sideCats();
+    const firstReal = cats.findIndex(c => !['all', 'fav', 'recent'].includes(c.key) && !c.key.startsWith('flt:'));
+    ui.side.innerHTML = cats.map((c, i) => `
+      ${i === firstReal ? '<div class="pgm-side-sep"></div>' : ''}
+      <button type="button" class="pgm-cat${c.key === state.cat ? ' pgm-active' : ''}" data-key="${escapeHtml(c.key)}" title="${escapeHtml(c.label)}">
+        <span class="pgm-cat-ico" style="color:${safeColor(c.color)}">${escapeHtml(c.icon)}</span>
+        <span class="pgm-cat-label">${escapeHtml(c.label)}</span>
+        <span class="pgm-cat-n">${c.n}</span>
+      </button>`).join('');
+    const active = ui.side.querySelector('.pgm-active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   function renderList() {
-    renderCats();
-    const q = searchInput.value.toLowerCase().trim();
-    const catKey = CATS[state.catIndex].key;
-    const all = getAllPrompts();
-    state.results = all.filter(p => {
-      const matchesCat = catKey === 'all' || p.catKey === catKey;
-      const matchesQuery = !q || p.title.toLowerCase().includes(q) || (p.cat || '').toLowerCase().includes(q) || p.prompt.toLowerCase().includes(q);
-      return matchesCat && matchesQuery;
-    });
-    state.selIndex = Math.min(state.selIndex, Math.max(0, state.results.length - 1));
+    const q = ui.search.value;
+    state.results = search(q, state.cat);
+    // Nothing in this category: show matches from every category rather than an empty list.
+    let fallback = false;
+    if (!state.results.length && q.trim() && state.cat !== 'all') {
+      state.results = search(q, 'all');
+      fallback = state.results.length > 0;
+    }
+    state.sel = Math.min(state.sel, Math.max(0, state.results.length - 1));
 
     if (!state.results.length) {
-      resultsDiv.innerHTML = `<div class="pg-empty">Aucun prompt ne correspond${q ? ` à « ${escapeHtml(searchInput.value)} »` : ''}.</div>`;
+      let msg = 'Aucun prompt ne correspond.';
+      if (state.cat === 'fav' && !q) msg = `Pas encore de favoris.<br>Sélectionnez un prompt et appuyez sur <b>${ALT}F</b> (ou ☆ dans l'aperçu).`;
+      else if (state.cat !== 'all') msg += '<br>Essayez la catégorie « Tous » (⇥).';
+      if (!getIndex().length) msg = 'Tous les prompts sont désactivés.<br>Ouvrez ⚙️ Réglages pour en réactiver.';
+      ui.list.innerHTML = `<div class="pgm-empty">${msg}</div>`;
+      renderPreview();
       return;
     }
 
-    resultsDiv.innerHTML = state.results.slice(0, 200).map((p, i) => `
-      <div class="pg-item${i === state.selIndex ? ' pg-sel' : ''}" data-i="${i}">
-        <div class="pg-item-icon" style="background:${escapeHtml(p.color || '#c8ff00')}1a;color:${escapeHtml(p.color || '#c8ff00')}">${escapeHtml(p.icon || '📄')}</div>
-        <div class="pg-item-body">
-          <div class="pg-item-title">${highlight(p.title, q)}</div>
-          <div class="pg-item-cat">${escapeHtml(p.cat || '')}${i < 9 ? ` · ⌥${i + 1}` : ''}</div>
-        </div>
-        <span class="pg-item-action">↵</span>
-      </div>
-    `).join('');
-
-    resultsDiv.querySelectorAll('.pg-item').forEach(el => {
-      el.addEventListener('click', () => selectPrompt(parseInt(el.dataset.i)));
-      el.addEventListener('mouseenter', () => { state.selIndex = parseInt(el.dataset.i); updateSel(); });
-    });
+    const catLabel = fallback || !CAT_BY_KEY[state.cat] || state.cat === 'all';
+    const curLabel = (sideCats().find(c => c.key === state.cat) || {}).label || '';
+    ui.list.innerHTML = (fallback ? `<div class="pgm-empty" style="padding:8px 10px;text-align:left">Rien dans « ${escapeHtml(curLabel)} » — résultats de toutes les catégories :</div>` : '') + state.results.map((p, i) => {
+      const color = safeColor(p.color);
+      const nFields = parseFields(p)?.fields.length || 0;
+      const sub = [catLabel ? p.cat : '', nFields ? `${nFields} champ${nFields > 1 ? 's' : ''}` : 'prêt à insérer'].filter(Boolean).join(' · ');
+      return `
+        <div class="pgm-item${i === state.sel ? ' pgm-sel' : ''}" data-i="${i}" role="option" aria-selected="${i === state.sel}">
+          <div class="pgm-ico" style="background:${color}1f;color:${color}">${escapeHtml(p.icon || '📄')}</div>
+          <div class="pgm-body">
+            <div class="pgm-title">${highlight(p.title, q)}</div>
+            <div class="pgm-sub">${escapeHtml(sub)}</div>
+          </div>
+          ${isFav(p.id) ? '<span class="pgm-fav-mini" title="Favori">★</span>' : ''}
+          ${i < 9 ? `<span class="pgm-key">${ALT}${i + 1}</span>` : ''}
+        </div>`;
+    }).join('');
+    ui.list.scrollTop = 0;
+    if (state.sel) setSel(state.sel, true);
+    renderPreview();
   }
 
-  function updateSel() {
-    resultsDiv.querySelectorAll('.pg-item').forEach((el, i) => {
-      el.classList.toggle('pg-sel', i === state.selIndex);
-      if (i === state.selIndex) el.scrollIntoView({ block: 'nearest' });
-    });
+  function markFavInList() {
+    const row = rowAt(state.sel);
+    const p = state.results[state.sel];
+    if (!row || !p) return;
+    const mini = row.querySelector('.pgm-fav-mini');
+    if (isFav(p.id) && !mini) row.querySelector('.pgm-body').after(el('span', { class: 'pgm-fav-mini', title: 'Favori', text: '★' }));
+    if (!isFav(p.id) && mini) mini.remove();
   }
 
-  // ═══════════════════════════════════════════════════════════
-  //  RENDER — FILL MODE
-  // ═══════════════════════════════════════════════════════════
-  function selectPrompt(index) {
-    const p = state.results[index];
+  function rowAt(i) { return ui.list.querySelector(`.pgm-item[data-i="${i}"]`); }
+
+  function setSel(i, scroll) {
+    if (!state.results.length) return;
+    i = Math.max(0, Math.min(i, state.results.length - 1));
+    const old = rowAt(state.sel);
+    if (old) { old.classList.remove('pgm-sel'); old.setAttribute('aria-selected', 'false'); }
+    state.sel = i;
+    const row = rowAt(i);
+    if (row) {
+      row.classList.add('pgm-sel');
+      row.setAttribute('aria-selected', 'true');
+      if (scroll) row.scrollIntoView({ block: 'nearest' });
+    }
+    renderPreview();
+  }
+
+  function renderPreview() {
+    if (!ui || !settings.showPreview) return;
+    const p = state.results[state.sel];
+    ui.preview.textContent = '';
     if (!p) return;
-    const split = splitContext(p.prompt);
-    const placeholders = split ? extractPlaceholders(split.ctx) : [];
-    if (!placeholders.length) {
-      finalizeInsert(p.prompt, p.title);
-      return;
+    const color = safeColor(p.color);
+    const parsed = parseFields(p);
+    const fav = isFav(p.id);
+
+    const head = el('div', { class: 'pgm-pv-head' }, [
+      el('div', { class: 'pgm-ico', style: `background:${color}1f;color:${color}`, text: p.icon || '📄' }),
+      el('div', null, [el('div', { class: 'pgm-pv-title', text: p.title }), el('div', { class: 'pgm-pv-cat', text: p.cat || '' })]),
+      el('button', { type: 'button', class: 'pgm-star' + (fav ? ' pgm-on' : ''), 'data-act': 'fav', title: `${fav ? 'Retirer des' : 'Ajouter aux'} favoris (${ALT}F)`, text: fav ? '★' : '☆' }),
+    ]);
+
+    const actions = el('div', { class: 'pgm-pv-actions' });
+    if (parsed) actions.append(el('button', { type: 'button', class: 'pgm-btn pgm-primary', 'data-act': 'open' }, ['✍️ Remplir puis insérer', el('kbd', { text: '↵' })]));
+    actions.append(el('button', { type: 'button', class: 'pgm-btn' + (parsed ? '' : ' pgm-primary'), 'data-act': 'raw' }, [parsed ? 'Insérer tel quel' : '💬 Insérer', el('kbd', { text: parsed ? '⇧↵' : '↵' })]));
+    actions.append(el('button', { type: 'button', class: 'pgm-btn', 'data-act': 'copy' }, ['📋 Copier', el('kbd', { text: `${ALT}C` })]));
+    if (settings.filters.length && !String(p.id).startsWith('custom-')) {
+      const pick = el('select', { class: 'pgm-btn', 'data-filter-pick': '', title: 'Ajouter ce prompt à un de vos filtres' },
+        [el('option', { value: '', text: '🎯 Ajouter à un filtre…' })].concat(settings.filters.map(f =>
+          el('option', { value: f.id, text: (inFilter(f, p) ? '✓ ' : '') + f.name }))));
+      actions.append(pick);
     }
-    enterFillMode(p, split, placeholders);
+
+    // Prompt text with the [placeholders] of « MON CONTEXTE » highlighted — built as text nodes, never innerHTML.
+    const pre = el('pre', { class: 'pgm-pv-text' });
+    if (parsed) {
+      const { split, fields } = parsed;
+      let pos = 0;
+      pre.append(split.pre);
+      for (const f of fields) {
+        pre.append(split.ctx.slice(pos, f.start), el('span', { class: 'pgm-ph', text: split.ctx.slice(f.start, f.end) }));
+        pos = f.end;
+      }
+      pre.append(split.ctx.slice(pos) + split.post);
+    } else {
+      pre.textContent = p.prompt;
+    }
+
+    const note = el('div', { class: 'pgm-pv-note', text: parsed
+      ? `${parsed.fields.length} champ${parsed.fields.length > 1 ? 's' : ''} à remplir dans « MON CONTEXTE ». Les champs laissés vides restent entre [crochets] et l'IA vous les demandera.`
+      : 'Ce prompt n\'a pas de champ à remplir.' });
+
+    ui.preview.append(head, actions, note, pre);
+    ui.preview.scrollTop = 0;
   }
 
-  function enterFillMode(prompt, split, placeholders) {
+  function setHints(mode) {
+    const list = mode === 'fill'
+      ? [['↵', 'champ suivant'], ['⇥', 'champ suivant'], [(IS_MAC ? '⌘' : 'Ctrl+') + '↵', 'insérer'], [`${ALT}C`, 'copier'], ['Esc', 'retour à la liste']]
+      : [['↑↓', 'naviguer'], ['↵', 'remplir & insérer'], ['⇧↵', 'insérer tel quel'], ['⇥', 'catégorie'], [`${ALT}1-9`, 'accès direct'], [`${ALT}F`, 'favori'], [`${ALT}C`, 'copier'], ['Esc', 'effacer / fermer']];
+    ui.hints.innerHTML = list.map(([k, v]) => `<span><kbd>${escapeHtml(k)}</kbd>${escapeHtml(v)}</span>`).join('');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  FILL MODE
+  // ═══════════════════════════════════════════════════════════
+  function openPrompt(i) {
+    const p = state.results[i];
+    if (!p) return;
+    if (i !== state.sel) setSel(i, true);
+    const parsed = parseFields(p);
+    if (!parsed) { finalizeInsert(p.prompt, p); return; }
+    enterFill(p, parsed);
+  }
+
+  function enterFill(p, parsed) {
     state.mode = 'fill';
-    state.fillPrompt = prompt;
-    state.fillCtx = split;
-    state.fillValues = {};
+    const values = parsed.fields.map(f => (settings.rememberFields && fieldMemory[memoryKey(f)]) || '');
+    state.fill = { p, parsed, values };
+    ui.palette.classList.add('pgm-mode-fill');
+    setHints('fill');
 
-    hintsList.innerHTML = `
-      <span><kbd>⇥</kbd>champ suivant</span>
-      <span><kbd>↵</kbd>insérer</span>
-      <span><kbd>⌘C</kbd>copier l'aperçu</span>
-      <span><kbd>Esc</kbd>retour</span>
-    `;
-
-    const fieldsHtml = placeholders.map((ph, i) => {
-      const kind = fieldKind(ph);
-      const id = 'pg-f-' + i;
-      if (kind.type === 'select') {
-        return `<div class="pg-field"><label for="${id}">${escapeHtml(ph)}</label>
-          <select id="${id}" data-ph="${escapeHtml(ph)}">
-            <option value="">— choisir —</option>
-            ${kind.options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
-          </select></div>`;
-      }
+    const fieldsHtml = parsed.fields.map((f, i) => {
+      const kind = fieldKind(f.ph);
+      const id = 'pgm-f-' + i;
+      const label = `<label for="${id}">${escapeHtml(f.label)}${f.hint ? ` <span class="pgm-hint">— ${escapeHtml(f.hint)}</span>` : ''}</label>`;
+      const common = `id="${id}" data-i="${i}" placeholder="${escapeHtml(f.ph)}" value="${escapeHtml(values[i])}"`;
       if (kind.type === 'textarea') {
-        return `<div class="pg-field"><label for="${id}">${escapeHtml(ph)}</label>
-          <textarea id="${id}" data-ph="${escapeHtml(ph)}" rows="2"></textarea></div>`;
+        return `<div class="pgm-field">${label}<textarea id="${id}" data-i="${i}" rows="2" placeholder="${escapeHtml(f.ph)}">${escapeHtml(values[i])}</textarea></div>`;
       }
-      return `<div class="pg-field"><label for="${id}">${escapeHtml(ph)}</label>
-        <input id="${id}" type="text" data-ph="${escapeHtml(ph)}" /></div>`;
+      if (kind.type === 'choice') {
+        // A datalist suggests the listed options but still accepts anything typed (« autre »).
+        return `<div class="pgm-field">${label}<input type="text" ${common} list="${id}-list" autocomplete="off">
+          <datalist id="${id}-list">${kind.options.map(o => `<option value="${escapeHtml(o)}"></option>`).join('')}</datalist></div>`;
+      }
+      return `<div class="pgm-field">${label}<input type="text" ${common} autocomplete="off"></div>`;
     }).join('');
 
-    resultsDiv.innerHTML = `
-      <div id="pg-fill">
-        <button id="pg-fill-back" type="button">← retour (Esc)</button>
-        <div id="pg-fill-title">${escapeHtml(prompt.title)}</div>
-        <form id="pg-fill-form">
-          ${fieldsHtml}
-          <textarea id="pg-fill-preview" class="pg-mono" readonly></textarea>
-          <div id="pg-fill-actions">
-            <button type="button" id="pg-fill-copy" class="pg-btn2">📋 Copier</button>
-            <button type="submit" class="pg-btn2 pg-primary">💬 Insérer ↵</button>
-          </div>
-        </form>
+    ui.fill.innerHTML = `
+      <div class="pgm-fill-left">
+        <button type="button" class="pgm-back">← Retour à la liste (Esc)</button>
+        <div class="pgm-fill-title">${escapeHtml(p.title)}</div>
+        <div class="pgm-fill-progress"></div>
+        <form id="pgm-fill-form" autocomplete="off">${fieldsHtml}</form>
       </div>
-    `;
+      <div class="pgm-fill-right">
+        <div class="pgm-fill-actions">
+          <button type="button" class="pgm-btn" data-act="copy">📋 Copier <kbd>${escapeHtml(ALT)}C</kbd></button>
+          <button type="button" class="pgm-btn pgm-primary" data-act="insert">💬 Insérer dans ${escapeHtml(provider.name)} <kbd>${IS_MAC ? '⌘' : 'Ctrl+'}↵</kbd></button>
+        </div>
+        <textarea id="pgm-fill-preview" readonly aria-label="Aperçu du prompt final"></textarea>
+      </div>`;
 
-    const form = resultsDiv.querySelector('#pg-fill-form');
-    const previewEl = resultsDiv.querySelector('#pg-fill-preview');
+    const form = ui.fill.querySelector('#pgm-fill-form');
+    const inputs = Array.from(form.querySelectorAll('[data-i]'));
+    const preview = ui.fill.querySelector('#pgm-fill-preview');
+    const progress = ui.fill.querySelector('.pgm-fill-progress');
 
     function regenerate() {
-      const filledCtx = fillContext(split.ctx, state.fillValues);
-      previewEl.value = split.pre + filledCtx + split.post;
+      preview.value = buildFilled(parsed, state.fill.values);
+      const done = state.fill.values.filter(v => v.trim()).length;
+      progress.textContent = `${done} / ${parsed.fields.length} champs remplis — les champs vides restent entre [crochets].`;
+      inputs.forEach(inp => inp.closest('.pgm-field').classList.toggle('pgm-filled', !!state.fill.values[inp.dataset.i].trim()));
     }
     regenerate();
 
-    const fieldEls = Array.from(form.querySelectorAll('[data-ph]'));
-    fieldEls.forEach(el => el.addEventListener('input', () => { state.fillValues[el.dataset.ph] = el.value; regenerate(); }));
+    form.addEventListener('input', e => {
+      const i = e.target.dataset.i;
+      if (i === undefined) return;
+      state.fill.values[i] = e.target.value;
+      regenerate();
+    });
+    form.addEventListener('submit', e => e.preventDefault());
+    form.addEventListener('keydown', e => {
+      // Enter in a one-line field moves on instead of inserting half-filled; on the last field it inserts.
+      if (e.key !== 'Enter' || e.target.tagName !== 'INPUT' || e.ctrlKey || e.metaKey || e.isComposing) return;
+      e.preventDefault();
+      const i = inputs.indexOf(e.target);
+      if (i < inputs.length - 1) inputs[i + 1].focus();
+      else insertFilled();
+    });
+    ui.fill.querySelector('.pgm-back').addEventListener('click', () => exitFill(true));
+    ui.fill.querySelector('[data-act="copy"]').addEventListener('click', copyFilled);
+    ui.fill.querySelector('[data-act="insert"]').addEventListener('click', insertFilled);
 
-    resultsDiv.querySelector('#pg-fill-back').addEventListener('click', exitFillMode);
-    resultsDiv.querySelector('#pg-fill-copy').addEventListener('click', () => copyText(previewEl.value, prompt.title));
-    form.addEventListener('submit', (e) => { e.preventDefault(); finalizeInsert(previewEl.value, prompt.title); });
-
-    if (fieldEls[0]) fieldEls[0].focus();
+    const firstEmpty = inputs.find(inp => !state.fill.values[inp.dataset.i]) || inputs[0];
+    requestAnimationFrame(() => firstEmpty && firstEmpty.focus());
   }
 
-  function exitFillMode() {
+  function exitFill(refocus) {
+    if (!ui) return;
     state.mode = 'list';
-    state.fillPrompt = null; state.fillCtx = null; state.fillValues = {};
-    hintsList.innerHTML = `
-      <span><kbd>↑↓</kbd>naviguer</span>
-      <span><kbd>↵</kbd>ouvrir/insérer</span>
-      <span><kbd>⇥</kbd>catégorie</span>
-      <span><kbd>⌥1-9</kbd>insertion rapide</span>
-      <span><kbd>⌘C</kbd>copier</span>
-      <span><kbd>Esc</kbd>fermer</span>
-    `;
-    renderList();
-    searchInput.focus();
+    state.fill = null;
+    ui.palette.classList.remove('pgm-mode-fill');
+    ui.fill.textContent = '';
+    setHints('list');
+    if (refocus) ui.search.focus();
   }
+
+  function rememberFilled() {
+    if (!settings.rememberFields || !state.fill) return;
+    state.fill.parsed.fields.forEach((f, i) => {
+      const v = state.fill.values[i].trim();
+      if (v) fieldMemory[memoryKey(f)] = v;
+    });
+    GM_setValue('pgm_field_memory', JSON.stringify(fieldMemory));
+  }
+  function filledText() { return buildFilled(state.fill.parsed, state.fill.values); }
+  function insertFilled() { if (!state.fill) return; rememberFilled(); finalizeInsert(filledText(), state.fill.p); }
+  function copyFilled() { if (!state.fill) return; rememberFilled(); copyPrompt(filledText(), state.fill.p); }
 
   // ═══════════════════════════════════════════════════════════
   //  TEXT INJECTION
   // ═══════════════════════════════════════════════════════════
-  function isUsableInput(el) {
-    if (!el || el.disabled || el.readOnly) return false;
-    if (el.getAttribute('aria-hidden') === 'true') return false;
-    const rect = el.getBoundingClientRect();
+  // Google Labs and some chats keep hidden inputs around: only type into a visible, writable one.
+  function isUsableInput(node) {
+    if (!node || node.disabled || node.readOnly) return false;
+    if (node.closest('.pgm-scope')) return false;
+    if (node.getAttribute('aria-hidden') === 'true') return false;
+    const rect = node.getBoundingClientRect();
     return rect.width > 0 && rect.height > 0;
   }
 
@@ -8262,302 +8772,612 @@ Structure la communication descendante et ascendante, en adaptant le format au m
       .concat(['textarea', 'div[contenteditable="true"]', '[role="textbox"]']);
     let fallback = null;
     for (const sel of selectors) {
-      for (const el of document.querySelectorAll(sel)) {
-        if (isUsableInput(el)) return el;
-        if (!fallback) fallback = el;
+      for (const node of document.querySelectorAll(sel)) {
+        if (isUsableInput(node)) return node;
+        if (!fallback && !node.closest('.pgm-scope')) fallback = node;
       }
     }
     return fallback;
   }
 
-  function injectText(text) {
-    const el = findInput();
-    if (!el) { showToast('⚠ Champ de saisie introuvable'); return false; }
-
-    el.focus();
-
-    if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
-      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set
-                        || Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-      if (nativeSetter) nativeSetter.call(el, text); else el.value = text;
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-    } else {
-      el.focus();
-      const dt = new DataTransfer();
-      dt.setData('text/plain', text);
-      const pasteEvent = new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true });
-      const handled = !el.dispatchEvent(pasteEvent);
-      if (!handled) {
-        el.textContent = text;
-        el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
-      }
-    }
-
+  function caretToEnd(node) {
     try {
       const range = document.createRange();
-      const selection = window.getSelection();
-      range.selectNodeContents(el);
+      range.selectNodeContents(node);
       range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    } catch (e) {}
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (e) { /* not a selectable node */ }
+  }
 
+  function injectText(text) {
+    const target = findInput();
+    if (!target) return false;
+    target.focus();
+
+    if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+      // Append after any draft instead of replacing it, and go through the native setter so React sees the change.
+      const proto = target.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+      const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+      const draft = target.value.replace(/\s+$/, '');
+      const next = draft ? draft + '\n\n' + text : text;
+      if (setter) setter.call(target, next); else target.value = next;
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+      try { target.setSelectionRange(next.length, next.length); } catch (e) { /* input type without selection */ }
+      return true;
+    }
+
+    // Rich editors (ProseMirror, Quill…) ignore textContent changes, so hand them a synthetic paste at the end.
+    caretToEnd(target);
+    const dt = new DataTransfer();
+    dt.setData('text/plain', text);
+    const handled = !target.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    if (!handled && !document.execCommand('insertText', false, text)) {
+      target.textContent = text;
+      target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
+    }
+    caretToEnd(target);
     return true;
   }
 
   // ═══════════════════════════════════════════════════════════
   //  ACTIONS
   // ═══════════════════════════════════════════════════════════
-  function finalizeInsert(text, title) {
+  function finalizeInsert(text, p) {
+    pushRecent(p);
     closePalette();
-    setTimeout(() => { if (injectText(text)) showToast(`✓ « ${title} » inséré`); }, 80);
+    setTimeout(() => {
+      if (injectText(text)) showToast(`✓ « ${p.title} » inséré`);
+      else copyPrompt(text, p, '⚠ Champ de saisie introuvable — prompt copié, collez-le avec Ctrl+V');
+    }, 80);
   }
 
-  function copyText(text, title) {
-    navigator.clipboard.writeText(text).then(() => showToast(`✓ « ${title} » copié`));
-  }
-
-  function showToast(msg) {
-    toast.querySelector('span').textContent = msg;
-    toast.classList.add('pg-show');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => toast.classList.remove('pg-show'), 2200);
+  function copyPrompt(text, p, message) {
+    pushRecent(p);
+    const done = () => showToast(message || `✓ « ${p.title} » copié`);
+    try {
+      if (typeof GM_setClipboard === 'function') { GM_setClipboard(text, 'text'); done(); return; }
+    } catch (e) { /* fall through to the web API */ }
+    navigator.clipboard.writeText(text).then(done, () => showToast('⚠ Copie impossible sur cette page'));
   }
 
   // ═══════════════════════════════════════════════════════════
-  //  OPEN / CLOSE
+  //  SETTINGS MODAL — Prompts on/off · Mes prompts · Préférences
   // ═══════════════════════════════════════════════════════════
-  function openPalette() {
-    state.mode = 'list'; state.selIndex = 0;
-    searchInput.value = '';
-    renderList();
-    overlay.classList.add('pg-open');
-    setTimeout(() => searchInput.focus(), 50);
-  }
-  function closePalette() { overlay.classList.remove('pg-open'); state.mode = 'list'; }
-  function togglePalette() { overlay.classList.contains('pg-open') ? closePalette() : openPalette(); }
+  let settingsModal = null;
 
-  // ═══════════════════════════════════════════════════════════
-  //  CUSTOM PROMPT MANAGER
-  // ═══════════════════════════════════════════════════════════
-  let managerModal = null;
-
-  function openManager() {
-    if (managerModal) managerModal.remove();
-    const modal = document.createElement('div');
-    modal.className = 'pg-modal';
+  function openSettings(tab) {
+    ensureUI();
+    closeSettings();
+    const modal = el('div', { class: 'pgm-modal pgm-scope' });
     modal.innerHTML = `
-      <div class="pg-modal-card">
-        <div class="pg-modal-header">
-          <h3>⚙️ Prompts personnalisés</h3>
-          <button class="pg-modal-close">&times;</button>
+      <div class="pgm-modal-card" role="dialog" aria-modal="true" aria-label="Réglages">
+        <div class="pgm-modal-head"><h3>⚙️ Réglages — Prompt Genius Médical</h3><button type="button" class="pgm-iconbtn" data-close title="Fermer (Esc)">✕ Fermer</button></div>
+        <div class="pgm-tabs">
+          <button type="button" class="pgm-tab" data-tab="filters">🎯 Mes filtres</button>
+          <button type="button" class="pgm-tab" data-tab="prompts">Prompts actifs</button>
+          <button type="button" class="pgm-tab" data-tab="custom">Mes prompts</button>
+          <button type="button" class="pgm-tab" data-tab="prefs">Préférences</button>
         </div>
-        <div class="pg-modal-body">
-          <div class="pg-section-title">Vos prompts</div>
-          <div class="pg-custom-list" id="pg-custom-list"></div>
-
-          <div class="pg-section-title">Ajouter un prompt</div>
-          <div class="pg-form-group"><label>Titre</label><input type="text" id="pg-new-title" maxlength="80"></div>
-          <div class="pg-form-group"><label>Catégorie (texte libre)</label><input type="text" id="pg-new-cat" value="Custom"></div>
-          <div class="pg-form-group"><label>Icône (emoji)</label><input type="text" id="pg-new-icon" maxlength="2" value="📌"></div>
-          <div class="pg-form-group"><label>Couleur (hex)</label><input type="text" id="pg-new-color" value="#c8ff00"></div>
-          <div class="pg-form-group"><label>Texte du prompt (une section « **MON CONTEXTE** » avec des [crochets] active le remplissage clavier)</label><textarea id="pg-new-prompt" rows="6"></textarea></div>
-          <button class="pg-btn pg-btn-primary" id="pg-add-prompt">Ajouter</button>
-
-          <div class="pg-divider"></div>
-
-          <div class="pg-section-title">Import / Export</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="pg-btn" id="pg-export-json">Exporter en JSON</button>
-            <label class="pg-btn" style="cursor:pointer;">
-              Importer un fichier
-              <input type="file" id="pg-import-file" accept=".txt,.md,.json,.csv,text/plain,application/json,text/csv" style="display:none;">
-            </label>
-          </div>
-          <p style="font-size:11px; color:var(--pg-text3); margin-top:10px;">
-            Formats : .txt, .md, .json, .csv (colonnes title,category,icon,color,prompt).<br>
-            Un fichier texte/markdown devient un seul prompt, titré d'après le nom de fichier.
-          </p>
-        </div>
-      </div>
-    `;
+        <div class="pgm-tabbody"></div>
+      </div>`;
     document.body.appendChild(modal);
-    managerModal = modal;
-
-    const closeBtn = modal.querySelector('.pg-modal-close');
-    const listDiv = modal.querySelector('#pg-custom-list');
-    const addBtn = modal.querySelector('#pg-add-prompt');
-    const exportBtn = modal.querySelector('#pg-export-json');
-    const fileInput = modal.querySelector('#pg-import-file');
-
-    function renderCustomList() {
-      const prompts = getCustomPrompts();
-      if (!prompts.length) { listDiv.innerHTML = `<div class="pg-empty" style="padding:16px;">Aucun prompt personnalisé.</div>`; return; }
-      listDiv.innerHTML = prompts.map((p, idx) => `
-        <div class="pg-custom-item">
-          <div class="pg-custom-info">
-            <span style="font-size:18px;">${escapeHtml(p.icon || '📄')}</span>
-            <span style="font-weight:500;">${escapeHtml(p.title)}</span>
-            <span style="font-size:11px;color:var(--pg-text3);">${escapeHtml(p.cat || '')}</span>
-          </div>
-          <div class="pg-custom-actions"><button class="pg-delete-btn" data-idx="${idx}" title="Supprimer">🗑️</button></div>
-        </div>
-      `).join('');
-      listDiv.querySelectorAll('.pg-delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const idx = parseInt(btn.dataset.idx);
-          const prompts = getCustomPrompts();
-          prompts.splice(idx, 1);
-          saveCustomPrompts(prompts);
-          renderCustomList();
-          renderList();
-          showToast('Prompt supprimé');
-        });
-      });
+    settingsModal = modal;
+    for (const type of ['keydown', 'keyup', 'keypress']) modal.addEventListener(type, e => e.stopPropagation());
+    modal.addEventListener('mousedown', e => { if (e.target === modal) closeSettings(); });
+    modal.querySelector('[data-close]').addEventListener('click', closeSettings);
+    const body = modal.querySelector('.pgm-tabbody');
+    const tabs = modal.querySelectorAll('.pgm-tab');
+    function show(name) {
+      tabs.forEach(t => t.classList.toggle('pgm-active', t.dataset.tab === name));
+      body.textContent = '';
+      body.scrollTop = 0;
+      ({ filters: renderFiltersTab, prompts: renderPromptsTab, custom: renderCustomTab, prefs: renderPrefsTab })[name](body);
     }
-    renderCustomList();
+    tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+    show(tab || (settings.filters.length ? 'prompts' : 'filters'));
+  }
 
-    addBtn.addEventListener('click', () => {
-      const title = modal.querySelector('#pg-new-title').value.trim();
-      const cat = modal.querySelector('#pg-new-cat').value.trim() || 'Custom';
-      const icon = modal.querySelector('#pg-new-icon').value.trim() || '📌';
-      const color = modal.querySelector('#pg-new-color').value.trim() || '#c8ff00';
-      const promptText = modal.querySelector('#pg-new-prompt').value.trim();
-      if (!title || !promptText) { alert('Titre et texte du prompt sont requis.'); return; }
-      const newPrompt = { id: 'custom-' + Date.now(), title, cat, catKey: 'custom', icon, color, prompt: promptText };
+  function closeSettings() {
+    if (!settingsModal) return;
+    settingsModal.remove();
+    settingsModal = null;
+    if (isOpen()) {
+      ui.palette.classList.toggle('pgm-nopreview', !settings.showPreview);
+      if (state.mode === 'list') {
+        if (!sideCats().some(c => c.key === state.cat)) state.cat = 'all';
+        ui.search.placeholder = `Rechercher parmi ${getIndex().length} prompts… (sans accents : « medecin », « ordonnance »)`;
+        renderSide();
+        renderList();
+        ui.search.focus();
+      }
+    }
+  }
+
+  function applyPromptToggles() { saveSettings(); invalidate(); }
+
+  function renderFiltersTab(body) {
+    body.innerHTML = `
+      <p class="pgm-note">Un filtre = votre métier + les prompts d'autres métiers qui vous servent. Il apparaît comme une catégorie dans la palette, et peut s'ouvrir par défaut. Ex. « Mon cabinet » = Médecin généraliste + 3 prompts de Secrétaire médicale.</p>
+      <div class="pgm-box" id="pgm-flt-list"></div>
+      <div class="pgm-row"><button type="button" class="pgm-btn pgm-primary" id="pgm-flt-new">＋ Nouveau filtre</button></div>
+      <div id="pgm-flt-edit"></div>`;
+    const listDiv = body.querySelector('#pgm-flt-list');
+    const editDiv = body.querySelector('#pgm-flt-edit');
+
+    function drawList() {
+      if (!settings.filters.length) { listDiv.innerHTML = '<div class="pgm-empty">Aucun filtre pour l\'instant. Créez-en un pour retrouver votre métier en un clic.</div>'; return; }
+      listDiv.innerHTML = settings.filters.map(f => `
+        <div class="pgm-custom-item">
+          <span style="font-size:17px">${escapeHtml(f.icon || '🎯')}</span>
+          <span style="flex:1;min-width:0"><span style="color:var(--pgm-text)">${escapeHtml(f.name)}</span>${settings.startCat === 'flt:' + f.id ? ' <span class="pgm-cat-n">· ouvert par défaut</span>' : ''}<br><span class="pgm-cat-n">${escapeHtml(filterSummary(f))}</span></span>
+          <button type="button" class="pgm-btn" data-edit="${escapeHtml(f.id)}">Modifier</button>
+          <button type="button" class="pgm-btn pgm-danger" data-del="${escapeHtml(f.id)}">Supprimer</button>
+        </div>`).join('');
+    }
+
+    function edit(f) {
+      const draft = f ? { ...f, cats: f.cats.slice(), ids: f.ids.slice() } : { id: 'f' + Date.now(), name: '', icon: '🎯', cats: [], ids: [] };
+      let startHere = settings.startCat === 'flt:' + draft.id || !settings.filters.length;
+      editDiv.innerHTML = `
+        <div class="pgm-sep"></div>
+        <div class="pgm-h">${f ? 'Modifier le filtre' : 'Nouveau filtre'}</div>
+        <div class="pgm-form">
+          <label>Nom<input type="text" class="pgm-input" id="pgm-flt-name" maxlength="40" placeholder="Ex. Mon cabinet, Garde, Service de pédiatrie" value="${escapeHtml(draft.name)}"></label>
+          <label>Icône (emoji)<input type="text" class="pgm-input" id="pgm-flt-icon" maxlength="4" value="${escapeHtml(draft.icon || '🎯')}"></label>
+        </div>
+        <div class="pgm-h" style="margin-top:6px">1 · Votre ou vos rôles (tous leurs prompts sont inclus)</div>
+        <div id="pgm-flt-cats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2px 12px;margin-bottom:12px">
+          ${CATS.filter(c => c.key !== 'all').map(c => `<label class="pgm-check"><input type="checkbox" data-fcat="${c.key}"${draft.cats.includes(c.key) ? ' checked' : ''}> ${escapeHtml(c.icon)} ${escapeHtml(c.label)}</label>`).join('')}
+        </div>
+        <div class="pgm-h">2 · Ajouter des prompts d'autres rôles <span class="pgm-cat-n" id="pgm-flt-n"></span></div>
+        <div class="pgm-row"><input type="search" class="pgm-input" id="pgm-flt-q" placeholder="Chercher un prompt à ajouter (ex. « certificat », « planning »)…" style="flex:1"></div>
+        <div class="pgm-box" id="pgm-flt-extra" style="max-height:260px"></div>
+        <label class="pgm-check"><input type="checkbox" id="pgm-flt-start"${startHere ? ' checked' : ''}> Ouvrir la palette sur ce filtre</label>
+        <div class="pgm-row" style="margin-top:10px">
+          <button type="button" class="pgm-btn pgm-primary" id="pgm-flt-save">Enregistrer le filtre</button>
+          <button type="button" class="pgm-btn" id="pgm-flt-cancel">Annuler</button>
+        </div>`;
+      const extraBox = editDiv.querySelector('#pgm-flt-extra');
+      const qInput = editDiv.querySelector('#pgm-flt-q');
+
+      function drawExtra() {
+        const q = fold(qInput.value.trim());
+        const others = BUILTIN_PROMPTS.filter(p => !draft.cats.includes(p.catKey) && (!q || fold(p.title).includes(q) || fold(p.cat).includes(q)));
+        // Already-picked prompts first so the selection stays visible.
+        others.sort((a, b) => draft.ids.includes(b.id) - draft.ids.includes(a.id));
+        extraBox.innerHTML = others.length ? others.map(p => `
+          <label class="pgm-check" style="padding:5px 10px"><input type="checkbox" data-fid="${escapeHtml(p.id)}"${draft.ids.includes(p.id) ? ' checked' : ''}>
+            <span style="flex:1;min-width:0">${escapeHtml(p.title)}</span><span class="pgm-cat-n">${escapeHtml(p.icon)} ${escapeHtml(p.cat)}</span></label>`).join('')
+          : '<div class="pgm-empty">Aucun prompt ne correspond.</div>';
+        const extra = draft.ids.filter(id => !BUILTIN_PROMPTS.some(p => p.id === id && draft.cats.includes(p.catKey))).length;
+        editDiv.querySelector('#pgm-flt-n').textContent = `· ${extra} ajouté${extra > 1 ? 's' : ''}`;
+      }
+      drawExtra();
+
+      qInput.addEventListener('input', drawExtra);
+      editDiv.querySelector('#pgm-flt-cats').addEventListener('change', e => {
+        const k = e.target.dataset.fcat;
+        draft.cats = draft.cats.filter(x => x !== k);
+        if (e.target.checked) draft.cats.push(k);
+        drawExtra();
+      });
+      extraBox.addEventListener('change', e => {
+        const id = e.target.dataset.fid;
+        if (!id) return;
+        draft.ids = draft.ids.filter(x => x !== id);
+        if (e.target.checked) draft.ids.push(id);
+        const extra = draft.ids.filter(x => !BUILTIN_PROMPTS.some(p => p.id === x && draft.cats.includes(p.catKey))).length;
+        editDiv.querySelector('#pgm-flt-n').textContent = `· ${extra} ajouté${extra > 1 ? 's' : ''}`;
+      });
+      editDiv.querySelector('#pgm-flt-cancel').addEventListener('click', () => { editDiv.textContent = ''; });
+      editDiv.querySelector('#pgm-flt-save').addEventListener('click', () => {
+        draft.name = editDiv.querySelector('#pgm-flt-name').value.trim();
+        draft.icon = editDiv.querySelector('#pgm-flt-icon').value.trim() || '🎯';
+        if (!draft.name) { showToast('⚠ Donnez un nom au filtre'); editDiv.querySelector('#pgm-flt-name').focus(); return; }
+        if (!draft.cats.length && !draft.ids.length) { showToast('⚠ Choisissez au moins un rôle ou un prompt'); return; }
+        // Prompts already covered by a chosen role don't need to be listed one by one.
+        draft.ids = draft.ids.filter(id => !BUILTIN_PROMPTS.some(p => p.id === id && draft.cats.includes(p.catKey)));
+        const i = settings.filters.findIndex(x => x.id === draft.id);
+        if (i === -1) settings.filters.push(draft); else settings.filters[i] = draft;
+        if (editDiv.querySelector('#pgm-flt-start').checked) { settings.startCat = 'flt:' + draft.id; state.cat = settings.startCat; }
+        else if (settings.startCat === 'flt:' + draft.id) settings.startCat = 'all';
+        saveSettings();
+        editDiv.textContent = '';
+        drawList();
+        showToast(`🎯 Filtre « ${draft.name} » enregistré`);
+      });
+      editDiv.querySelector('#pgm-flt-name').focus();
+    }
+
+    listDiv.addEventListener('click', e => {
+      const ed = e.target.closest('[data-edit]');
+      const del = e.target.closest('[data-del]');
+      if (ed) edit(settings.filters.find(f => f.id === ed.dataset.edit));
+      if (del) {
+        const f = settings.filters.find(x => x.id === del.dataset.del);
+        if (!f || !confirm(`Supprimer le filtre « ${f.name} » ? Les prompts eux-mêmes ne sont pas supprimés.`)) return;
+        settings.filters = settings.filters.filter(x => x !== f);
+        if (settings.startCat === 'flt:' + f.id) settings.startCat = 'all';
+        if (state.cat === 'flt:' + f.id) state.cat = 'all';
+        saveSettings();
+        drawList();
+        editDiv.textContent = '';
+      }
+    });
+    body.querySelector('#pgm-flt-new').addEventListener('click', () => edit(null));
+    drawList();
+  }
+
+  function renderPromptsTab(body) {
+    body.innerHTML = `
+      <p class="pgm-note">Décochez ce que vous n'utilisez pas : les prompts désactivés disparaissent de la palette et de la recherche, qui s'ouvre et filtre plus vite. Rien n'est supprimé, vous pouvez les réactiver ici à tout moment. (Le fichier du script reste chargé en entier par votre gestionnaire de userscripts.)</p>
+      <div class="pgm-row">
+        <input type="search" class="pgm-input" id="pgm-set-filter" placeholder="Filtrer les prompts…" style="flex:1;min-width:180px">
+        <button type="button" class="pgm-btn" data-all="on">Tout activer</button>
+        <button type="button" class="pgm-btn pgm-danger" data-all="off">Tout désactiver</button>
+        <span class="pgm-count"></span>
+      </div>
+      <div class="pgm-setlist"></div>`;
+    const listBox = body.querySelector('.pgm-setlist');
+    const count = body.querySelector('.pgm-count');
+    const filter = body.querySelector('#pgm-set-filter');
+    const open = new Set();
+
+    function catState(key) {
+      const all = BUILTIN_PROMPTS.filter(p => p.catKey === key);
+      if (settings.disabledCats.includes(key)) return { on: 0, total: all.length, catOff: true };
+      return { on: all.filter(p => !settings.disabledIds.includes(p.id)).length, total: all.length, catOff: false };
+    }
+    function updateCount() { count.textContent = `${getIndex().length - getCustomPrompts().length} / ${BUILTIN_PROMPTS.length} actifs`; }
+
+    function promptCheck(p, dim) {
+      const on = !settings.disabledIds.includes(p.id);
+      return `<label class="pgm-check${dim ? ' pgm-dim' : ''}"><input type="checkbox" data-id="${escapeHtml(p.id)}"${on ? ' checked' : ''}${dim ? ' disabled' : ''}> <span>${escapeHtml(p.title)}</span></label>`;
+    }
+
+    function draw() {
+      const q = fold(filter.value.trim());
+      if (q) {
+        const hits = BUILTIN_PROMPTS.filter(p => fold(p.title).includes(q) || fold(p.cat).includes(q));
+        listBox.innerHTML = hits.length
+          ? `<div class="pgm-setcat"><div class="pgm-setitems" style="padding-left:12px">${hits.map(p => promptCheck(p, settings.disabledCats.includes(p.catKey)).replace('</span></label>', `</span> <span class="pgm-cat-n">${escapeHtml(p.cat)}</span></label>`)).join('')}</div></div>`
+          : '<div class="pgm-empty">Aucun prompt ne correspond.</div>';
+      } else {
+        listBox.innerHTML = CATS.filter(c => c.key !== 'all').map(c => {
+          const s = catState(c.key);
+          const isOpenCat = open.has(c.key);
+          const items = isOpenCat
+            ? `<div class="pgm-setitems">${BUILTIN_PROMPTS.filter(p => p.catKey === c.key).map(p => promptCheck(p, s.catOff)).join('')}</div>`
+            : '';
+          return `<div class="pgm-setcat">
+            <div class="pgm-setcat-head">
+              <input type="checkbox" data-cat="${c.key}"${s.catOff ? '' : ' checked'} aria-label="Activer ${escapeHtml(c.label)}" style="accent-color:#9acb00;width:16px;height:16px;margin:0">
+              <span class="pgm-cat-ico">${escapeHtml(c.icon)}</span>
+              <span class="pgm-cat-label">${escapeHtml(c.label)}</span>
+              <span class="pgm-cat-n">${s.on}/${s.total}</span>
+              <button type="button" class="pgm-expand" data-expand="${c.key}">${isOpenCat ? '▾ masquer' : '▸ détail'}</button>
+            </div>${items}</div>`;
+        }).join('');
+        listBox.querySelectorAll('input[data-cat]').forEach(cb => {
+          const s = catState(cb.dataset.cat);
+          cb.indeterminate = !s.catOff && s.on > 0 && s.on < s.total;
+        });
+      }
+      updateCount();
+    }
+
+    filter.addEventListener('input', draw);
+    listBox.addEventListener('click', e => {
+      const b = e.target.closest('[data-expand]');
+      if (!b) return;
+      const k = b.dataset.expand;
+      open.has(k) ? open.delete(k) : open.add(k);
+      draw();
+    });
+    listBox.addEventListener('change', e => {
+      const cb = e.target;
+      if (cb.dataset.cat) {
+        const k = cb.dataset.cat;
+        if (cb.checked) {
+          settings.disabledCats = settings.disabledCats.filter(x => x !== k);
+          // Re-enabling a category whose prompts were all switched off one by one turns them back on.
+          const ids = BUILTIN_PROMPTS.filter(p => p.catKey === k).map(p => p.id);
+          if (ids.every(id => settings.disabledIds.includes(id))) settings.disabledIds = settings.disabledIds.filter(id => !ids.includes(id));
+        } else if (!settings.disabledCats.includes(k)) settings.disabledCats.push(k);
+      } else if (cb.dataset.id) {
+        const id = cb.dataset.id;
+        settings.disabledIds = settings.disabledIds.filter(x => x !== id);
+        if (!cb.checked) settings.disabledIds.push(id);
+      } else return;
+      applyPromptToggles();
+      draw();
+    });
+    body.querySelectorAll('[data-all]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.all === 'on') { settings.disabledCats = []; settings.disabledIds = []; }
+      else settings.disabledCats = CATS.filter(c => c.key !== 'all').map(c => c.key);
+      applyPromptToggles();
+      draw();
+    }));
+    draw();
+  }
+
+  function parseCSV(text) {
+    const firstLine = text.split(/\r?\n/, 1)[0];
+    const sep = (firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length ? ';' : ','; // Excel FR writes ";"
+    const rows = [];
+    let row = [];
+    let field = '';
+    let quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (quoted) {
+        if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+        else if (ch === '"') quoted = false;
+        else field += ch;
+      } else if (ch === '"') quoted = true;
+      else if (ch === sep) { row.push(field); field = ''; }
+      else if (ch === '\n' || ch === '\r') {
+        if (ch === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); rows.push(row); row = []; field = '';
+      } else field += ch;
+    }
+    if (field || row.length) { row.push(field); rows.push(row); }
+    const [head, ...data] = rows.filter(r => r.some(c => c.trim()));
+    if (!head) return [];
+    const keys = head.map(h => h.trim().toLowerCase());
+    return data.map(r => Object.fromEntries(keys.map((k, i) => [k, (r[i] || '').trim()])));
+  }
+
+  function renderCustomTab(body) {
+    body.innerHTML = `
+      <div class="pgm-h">Vos prompts</div>
+      <div class="pgm-box" id="pgm-custom-list"></div>
+      <div class="pgm-h">Ajouter un prompt</div>
+      <div class="pgm-form">
+        <label class="pgm-wide">Titre<input type="text" class="pgm-input" id="pgm-new-title" maxlength="120" placeholder="Ex. Compte rendu de consultation de suivi"></label>
+        <label>Icône (emoji)<input type="text" class="pgm-input" id="pgm-new-icon" maxlength="4" value="📌"></label>
+        <label>Couleur (hex)<input type="text" class="pgm-input" id="pgm-new-color" value="#c8ff00"></label>
+        <label class="pgm-wide">Texte du prompt<textarea class="pgm-input" id="pgm-new-prompt" placeholder="Astuce : une section « **MON CONTEXTE** » avec des [crochets] (ex. - Âge : [X] ans) crée automatiquement le formulaire à remplir."></textarea></label>
+      </div>
+      <div class="pgm-row"><button type="button" class="pgm-btn pgm-primary" id="pgm-add">Ajouter</button></div>
+      <div class="pgm-sep"></div>
+      <div class="pgm-h">Import / export</div>
+      <div class="pgm-row">
+        <button type="button" class="pgm-btn" id="pgm-export">Exporter mes prompts (JSON)</button>
+        <label class="pgm-btn" style="cursor:pointer">Importer un fichier…<input type="file" id="pgm-import" accept=".txt,.md,.json,.csv,text/plain,application/json,text/csv" hidden></label>
+      </div>
+      <p class="pgm-note">JSON : liste d'objets { title, prompt, cat?, icon?, color? }. CSV (virgule ou point-virgule, guillemets acceptés) : colonnes title, prompt et en option category, icon, color. Un fichier .txt / .md devient un seul prompt titré d'après le nom du fichier.</p>`;
+
+    const listDiv = body.querySelector('#pgm-custom-list');
+    function drawList() {
       const prompts = getCustomPrompts();
-      prompts.push(newPrompt);
+      if (!prompts.length) { listDiv.innerHTML = '<div class="pgm-empty">Aucun prompt personnalisé pour l\'instant.</div>'; return; }
+      listDiv.innerHTML = prompts.map((p, i) => `
+        <div class="pgm-custom-item">
+          <span style="font-size:17px">${escapeHtml(p.icon)}</span>
+          <span style="flex:1;min-width:0;color:var(--pgm-text)">${escapeHtml(p.title)}</span>
+          <button type="button" class="pgm-btn pgm-danger" data-del="${i}">Supprimer</button>
+        </div>`).join('');
+    }
+    drawList();
+
+    listDiv.addEventListener('click', e => {
+      const b = e.target.closest('[data-del]');
+      if (!b) return;
+      const prompts = getCustomPrompts().slice();
+      const [gone] = prompts.splice(Number(b.dataset.del), 1);
+      if (!gone || !confirm(`Supprimer « ${gone.title} » ? Cette action est définitive.`)) return;
       saveCustomPrompts(prompts);
-      renderCustomList();
-      renderList();
-      showToast(`✓ « ${title} » ajouté`);
-      modal.querySelector('#pg-new-title').value = '';
-      modal.querySelector('#pg-new-prompt').value = '';
-      modal.querySelector('#pg-new-cat').value = 'Custom';
-      modal.querySelector('#pg-new-icon').value = '📌';
-      modal.querySelector('#pg-new-color').value = '#c8ff00';
+      drawList();
+      showToast(`Prompt « ${gone.title} » supprimé`);
     });
 
-    exportBtn.addEventListener('click', () => {
-      const json = JSON.stringify(getCustomPrompts(), null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
+    body.querySelector('#pgm-add').addEventListener('click', () => {
+      const title = body.querySelector('#pgm-new-title').value.trim();
+      const text = body.querySelector('#pgm-new-prompt').value.trim();
+      if (!title || !text) { showToast('⚠ Le titre et le texte du prompt sont obligatoires'); return; }
+      const p = normalizeCustom({
+        id: 'custom-' + Date.now(), title, prompt: text,
+        icon: body.querySelector('#pgm-new-icon').value.trim(),
+        color: body.querySelector('#pgm-new-color').value.trim(),
+      }, 0);
+      saveCustomPrompts(getCustomPrompts().concat(p));
+      drawList();
+      body.querySelector('#pgm-new-title').value = '';
+      body.querySelector('#pgm-new-prompt').value = '';
+      showToast(`✓ « ${title} » ajouté (catégorie « Mes prompts »)`);
+    });
+
+    body.querySelector('#pgm-export').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(getCustomPrompts(), null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'prompt-genius-medical-custom.json'; a.click();
-      URL.revokeObjectURL(url);
+      const a = el('a', { href: url, download: 'prompt-genius-medical-custom.json' });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast('Export effectué');
     });
 
+    const fileInput = body.querySelector('#pgm-import');
     fileInput.addEventListener('change', () => {
       const file = fileInput.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (ev) => {
-        const content = ev.target.result;
+      reader.onload = () => {
+        const content = String(reader.result);
         const ext = file.name.split('.').pop().toLowerCase();
-        let imported = [];
+        let raw;
         try {
           if (ext === 'json') {
-            imported = JSON.parse(content);
+            const parsed = JSON.parse(content);
+            raw = Array.isArray(parsed) ? parsed : [parsed];
           } else if (ext === 'csv') {
-            const lines = content.split(/\r?\n/).filter(l => l.trim());
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-            for (let i = 1; i < lines.length; i++) {
-              const values = lines[i].split(',').map(v => v.trim());
-              const obj = {};
-              headers.forEach((h, idx) => { obj[h] = values[idx] || ''; });
-              if (obj.title && obj.prompt) {
-                imported.push({ id: 'custom-csv-' + Date.now() + i, title: obj.title, cat: obj.category || obj.cat || 'Custom', catKey: 'custom', icon: obj.icon || '📄', color: obj.color || '#c8ff00', prompt: obj.prompt });
-              }
-            }
+            raw = parseCSV(content).map(r => ({ title: r.title, prompt: r.prompt, cat: r.category || r.cat, icon: r.icon, color: r.color }));
           } else {
-            const title = file.name.replace(/\.[^/.]+$/, '');
-            imported.push({ id: 'custom-file-' + Date.now(), title: title || 'Prompt importé', cat: 'Importé', catKey: 'custom', icon: '📄', color: '#c8ff00', prompt: content });
+            raw = [{ title: file.name.replace(/\.[^/.]+$/, '') || 'Prompt importé', prompt: content, cat: 'Importé', icon: '📄' }];
           }
-          if (Array.isArray(imported) && imported.length) {
-            const merged = getCustomPrompts().concat(imported.map(p => ({ catKey: 'custom', ...p })));
-            saveCustomPrompts(merged);
-            renderCustomList();
-            renderList();
-            showToast(`${imported.length} prompt(s) importé(s)`);
-          } else { alert('Aucun prompt valide trouvé dans ce fichier.'); }
-        } catch (err) { alert('Échec de lecture du fichier : ' + err.message); }
+        } catch (err) {
+          showToast('⚠ Fichier illisible : ' + err.message);
+          fileInput.value = '';
+          return;
+        }
+        const valid = raw.filter(isValidPrompt);
+        const stamp = Date.now();
+        const imported = valid.map((p, i) => normalizeCustom({ ...p, id: 'custom-' + stamp + '-' + i }, i));
+        if (imported.length) {
+          saveCustomPrompts(getCustomPrompts().concat(imported));
+          drawList();
+        }
+        const skipped = raw.length - valid.length;
+        showToast(imported.length
+          ? `✓ ${imported.length} prompt(s) importé(s)${skipped ? ` · ${skipped} ignoré(s) (titre ou texte manquant)` : ''}`
+          : '⚠ Aucun prompt valide (il faut au moins « title » et « prompt »)');
         fileInput.value = '';
       };
       reader.readAsText(file);
     });
-
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeManager(); });
-    closeBtn.addEventListener('click', closeManager);
-    document.addEventListener('keydown', handleManagerKey);
   }
 
-  function closeManager() {
-    if (managerModal) { managerModal.remove(); managerModal = null; document.removeEventListener('keydown', handleManagerKey); }
+  function renderPrefsTab(body) {
+    const memCount = Object.keys(fieldMemory).length;
+    body.innerHTML = `
+      <div class="pgm-h">Raccourci clavier</div>
+      <div class="pgm-row">
+        <select class="pgm-input" id="pgm-hotkey">${Object.entries(HOTKEYS).map(([k, h]) =>
+          `<option value="${k}"${k === settings.hotkey ? ' selected' : ''}>${escapeHtml(h.label)}${k === 'mod+shift+p' ? ' — identique au Prompt Genius principal' : ''}${k === DEFAULT_SETTINGS.hotkey ? ' (par défaut)' : ''}</option>`).join('')}</select>
+      </div>
+      <p class="pgm-note">Si vous utilisez aussi le Prompt Genius principal, évitez ${escapeHtml(HOTKEYS['mod+shift+p'].label)} : les deux palettes s'ouvriraient en même temps.</p>
+      <div class="pgm-sep"></div>
+      <div class="pgm-h">À l'ouverture</div>
+      <div class="pgm-row"><label class="pgm-check" style="gap:10px">Ouvrir la palette sur
+        <select class="pgm-input" id="pgm-startcat">${[['all', '✦ Tous'], ['fav', '★ Favoris'], ['recent', '🕘 Récents']].concat(settings.filters.map(f => ['flt:' + f.id, '🎯 ' + f.name]))
+          .map(([k, l]) => `<option value="${escapeHtml(k)}"${k === settings.startCat ? ' selected' : ''}>${escapeHtml(l)}</option>`).join('')}</select></label></div>
+      <div class="pgm-sep"></div>
+      <div class="pgm-h">Affichage</div>
+      <label class="pgm-check"><input type="checkbox" id="pgm-pref-trigger"${settings.showTrigger ? ' checked' : ''}> Afficher le bouton flottant 💊 (en bas à droite)</label>
+      <label class="pgm-check"><input type="checkbox" id="pgm-pref-preview"${settings.showPreview ? ' checked' : ''}> Afficher l'aperçu du prompt à droite de la liste</label>
+      <p class="pgm-note" style="margin-top:6px">Bouton masqué ? Le raccourci et le menu de l'extension (icône Tampermonkey / Violentmonkey → « Ouvrir la palette ») marchent toujours.</p>
+      <div class="pgm-sep"></div>
+      <div class="pgm-h">Formulaire</div>
+      <label class="pgm-check"><input type="checkbox" id="pgm-pref-remember"${settings.rememberFields ? ' checked' : ''}> Pré-remplir les champs avec mes dernières réponses (ex. mes coordonnées)</label>
+      <p class="pgm-note" style="margin-top:6px">Stocké uniquement dans ce navigateur. N'y laissez jamais de données patient identifiantes. ${memCount} réponse(s) mémorisée(s).</p>
+      <div class="pgm-row"><button type="button" class="pgm-btn pgm-danger" id="pgm-clear-mem"${memCount ? '' : ' disabled'}>Effacer les réponses mémorisées</button>
+      <button type="button" class="pgm-btn pgm-danger" id="pgm-clear-recent">Vider favoris et récents</button></div>`;
+
+    body.querySelector('#pgm-hotkey').addEventListener('change', e => {
+      settings.hotkey = e.target.value;
+      saveSettings();
+      refreshTrigger();
+      showToast(`Raccourci : ${hotkeyLabel()}`);
+    });
+    body.querySelector('#pgm-startcat').addEventListener('change', e => { settings.startCat = e.target.value; state.cat = settings.startCat; saveSettings(); });
+    body.querySelector('#pgm-pref-trigger').addEventListener('change', e => { settings.showTrigger = e.target.checked; saveSettings(); refreshTrigger(); });
+    body.querySelector('#pgm-pref-preview').addEventListener('change', e => { settings.showPreview = e.target.checked; saveSettings(); });
+    body.querySelector('#pgm-pref-remember').addEventListener('change', e => { settings.rememberFields = e.target.checked; saveSettings(); });
+    body.querySelector('#pgm-clear-mem').addEventListener('click', () => {
+      if (!confirm('Effacer toutes les réponses mémorisées ?')) return;
+      fieldMemory = {};
+      GM_setValue('pgm_field_memory', '{}');
+      body.textContent = '';
+      renderPrefsTab(body);
+      showToast('Réponses mémorisées effacées');
+    });
+    body.querySelector('#pgm-clear-recent').addEventListener('click', () => {
+      if (!confirm('Vider la liste des favoris et des prompts récents ?')) return;
+      settings.favs = [];
+      settings.recents = [];
+      saveSettings();
+      showToast('Favoris et récents vidés');
+    });
   }
-  function handleManagerKey(e) { if (e.key === 'Escape' && managerModal) { e.preventDefault(); closeManager(); } }
 
   // ═══════════════════════════════════════════════════════════
-  //  EVENT LISTENERS
+  //  KEYBOARD — capture phase so the hotkey wins over site shortcuts
   // ═══════════════════════════════════════════════════════════
-  trigger.addEventListener('click', togglePalette);
-  overlay.addEventListener('click', e => { if (e.target === overlay) closePalette(); });
-  manageBtn.addEventListener('click', (e) => { e.stopPropagation(); closePalette(); openManager(); });
-  searchInput.addEventListener('input', () => { if (state.mode === 'list') { state.selIndex = 0; renderList(); } });
+  function matchesHotkey(e) {
+    const h = HOTKEYS[settings.hotkey];
+    const mod = IS_MAC ? e.metaKey : e.ctrlKey;
+    const other = IS_MAC ? e.ctrlKey : e.metaKey;
+    if (other || mod !== h.mod || e.altKey !== h.alt || e.shiftKey !== h.shift) return false;
+    // e.key follows the keyboard layout (AZERTY's M is not on QWERTY's M key). On macOS, Option turns
+    // M into "µ", so there the physical key code is the fallback.
+    return (e.key || '').toLowerCase() === h.key || (IS_MAC && e.altKey && e.code === 'Key' + h.key.toUpperCase());
+  }
+
+  // Alt+letter / Alt+digit by physical key: Option on macOS and AZERTY's shifted digits change e.key.
+  function altCode(e) {
+    if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return '';
+    return e.code || '';
+  }
 
   document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
-      e.preventDefault(); e.stopPropagation(); togglePalette(); return;
+    if (matchesHotkey(e)) { e.preventDefault(); e.stopPropagation(); togglePalette(); return; }
+
+    if (settingsModal) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeSettings(); }
+      return;
     }
-    if (!overlay.classList.contains('pg-open')) return;
+    if (!isOpen()) return;
+    const code = altCode(e);
 
     if (state.mode === 'fill') {
-      if (e.key === 'Escape') { e.preventDefault(); exitFillMode(); return; }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !window.getSelection().toString()) {
-        const previewEl = document.getElementById('pg-fill-preview');
-        if (previewEl) { e.preventDefault(); copyText(previewEl.value, state.fillPrompt.title); }
-        return;
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault();
-        const previewEl = document.getElementById('pg-fill-preview');
-        if (previewEl) finalizeInsert(previewEl.value, state.fillPrompt.title);
-        return;
-      }
+      if (e.key === 'Escape') { e.preventDefault(); exitFill(true); return; }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); insertFilled(); return; }
+      if (code === 'KeyC') { e.preventDefault(); copyFilled(); return; }
       return;
     }
 
-    if (e.key === 'Escape') { e.preventDefault(); closePalette(); return; }
-
+    const p = state.results[state.sel];
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (ui.search.value) { ui.search.value = ''; state.sel = 0; renderList(); }
+      else closePalette();
+      return;
+    }
+    if (document.activeElement && document.activeElement.tagName === 'SELECT') return; // « Ajouter à un filtre » menu keeps its keys
     if (e.key === 'Tab') {
       e.preventDefault();
-      const dir = e.shiftKey ? -1 : 1;
-      state.catIndex = (state.catIndex + dir + CATS.length) % CATS.length;
-      state.selIndex = 0;
-      renderList();
+      const cats = sideCats();
+      const i = cats.findIndex(c => c.key === state.cat);
+      setCat(cats[(i + (e.shiftKey ? -1 : 1) + cats.length) % cats.length].key);
       return;
     }
-
-    if (e.key === 'ArrowDown') { e.preventDefault(); state.selIndex = Math.min(state.selIndex + 1, state.results.length - 1); updateSel(); return; }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); state.selIndex = Math.max(state.selIndex - 1, 0); updateSel(); return; }
-    if (e.key === 'Enter')     { e.preventDefault(); selectPrompt(state.selIndex); return; }
-
-    if (e.altKey && /^[1-9]$/.test(e.key)) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSel(state.sel + 1, true); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setSel(state.sel - 1, true); return; }
+    if (e.key === 'PageDown') { e.preventDefault(); setSel(state.sel + 8, true); return; }
+    if (e.key === 'PageUp') { e.preventDefault(); setSel(state.sel - 8, true); return; }
+    if (e.key === 'Enter' && !e.isComposing) {
+      if (document.activeElement && document.activeElement !== ui.search && document.activeElement.tagName === 'BUTTON') return; // let buttons click
       e.preventDefault();
-      const idx = parseInt(e.key, 10) - 1;
-      if (state.results[idx]) selectPrompt(idx);
+      if (!p) return;
+      if (e.shiftKey || e.ctrlKey || e.metaKey) finalizeInsert(p.prompt, p);
+      else openPrompt(state.sel);
       return;
     }
-
-    if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !window.getSelection().toString()) {
+    if (/^Digit[1-9]$/.test(code)) {
       e.preventDefault();
-      const p = state.results[state.selIndex];
-      if (p) copyText(p.prompt, p.title);
+      openPrompt(Number(code.slice(5)) - 1);
+      return;
+    }
+    if (code === 'KeyF') { e.preventDefault(); if (p) { toggleFav(p); renderSide(); renderPreview(); markFavInList(); } return; }
+    if (code === 'KeyC') { e.preventDefault(); if (p) copyPrompt(p.prompt, p); return; }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'c' && !hasTextSelection()) {
+      e.preventDefault();
+      if (p) copyPrompt(p.prompt, p);
     }
   }, true);
 
-  console.log(`[Prompt Genius Médical v3.0.0] Chargé pour ${provider.name} — ⌘⇧P pour ouvrir (${BUILTIN_PROMPTS.length} prompts intégrés sur ${CATS.length - 1} catégories)`);
+  trigger.addEventListener('click', togglePalette);
+
+  if (typeof GM_registerMenuCommand === 'function') {
+    GM_registerMenuCommand(`Ouvrir la palette (${hotkeyLabel()})`, openPalette);
+    GM_registerMenuCommand('Réglages (activer/désactiver des prompts…)', () => openSettings());
+  }
+
+  console.log(`[Prompt Genius Médical${typeof GM_info !== 'undefined' ? ' v' + GM_info.script.version : ''}] ${provider.name} — ${hotkeyLabel()} pour ouvrir (${getIndex().length}/${BUILTIN_PROMPTS.length} prompts actifs)`);
 
 })();

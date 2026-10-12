@@ -13,19 +13,52 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 ## [Unreleased]
 _Changes since v1.4.0 (1a66963)._
 
+### Medical userscript — `prompt-med.user.js` v3.1.0 (was `prompt med.js` v3.0.0)
+
+#### Added
+- « Mes filtres »: a custom category made of one or more jobs plus hand-picked prompts from other jobs. Can be the default category on open, and prompts can be added from the preview pane.
+- Settings tab « Prompts actifs »: switch whole jobs or single prompts off. They leave the palette and the search index (lighter list, faster filtering), and nothing is deleted.
+- Desktop three-pane layout (categories | results | preview with highlighted `[placeholders]`), favourites (`Alt+F`), « Récents », `Alt+C` copy, PageUp/PageDown, hotkey choice, floating-button toggle, opt-in memory of form answers, and Tampermonkey menu commands.
+- Accent-insensitive, multi-word, ranked search. A query with no hit in the current category falls back to all categories.
+
+#### Fixed
+- Both palettes opened together when the main script was also installed. Cause: same `Ctrl+Shift+P`, same element ids (`pg-*`), same `:root` CSS variables and same button corner. Now everything is `pgm-*`, the default hotkey is `Alt+M` and the button sits higher.
+- The last 26 of 226 prompts were unreachable under « Tous». Cause: the list was silently capped at 200.
+- Filling one `[X]` filled every `[X]` of the prompt (9 prompts, e.g. as-9's five times). Cause: fields were keyed by placeholder text, not occurrence. Fields are now labelled from their line (« Contraintes — petit-déjeuner à ▢ h ») instead of « X ».
+- Enter in the first form field inserted a half-filled prompt. It now moves to the next field; `Ctrl+Enter` inserts.
+- `Alt+1–9` did nothing on macOS (Option+1 types "¡") and on AZERTY. Cause: matched `e.key`, not the physical `e.code`.
+- `Ctrl+C` with text selected in the search box copied the whole prompt. Cause: `getSelection()` doesn't see input selections.
+- Inserting into a textarea wiped the user's draft. Cause: the value was replaced, not appended. Also, the textarea setter was called on `<input>` (Illegal invocation).
+- A malformed JSON import broke the palette until storage was cleared. CSV split on every comma and ignored Excel FR's `;`.
+- Custom prompts only appeared under « Tous » (their `catKey: 'custom'` had no category).
+- Every chat page fetched Google Fonts through a CSS `@import`, which CSP blocks on several hosts anyway. Now system fonts; the palette DOM is built on first open.
+
+#### Changed
+- Renamed `prompt med.js` → `prompt-med.user.js` so userscript managers offer one-click install; added `@downloadURL`/`@updateURL`. `@name`/`@namespace` deliberately unchanged so existing installs keep their saved prompts.
+
+### Landing page
+- New « Prompts médicaux » section: 226 cards with job chips, accent-free search, copy and modal. The data is loaded on demand from `prompt-med.user.js` itself (via a `window.__PGM_EXPORT__` hook), so there is no second copy to drift. The `⌘K` palette searches them too.
+
 ### Added
 - Four photo-restoration prompts in a new `Image Restoration` category, written for Google Labs Flow (and any image model that takes a reference image): `flow-restore-bw` (B&W → B&W archival repair), `flow-colorize` (B&W → color), `flow-revive-color` (faded 70s–90s prints), `flow-upscale-free` (max-resolution rebuild with no fidelity lock).
 - `labs.google` support: new `@match https://labs.google/*` plus a `PROVIDERS` entry, so the palette opens on Flow / Whisk / ImageFX.
 - `all_prompts/google-labs-flow-photo-restoration.md` — bilingual (EN + FR) long-form source for the four prompts, plus notes on what was changed from the originals and when *not* to use the no-fidelity one.
 - The four new prompts also landed in `index.html`'s `PROMPTS`, copied verbatim from `BUILTIN_PROMPTS` so the two lists don't drift on day one.
 - `CONTEXT.md` at repo root — single-page brief so future AI assistants and future-me can pick up the project cold without re-reading 1840 lines of userscript. `(850f910)`
+- `index.html` gets a "Vibe Coding 101" section: the six `vc-*` prompts as numbered steps (CONTEXT → CHANGELOG → TRAJECTORY → README → TROUBLESHOOTING → PROMPTS), each with one-click copy and view. They also join the grid under a `Vibe Coding` filter, copied verbatim from `BUILTIN_PROMPTS`.
+- `README.md` rewritten for non-technical readers: step-by-step userscript-manager install (incl. Chrome Developer mode + "Allow User Scripts"), Greasy Fork install link, usage, real palette screenshot at `docs/palette.png`.
 
 ### Changed
 - `findInput()` now walks `provider.sel` one selector at a time and prefers an input that is enabled, writable and actually rendered. Symptom it fixes: on Google Labs the old `document.querySelector(provider.sel)` resolved the comma list in *document* order and landed in a hidden offscreen textarea, so the prompt went nowhere. Falls back to the first match found if nothing is visible, so existing sites behave as before.
 - Userscript `@version` 1.4.0 → 1.5.0; `@description` now mentions Google Labs / Flow.
+- Userscript `@downloadURL` / `@updateURL` now point at Greasy Fork (script 571159) instead of GitHub raw, so installed copies update from the Greasy Fork listing.
+
+### Fixed
+- Landing page scrolled sideways on phones (~400px) — long unbreakable card titles like `(TROUBLESHOOTING.md)` set the grid column's min width. Titles now wrap.
+- "Copy" silently failed when `index.html` was opened from disk — `navigator.clipboard` is undefined outside secure contexts. Falls back to `execCommand('copy')`.
 
 ### Architectural
-- Documented the prompt-list drift: `BUILTIN_PROMPTS` (userscript, 18) and `PROMPTS` (`index.html`, 11) are independent copies; landing page is behind by 7 prompts and carries 3 the userscript doesn't have. No shared source yet. `(850f910)` — still true after this change; the counts are now 22 and 15.
+- Documented the prompt-list drift: `BUILTIN_PROMPTS` (userscript, 18) and `PROMPTS` (`index.html`, 11) are independent copies; landing page is behind by 7 prompts and carries 3 the userscript doesn't have. No shared source yet. `(850f910)` — still true after this change; the counts are now 22 and 15. Now 22 and 21: the six Vibe Coding prompts were copied over.
 
 ---
 

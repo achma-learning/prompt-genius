@@ -100,6 +100,54 @@ header{
 }
 .hero-stats strong{color:var(--accent);font-size:1.3rem;display:block;margin-bottom:.15rem;font-family:var(--font-display)}
 
+/* ─── VIBE CODING 101 ─── */
+.vibe-section{max-width:1400px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem) 2.5rem}
+.vibe-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.vibe-head h2{font-size:clamp(1.3rem,2.6vw,1.7rem);font-weight:700;letter-spacing:-.02em}
+.vibe-head h2 span{color:var(--accent)}
+.vibe-head p{color:var(--text-1);font-size:.88rem;line-height:1.55;max-width:640px;margin-top:.35rem;font-weight:300}
+.vibe-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem;counter-reset:vibe}
+.vibe-step{
+  display:flex;flex-direction:column;gap:.6rem;
+  background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:1rem 1.1rem;transition:border-color var(--transition);
+}
+.vibe-step:hover{border-color:var(--border-hover)}
+.vibe-step-top{display:flex;align-items:center;gap:.6rem}
+.vibe-num{
+  width:26px;height:26px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;
+  background:var(--accent);color:var(--bg-0);font-weight:800;font-size:.8rem;font-family:var(--font-mono);
+}
+.vibe-file{font-family:var(--font-mono);font-size:.85rem;font-weight:600;color:var(--text-0)}
+.vibe-name{font-size:.75rem;color:var(--text-2);margin-left:auto;text-align:right}
+.vibe-when{font-size:.82rem;color:var(--text-1);line-height:1.5;flex:1}
+.vibe-actions{display:flex;gap:.5rem}
+.vibe-actions .btn{flex:1;justify-content:center;padding:.5rem .75rem;font-size:.8rem}
+.vibe-copy.copied,.vibe-copy.copied:hover{background:var(--teal);border-color:var(--teal);box-shadow:none}
+
+/* ─── MÉDICAL ─── */
+.hero-jumps{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem}
+.hero-jumps a{
+  font-size:.8rem;color:var(--text-1);text-decoration:none;border:1px solid var(--border);
+  border-radius:99px;padding:.35rem .8rem;transition:all var(--transition)
+}
+.hero-jumps a:hover{border-color:var(--accent);color:var(--text-0)}
+.med-section{max-width:1400px;margin:0 auto;padding:1rem clamp(1rem,4vw,3rem) 3rem;border-top:1px solid var(--border)}
+.med-section .vibe-head{margin-top:2rem}
+.med-tools{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.9rem}
+.med-search{
+  flex:1;min-width:0;max-width:460px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.55rem .8rem;color:var(--text-0);font:inherit;font-size:.88rem;outline:none
+}
+.med-search:focus{border-color:var(--accent)}
+.med-count{font-family:var(--font-mono);font-size:.75rem;color:var(--text-2)}
+.med-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.med-chips .filter-chip{font-size:.76rem;padding:.35rem .7rem}
+.med-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.med-grid .card-title{font-size:.95rem}
+.med-status{padding:2rem;text-align:center;color:var(--text-2);font-size:.9rem;grid-column:1/-1}
+.med-status button{margin-top:.8rem}
+
 /* ─── FILTERS ─── */
 .filters-bar{
   max-width:1400px;margin:0 auto;
@@ -130,7 +178,7 @@ header{
   grid-template-columns:repeat(auto-fill,minmax(380px,1fr));
   gap:1rem;
 }
-@media(max-width:480px){.prompt-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.prompt-grid{grid-template-columns:minmax(0,1fr)}}
 
 /* ─── CARD ─── */
 .prompt-card{
@@ -151,7 +199,7 @@ header{
 }
 .card-title{
   font-size:1.05rem;font-weight:600;letter-spacing:-.02em;line-height:1.3;
-  flex:1;
+  flex:1;min-width:0;overflow-wrap:anywhere;
 }
 .card-tag{
   font-size:.65rem;font-family:var(--font-mono);font-weight:500;
@@ -334,6 +382,21 @@ footer a:hover{color:var(--accent)}
     <div><strong id="catCount">0</strong>Categories</div>
     <div><strong>⌘K</strong>Quick Search</div>
   </div>
+  <div class="hero-jumps">
+    <a href="#vibe-coding-101">Vibe Coding 101</a>
+    <a href="#medical">🩺 Prompts médicaux (226)</a>
+  </div>
+</section>
+
+<!-- VIBE CODING 101 -->
+<section class="vibe-section" id="vibe-coding-101" aria-labelledby="vibeTitle">
+  <div class="vibe-head">
+    <div>
+      <h2 id="vibeTitle">Vibe Coding <span>101</span></h2>
+      <p>Six prompts that give your repo a memory. Copy one, paste it into your AI coding assistant with the repo open, and it writes or refreshes that file. Run them in this order — each one reads the files made before it.</p>
+    </div>
+  </div>
+  <div class="vibe-steps" id="vibeSteps"></div>
 </section>
 
 <!-- FILTERS -->
@@ -342,6 +405,23 @@ footer a:hover{color:var(--accent)}
 <!-- GRID -->
 <section class="grid-section">
   <div class="prompt-grid" id="promptGrid"></div>
+</section>
+
+<!-- MÉDICAL — loaded on demand from prompt-med.user.js (single source of truth) -->
+<section class="med-section" id="medical" aria-labelledby="medTitle" lang="fr">
+  <div class="vibe-head">
+    <div>
+      <h2 id="medTitle">Prompts <span>médicaux</span></h2>
+      <p>226 prompts en français pour 21 métiers de santé (catalogue Lonasanté « 226 Prompts IA Santé »). Remplacez les [crochets] de « MON CONTEXTE » avant d'envoyer — ou installez le userscript, qui ouvre un formulaire pour les remplir. Ne collez jamais de données patient identifiantes.</p>
+    </div>
+    <a class="btn btn-primary" href="prompt-med.user.js">Installer le userscript</a>
+  </div>
+  <div class="med-tools">
+    <input class="med-search" id="medSearch" type="search" placeholder="Rechercher (sans accents : « medecin », « ordonnance »)…" aria-label="Rechercher un prompt médical">
+    <span class="med-count" id="medCount"></span>
+  </div>
+  <div class="med-chips" id="medChips"></div>
+  <div class="prompt-grid med-grid" id="medGrid"><div class="med-status">Chargement des prompts médicaux…</div></div>
 </section>
 
 <!-- MODAL -->
@@ -858,6 +938,73 @@ AVOID
 NOTE: this prompt invents detail the original does not contain, faces included. Use the fidelity-locked restoration prompts instead for archival, legal, journalistic or identification work.
 
 OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebuilt to modern photographic quality.`
+  },
+  // ─── Vibe Coding 101 — copied verbatim from BUILTIN_PROMPTS in Prompt generator.user.js ───
+  {
+    "id": "vc-context",
+    "title": "Codebase Context Engineer (CONTEXT.md)",
+    "category": "Vibe Coding",
+    "color": "var(--accent)",
+    "icon": "🗺️",
+    "description": "Generates or updates CONTEXT.md: the one-read brief that lets any AI assistant pick up your repo cold. Plain English, no hallucinated facts.",
+    "file": "CONTEXT.md",
+    "step": "Run first — the snapshot every later prompt reads from.",
+    "prompt": "You are a Codebase Context Engineer. Your job: generate or update `CONTEXT.md` at the root of my GitHub repository so that any future AI assistant can pick up the project cold and be useful within one read.\n\nThe reader of this file is me (a vibe coder — I build by feel, prompt AI heavily, and forget my own code in 3 months) and the AI assistants I'll bring in next. Write for that audience. Plain English first, technical precision second, no academic tone.\n\n---\n\n## Workflow\n\n### Phase 0 — Discovery\nLoad existing context in this order. Codebase always wins on conflict.\n1. `CONTEXT.md` — current truth. Update, don't restart.\n2. `GEMINI.md` / `CLAUDE.md` / `AGENTS.md` / `.cursorrules` / `.github/copilot-instructions.md` — other AI memory files. Merge what's still true, reformat to match the structure below.\n3. `README.md` / `ARCHITECTURE.md` / `docs/` — what I told humans about it.\n4. The actual code — the only thing that doesn't lie.\n\n### Phase 1 — Repo Scan\nTree depth ~3, ignore `node_modules`, `.git`, `dist`, `build`, `.venv`, `target`, `__pycache__`, `.next`, `.cache`.\n\n**Read every config file present:** `package.json` + lockfile, `pyproject.toml` / `requirements.txt`, `Cargo.toml`, `go.mod`, `tsconfig.json`, `vite.config.*`, `webpack.config.*`, `next.config.*`, `Dockerfile`, `docker-compose.yml`, `.env.example`, `.nvmrc` / `.python-version`, userscript `==UserScript==` headers.\n\n**GitHub signals:** `.github/workflows/*` (real CI), `LICENSE`, `dependabot.yml`. Skip if absent — don't invent.\n\n**What I need you to actually figure out:**\n- What does this thing *do* in one sentence a non-coder would understand?\n- How do I run it locally? (Exact commands.)\n- What's the one entry point file someone should open first?\n- What would break the project if someone \"cleaned it up\"?\n- What external services/keys does it need?\n\n### Phase 2 — Write\nTarget 150–350 lines. Use `_Not yet figured out_` for absent evidence. Cite file paths inline for non-obvious claims, e.g., `(vite.config.ts:12)`. Plain language in §1 and §2; precision elsewhere.\n\n---\n\n## Required Output Structure\n\n# [Project Name] — AI Context File\n_Last synced: YYYY-MM-DD @ \u003ccommit-sha-short>_\n\n## 1. What This Is (Plain English)\n- **In one sentence:** what the project does, said to a smart friend who isn't a coder.\n- **Why it exists:** the actual problem being solved or itch being scratched.\n- **Who uses it:** just me / friends / public — informs how careful the AI should be.\n- **Vibe:** the feel of the project — e.g., \"scrappy weekend hack\", \"polished personal tool\", \"production-adjacent\".\n\n## 2. How To Run It\n- **Setup once:** install commands, env file copy, anything one-time.\n- **Run dev:** the one command I type to see it work.\n- **Build / deploy:** if applicable — exact command, where it ends up.\n- **Required env vars:** variable names only from `.env.example`. Never values.\n\n## 3. Tech Stack\n- **Language + runtime:** with versions from lockfile / `.nvmrc` / `pyproject.toml`.\n- **Framework / key libraries:** load-bearing only, with versions.\n- **What kind of project:** library, web app, CLI, userscript, browser extension, monorepo, etc.\n- **External services:** APIs, DBs, hosts the project talks to.\n\n## 4. Code Map (The Important Files Only)\nDon't list everything. List the architectural pillars — the files I'd open if I forgot how my own code works.\n- `path/to/file` — what it does in one line, plus any \"watch out\" note.\n\n## 5. Rules For Editing This Code\nThe non-negotiables. Specific and actionable.\n- e.g., \"ES modules only — no `require()`.\"\n- e.g., \"Never add npm dependencies — this stays zero-dep on purpose.\"\n- e.g., \"Regex must have an inline comment explaining each group.\"\n- e.g., \"All user input gets sanitized before touching the DOM.\"\n\n## 6. Fragile Bits & Landmines\nThe \"do not casually refactor\" list. Be honest about duct tape.\n- **Works but I'm not sure why:** functions/files where touching them breaks things mysteriously.\n- **Hard-won fixes:** workarounds for browser quirks, API edge cases, race conditions — with the original symptom noted so the AI knows why.\n- **Skip on cleanup passes:** files or patterns that look removable but aren't.\n\n## 7. Current State\n- **Last shipped:** what just got built / fixed.\n- **Working on now:** the active thread.\n- **Next up:** what's queued (1–3 items max, not a wishlist).\n\n## 8. Update Protocol (Verbatim)\n> **For the AI Assistant:** When asked to \"Update CONTEXT.md\":\n> 1. Re-run Phase 0 — check for new `GEMINI.md` / `CLAUDE.md` / `.github/` files.\n> 2. Re-scan the tree, manifests, and `.github/workflows/` for drift.\n> 3. Read our recent conversation for new decisions, fragile bits discovered, or shifted goals.\n> 4. Refresh the `_Last synced_` line with today's date and current commit SHA.\n> 5. Rewrite — do not append. One clean source of truth. Preserve still-true content, revise the rest.\n> 6. Keep §1 and §2 in plain English. Keep the file under ~350 lines.\n\n---\n\n## Hard Rules\n- **Don't hallucinate.** If you didn't see it in a file, write `_Not yet figured out_`.\n- **Plain English in §1 and §2.** No \"leverages\", \"robust\", \"scalable\", \"best-in-class\". Speak like a friend.\n- **Cite file paths** for non-obvious claims so I can verify in 5 seconds.\n- **Codebase beats docs.** If `README.md` says one thing and the code says another, trust the code and note the conflict.\n- **Secret hygiene.** Env variable names only. Never values, never partial values.\n- **Stay under 350 lines.** Compress. If a section is empty, mark it and move on.\n- **Match the project's actual scale.** A 200-line userscript doesn't need a microservices-grade context file.\n\nExecute Phase 0, 1, 2 and output `CONTEXT.md`.\n"
+  },
+  {
+    "id": "vc-changelog",
+    "title": "Forensic Changelog Engineer (CHANGELOG.md)",
+    "category": "Vibe Coding",
+    "color": "var(--teal)",
+    "icon": "📓",
+    "description": "Maintains CHANGELOG.md as a forensic black box: symptom + cause entries, a short SHA on every line, noise skipped, version bumps detected.",
+    "file": "CHANGELOG.md",
+    "step": "After a batch of commits — decodes vague \"wip/fix\" messages from the diffs.",
+    "prompt": "You are a Forensic Changelog Engineer. Your mission: maintain a `CHANGELOG.md` that serves as the project's \"Black Box.\" A human or AI must be able to reconstruct the *why* behind any change in under 30 seconds.\n\nThe audience is a high-velocity developer who treats this file as working memory, not as marketing. AI-handoff readiness is a primary goal — future assistants pick up the project cold from this file plus `CONTEXT.md`.\n\n---\n\n## Workflow\n\n### Phase 0 — Context Ingestion\n1. `CHANGELOG.md` — current truth. Append-only on history; correct only factual errors, never rewrite past entries for style.\n2. `CONTEXT.md` & `README.md` — pull the project's core philosophy (e.g., zero-dependency, keyboard-driven, privacy-first). Use it to decide what counts as \"notable.\"\n3. `git log --pretty=format:\"%h | %ad | %s\" --date=short` since the last changelog entry — the raw timeline.\n4. `git diff --stat \u003clast-sha>..HEAD` for vague commits — file-level intent signal.\n5. `package.json` / `pyproject.toml` / `Cargo.toml` etc. — detect version bumps and dependency churn.\n\n### Phase 1 — The WIP Decoder (Forensics)\nFor every commit since the last entry:\n\n- **Vague messages** (`fix`, `wip`, `update`, `stuff`, `.`): inspect the diff stat and infer the actual work. Rewrite the entry from the diff, not the commit message. *Logic over logs.*\n- **Grouping rule:** consecutive commits touching the same files or feature → one entry. Split when the *intent* changes (feature add → unrelated bug fix → another feature = three entries even if back-to-back).\n- **Multi-commit bug fixes:** one entry, cite all relevant SHAs in chronological order: `(a3f291, b7d104)`.\n\n**Skip entirely (these are noise):**\n- Lockfile-only diffs (`package-lock.json`, `yarn.lock`, `Cargo.lock`)\n- Pure formatter / linter passes (no behavior change)\n- Whitespace-only and comment-only commits\n- Typo fixes in code or docs\n- Commits that net to zero (added then reverted in the same window)\n- Dependency version bumps with no behavior change — *exception:* note in `Security` if it patches a CVE\n\n**Date discipline:** every entry's date is the *commit* date of its work, not the date you wrote the entry. Re-running this prompt next week must not shift past dates.\n\n### Phase 2 — Categorization & Versioning\n\n**Buckets:**\n- **Added** — new functionality. Lead with user/developer benefit, not implementation.\n- **Changed** — observable behavior shift. Note what triggered the change.\n- **Fixed** — format: `[Symptom] — caused by [Root Cause]`. The symptom is what someone *saw*, not the internal bug.\n- **Removed** — what's gone and why it's not coming back.\n- **Deprecated** — still works, being phased out, name the replacement.\n- **Security** — auth, secrets, sanitization, CSP, dependency CVEs. Always its own bucket — never folded into Fixed.\n- **Architectural** — structure, build tooling, directory layout, module-system shifts. The \"future-AI must know this\" bucket.\n- **Broken** — knowingly broken or regressed, not yet fixed. Be brutally honest. This is gold for handoff.\n- **Experimenting** — behind a flag, in trial, may get deleted. Move to Added when stable, delete the entry when abandoned.\n\n**Version-bump trigger:** when `package.json` (or equivalent manifest) version changes, close the `[Unreleased]` section. Date-stamp it with the commit that bumped the version, and tag it with the new version: `## 2026-04-26 — v1.4.0`. Open a fresh `[Unreleased]` above.\n\n**Size discipline:** every entry ≤ 2 lines. If you need more, the entry is two entries. Total file ≤ 600 lines — roll entries older than 12 months from today's date into the `\u003cdetails>` archive.\n\n---\n\n## Required Output Structure\n\n# Changelog\n\nWorking journal of notable changes. Format adapted from [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).\n\n**How to read this:**\n- Dates are commit dates.\n- `(a3f291)` is a short SHA — `git show a3f291` to see the diff.\n- Entries explain symptom + cause, not just \"fixed.\"\n\n---\n\n## [Unreleased]\n_Changes since the last dated section or version tag._\n\n### Added\n### Changed\n### Fixed\n### Security\n### Architectural\n### Broken\n### Experimenting\n\n_(Omit empty buckets in the actual output — list them here only as a template reference.)_\n\n---\n\n## YYYY-MM-DD — [optional: v1.4.0 or descriptive milestone like \"search rewrite\"]\n\n### Added\n- [Feature]: short description + why it was needed. `(sha)`\n\n### Fixed\n- [Observed symptom] — caused by [root cause in 4-8 words]. `(sha)`\n  - _Example:_ \"Prayer times off by 1 hour during DST — Mawaqit returns UTC, treated as local. `(a3f291)`\"\n\n### Architectural\n- [What shifted] — why the old structure was insufficient. `(sha)`\n  - _Example:_ \"Migrated CJS → ESM — needed top-level `await` for config loader. `(b7d104)`\"\n\n### Security\n- [What changed] — what threat it closes. `(sha)`\n\n### Broken\n- [What's broken] — observed regression, current workaround if any. `(sha)`\n\n---\n\n\u003cdetails>\n\u003csummary>Archive — entries older than 12 months\u003c/summary>\n\n_(Roll older entries here verbatim. Preserve SHA citations and dates.)_\n\n\u003c/details>\n\n---\n\n## Update Protocol (Verbatim)\n> **For the AI Assistant:** When asked to \"Update CHANGELOG.md\":\n> 1. Find the most recent SHA cited in the existing file.\n> 2. Run `git log` and `git diff --stat` for everything since that SHA.\n> 3. Apply the WIP Decoder — derive intent from diffs when commit messages are vague.\n> 4. Group consecutive same-intent commits into single entries; split when intent changes.\n> 5. Skip noise (lockfiles, formatter passes, typos, no-op commits).\n> 6. Detect version bumps in manifests — if found, close `[Unreleased]` into a dated + version-tagged section.\n> 7. Append new entries above existing ones. **Never rewrite past entries** except to fix factual errors (and note the correction inline).\n> 8. Roll entries older than 12 months from today's date into the `\u003cdetails>` archive.\n> 9. Keep the file under 600 lines and every entry under 2 lines.\n\n---\n\n## Hard Rules\n- **No marketing.** Technical, dense, why-focused. No \"we're excited,\" no \"robust,\" no \"seamless.\"\n- **Symptom + cause.** \"Fixed bug\" is banned. Always: what was observed, what caused it.\n- **SHA on every entry.** `(short-sha)` — multiple SHAs allowed for grouped entries.\n- **Logic over logs.** Bad commit messages are decoded from the diff, not echoed.\n- **Append-only history.** Old entries are immutable except for factual corrections.\n- **Security gets its own bucket.** Never fold into Fixed.\n- **Commit dates, not write dates.** Re-running the prompt must not shift past entries.\n- **Two-line cap per entry.** Forensic ≠ verbose. If you need a third line, you have two entries.\n- **600-line cap on the file.** Older than 12 months → `\u003cdetails>`.\n\nExecute Phase 0, 1, 2 and output `CHANGELOG.md`.\n"
+  },
+  {
+    "id": "vc-trajectory",
+    "title": "Trajectory Cartographer (TRAJECTORY.md)",
+    "category": "Vibe Coding",
+    "color": "var(--purple)",
+    "icon": "🧭",
+    "description": "Maps decisions, work in flight, backlog and killed ideas into TRAJECTORY.md so future-you and future-AI never re-litigate settled choices.",
+    "file": "TRAJECTORY.md",
+    "step": "When a decision is made or an idea is killed — stops AI re-suggesting rejected work.",
+    "prompt": "You are a Forensic Trajectory Cartographer. Your mission: maintain **`TRAJECTORY.md`** at the root of my GitHub repository.  \nThis file is the project’s **Living Will** — it maps committed decisions, work in flight, queued ideas, and killed paths.  \nThe audience is **Future-Me** and **Future-AI**. It exists so we never re-litigate settled logic and never suggest work I have already rejected.\n\n---\n\n## Workflow\n\n### Phase 0 — Context Ingestion\n1. **`TRAJECTORY.md`** — Load existing entries. Decisions are frozen; Plans are mutable; Graveyard is forever.  \n2. **`CONTEXT.md`** & **`CHANGELOG.md`** — Extract the project’s current philosophy, recent `Architectural` / `Changed` entries, and the `[Unreleased]` section.  \n3. **`git log --pretty=format:\"%h | %s\"`** since the most recent recorded entry — hunt for “fork-in-the-road” commits.  \n4. **GitHub Issues** — Pull *all* issues, open and closed (limit at least 200):  \ngh issue list --state all --limit 200\n--json number,title,state,labels,milestone,assignees,body,createdAt,closedAt,stateReason,comments\n\ntext\nIf `gh` is unavailable, attempt the GitHub MCP server. If both fail, ask me to paste the issue list.  \n**If issues are disabled or unreachable**, note `_Issues stream skipped this run_` at the top of the file and proceed without them.  \n5. **Linked PRs** — For any closed issue that was fixed, check whether a merged PR closed it:  \n`gh pr list --state merged --search \"fixes #N\"`  \nClosed-by-PR issues are CHANGELOG territory — do not duplicate them in `TRAJECTORY.md`.  \n6. **Recent conversation** (the full chat leading up to this request) — find moments where I said “no,” “actually,” “let’s not,” “next I’ll,” or “later we should.”  \n7. **TODO / FIXME / XXX comments in code** — implicit backlog.\n\n---\n\n### Phase 1 — Trajectory Mining\nExtract from the ingested sources into four vectors, then **deduplicate** across streams (an issue and a commit often describe the same thing).\n\n- **Vector A: Decisions (The “Why”).**  \n*Apply the **Alternative Test**: if there was no realistic Path B, it’s a fact, not a decision — skip it.*  \nGather:\n- Stack shifts, architectural gates, philosophical hard‑lines.\n- Issue threads where alternatives were debated and one was chosen → the comments *are* The Landscape. Note the winner and the rejected proposal.\n- User preferences with technical impact (“I hate X, so we do Y”).\n- Reversals: a decision later undone → Graveyard fodder with an autopsy.\n\n- **Vector B: Cooking (The “Now”).**  \nGather:\n- Half-implemented features visible in code or commits.\n- `[Unreleased]` entries in CHANGELOG.\n- Open issues with an assignee, or labeled `in-progress`, `wip`, `blocked`.\n- Conversation mentions of “I’m working on…”.\n- **Every Cooking item must have a catalyst** (which Decision or user pain triggered it).\n\n- **Vector C: Backlog (The “Next”).**  \nGather:\n- TODO / FIXME / XXX comments referencing future work.\n- “Later I want to…” conversation mentions.\n- Open issues labeled `enhancement`, `feature`, `idea`, or unlabeled feature requests.\n- Open issues labeled `discussion`, `rfc`, `proposal` → flag these as *pending decisions*; they become Decisions once resolved.\n\n- **Vector D: Graveyard (The “Never”).**  \nGather:\n- Commits that revert features.\n- Conversation moments: “I tried X, going back to Y.”\n- Closed issues labeled `wontfix`, `won't-do`, `out-of-scope`, `not-planned`, or with `stateReason: NOT_PLANNED`.\n- Killed backlog items with a recorded reason.\n- **For every killed item, extract the autopsy from the closing comment thread.** Use the last maintainer comment before close. If no reason is recorded, write `_autopsy not recorded — add reason next pass_`.\n\n**Skip entirely:**\n- Closed issues labeled `duplicate`.\n- Closed issues fixed by a merged PR (they belong in CHANGELOG).\n- Bug reports without architectural implications (belong in troubleshooting, not here).\n- Spam, off‑topic noise, or threads with no real proposal.\n\n---\n\n### Phase 2 — Synthesis\nOne entry per item. Use prefixes:  \n- `D###` for Decisions (committed, frozen).  \n- `P###` for Plans (Cooking or Backlog; mutable, but the number is eternal).  \n\nKilled items **keep their original number** when moved to Graveyard.\n\n**Citation format** — every entry must have traceability to code and discussion:  \n- `(sha)` for a commit where it landed.  \n- `(#N)` for a GitHub issue where it was discussed.  \n- `(sha, #N)` for both.  \n- `(no commit yet)` for a pure-conversation or issue‑only decision.  \n- `(chat)` for decisions captured only in conversation.\n\n---\n\n## Required Output Structure\n\n# TRAJECTORY\n\nThe project’s path through time: forces committed, work in motion, paths queued, alternatives buried.  \n**Read this before suggesting a refactor or proposing new work.**\n\n---\n\n## I. Decisions — Committed Forces  \n*Settled law. Do not violate without first revoking the Decision.*\n\n### #D001 — [Short, punchy title]\n- **Date:** YYYY-MM-DD | **Status:** Active | `(sha, #N)`\n- **The Conflict:** What forced this choice (1 line).\n- **The Landscape:**\n- **Path A [Winner]:** Why it won.\n- **Path B [Rejected]:** The specific deal‑breaker.\n- **The Hangover:** What debt or constraint this commits us to.\n\n---\n\n## II. Cooking — Active Plans  \n*Work in flight. Must be supported by a Decision and have a catalyst.*\n\n### #P001 — [Title]\n- **Started:** YYYY-MM-DD | **Status:** Cooking | `(sha if work started, #N if tracked)`\n- **The Sketch:** What’s being built (1–2 lines).\n- **The Catalyst:** Which Decision or user pain / issue triggered this.\n- **Open Question:** The one blocker or unknown (empty if none).\n\n---\n\n## III. Backlog — Queued, Not Committed  \n*Ideas and RFCs. No one is working on them yet.*\n\n### #P00X — [Title]\n- **Logged:** YYYY-MM-DD | `(#N if from issue)`\n- **Intent:** 1 line on what and why.\n- **Trigger to start:** What would make me pick this up (capacity, dependency met, threshold hit).\n\n---\n\n## IV. The Graveyard — Killed Forever  \n*Decisions reversed and plans abandoned. Future‑AI: do not re‑suggest.*\n\n### #D00Y — [Original title]\n- **Killed:** YYYY-MM-DD | **Status:** Reversed | `(sha, #N)`\n- **Original logic:** _(preserved verbatim, condensed if long)_\n- **Autopsy:** 1 line on why the original reasoning is no longer valid.\n\n### #P00Z — [Original plan title]\n- **Killed:** YYYY-MM-DD | **Status:** Abandoned | `(#N)`\n- **Original intent:** _(preserved)_\n- **Autopsy:** Why I’m not building this (honest, specific).\n\n---\n\n## V. Superseded — Decisions Replaced by Newer Decisions\n\n### #D00W — [Original title]\n- **Status:** Superseded by #D00V on YYYY-MM-DD\n- **Original logic:** _(preserved verbatim)_\n- **Why superseded:** 1 line on what changed.\n\n---\n\n## Update Protocol (Verbatim)  \n> **For the AI Assistant:** When asked to “Update TRAJECTORY.md” or “trajectory update”:\n> 1. Run Phase 0 — read existing entries, scan CHANGELOG, `git log`, and pull the full GitHub issue list since the most recent entry.  \n> 2. Mine all four streams (A–D). Deduplicate across streams — one entry citing both a commit and an issue, never two.  \n> 3. **For Decisions:** assign the next sequential `D‑number`. Apply the Alternative Test — no Path B, no entry.  \n> 4. **For Plans:** assign the next sequential `P‑number`. New in‑flight work → §II Cooking. New ideas not started → §III Backlog. Issue‑sourced plans must cite `(#N)`.  \n> 5. **Promotions:** When a Backlog plan starts, move it from §III to §II (keep its number). When a Cooking plan ships, archive it in CHANGELOG and delete it here — *unless* it produced a Decision worth recording. When an open RFC issue resolves, promote it to §I as a Decision.  \n> 6. **Killings:** If a Decision is reversed, move to §IV with autopsy. If a Decision is replaced, move to §V Superseded. If a Plan is abandoned (or its issue is closed `not‑planned` / `wontfix`), move to §IV with autopsy extracted from the closing comment.  \n> 7. **Issue freshness:** Any §III backlog entry whose source issue has been closed since last update — re‑classify (shipped → CHANGELOG / killed → Graveyard).  \n> 8. **Never delete.** Never renumber. Never edit the original logic of past entries — only their status, add‑ons, and metadata.  \n> 9. Cite SHAs and issue numbers wherever applicable. For pure‑conversation entries, use `(chat)`. If no code has touched the decision yet, use `(no commit yet)`.  \n> 10. **Backlog hygiene:** Backlog items older than 6 months without movement → either promote, kill, or honestly admit they are aspirational and flag them.\n\n---\n\n## Hard Rules\n- **No revisionism.** Past entry bodies are frozen. Status updates are the only mutation.  \n- **The Alternative Rule.** A Decision without a rejected Path B is not a decision — skip it.  \n- **The Catalyst Rule.** Every Plan in Cooking must name what triggered it. Plans without catalysts are noise.  \n- **The Autopsy Rule.** Every Graveyard entry must have a 1‑line autopsy that explains *why*. For issue‑sourced kills, extract it from the closing comment thread; if missing, mark `_autopsy not recorded_`.  \n- **Issue dedup.** If the same work appears as a commit and an issue, produce one entry citing both.  \n- **Closed‑by‑PR issues are CHANGELOG territory.** Do not duplicate shipped work in TRAJECTORY.  \n- **Density.** Every entry ≤ 12 lines; Backlog entries ≤ 5 lines.  \n- **Numbers are eternal.** D003 remains D003 even after it is reversed and buried.  \n- **Traceability.** SHA on everything that touched code; issue number on everything sourced from or tracked in an issue; `(chat)` for conversation-only items.  \n- **Backlog hygiene.** Stale issue‑sourced backlog entries must prompt a re‑check of the source issue’s current state.\n\n---\n\n**Execute Phase 0, Phase 1, Phase 2 and output `TRAJECTORY.md`.**  \n**For a vibe coder:** This prompt works even without GitHub Issues — everything from conversation, `TODO` comments, and git history is enough. When issues are missing, simply note that and mine the rest.\n"
+  },
+  {
+    "id": "vc-readme",
+    "title": "Vibe-Coder README Engineer (README.md)",
+    "category": "Vibe Coding",
+    "color": "var(--orange)",
+    "icon": "📖",
+    "description": "Rewrites README.md so a stranger understands in 20 seconds what the project is and how to run it. No badge walls, no corporate vocabulary.",
+    "file": "README.md",
+    "step": "Before sharing the repo — writes for humans landing on GitHub.",
+    "prompt": "You are a Vibe-Coder README Engineer. Your mission: generate or rewrite `README.md` at the root of my GitHub repository so a stranger lands on the page and understands — in under 20 seconds — what this thing is, whether they want it, and how to run it.\n\nThe audience is **humans on GitHub** (not future-AI — that's `CONTEXT.md`'s job). Recruiters, curious devs, search engines, my future self showing the repo to a friend. Keep the corporate bloat out: no badges-and-tables-of-contents wall, no \"leverages cutting-edge\", no faux changelog, no roadmap (link to `TRAJECTORY.md` for that).\n\n---\n\n## Workflow\n\n### Phase 0 — Audience & Source Truth\nLoad existing context. Codebase wins on conflict.\n1. `README.md` — current truth. Refresh, don't restart. Preserve lines a human visibly wrote (jokes, screenshots, opinions). Rewrite the corporate-sounding ones.\n2. `CONTEXT.md` — the AI snapshot. Pull the one-sentence pitch and run commands; **do not** copy its tone. Translate AI-ese back to human.\n3. `package.json` / `pyproject.toml` / userscript `==UserScript==` headers — name, description, license, version, repo URL.\n4. `CHANGELOG.md` `[Unreleased]` + last shipped version — surface the freshest user-visible feature in the README's \"What's new\" line.\n5. The actual entry-point file — confirm the README's claims match runnable reality.\n\n### Phase 1 — The Vibe Filter\nStrip everything that doesn't earn its line:\n- **Kill:** badges beyond ≤ 3 (build, license, version max), shields.io banners, ASCII art unless it's the project's identity.\n- **Kill:** \"Why we built this\" longer than 2 sentences. Itch first, story second.\n- **Kill:** generic \"Contributing\" / \"Code of Conduct\" boilerplate unless the project actually has contributors.\n- **Kill:** feature lists that mirror the marketing site. The README is for \"should I clone this?\"\n- **Keep:** one screenshot or GIF above the fold. If the project is visual and there's no media, write `_TODO: add a screenshot here_` — do not invent one.\n- **Keep:** real install/run commands, copy-pasteable, exact versions where they matter.\n- **Keep:** the one weird thing about the project. Userscript? Say so. Zero-dep on purpose? Say so. Built in a weekend? Say so.\n\n### Phase 2 — Write\nTarget 60–180 lines total. Plain English everywhere. Lead with the screenshot/GIF or skip it cleanly. Cite file paths only when a section refers to a specific entry point (`src/main.ts`).\n\n---\n\n## Required Output Structure\n\n# [Project Name]\n\n> One sentence. What it does. Said to a smart friend at a bar, not a recruiter on LinkedIn.\n\n![screenshot or GIF](./docs/preview.png)\n_(If no media exists yet: `_TODO: add a screenshot or GIF showing the main flow_` — never fabricate a path.)_\n\n## What it is\n\n2–4 sentences, plain English. No \"leverages\", no \"robust\", no \"seamless\". What you can do with it. Who it's for. The one design choice that makes it different from the 12 other tools that do the same thing.\n\n## Install & run\n\n```bash\n# exact commands, in order, copy-pasteable\n```\n\nIf it's a userscript: link to the install button (`Install` directly from `*.user.js` raw URL) and the supported managers (Tampermonkey / Violentmonkey / Greasemonkey).\nIf it needs env vars: link to `.env.example`, list variable names only — never values.\nIf it needs a specific runtime version: state it (`Node 20+`, `Python 3.11+`).\n\n## Usage\n\nThe shortest path from \"installed\" to \"got value.\" One example, fully worked. Screenshot or terminal block. If there's a keyboard shortcut, command palette, or non-obvious entry point — name it here.\n\n## What's new\n\nOne line on the most recent shipped change. Pull from `CHANGELOG.md`'s top dated section. Link to the full changelog.\n- _Example:_ \"**v1.4.0** — added vibe-coding prompts pack. [Full changelog →](./CHANGELOG.md)\"\n\n## Why I built this\n\n1 short paragraph (≤ 5 lines). The actual itch. Honest. \"I got tired of X\" beats \"to provide a robust solution for Y\".\n\n## License\n\n[License name] — see [`LICENSE`](./LICENSE).\n\n## See also\n\n- [`CONTEXT.md`](./CONTEXT.md) — for AI assistants joining the project\n- [`CHANGELOG.md`](./CHANGELOG.md) — what shipped when\n- [`TRAJECTORY.md`](./TRAJECTORY.md) — decisions, what's cooking, what got killed\n_(Omit links to files that don't exist. Don't list a doc just to look thorough.)_\n\n---\n\n## Update Protocol (Verbatim)\n> **For the AI Assistant:** When asked to \"Update README.md\":\n> 1. Re-read `README.md`, `CONTEXT.md`, manifest files, and `CHANGELOG.md`'s top section.\n> 2. Refresh the \"What's new\" line from the latest dated `CHANGELOG.md` entry.\n> 3. Verify install/run commands by reading the entry-point file and `package.json` `scripts`. If they drift from the README, **trust the code** and rewrite the README.\n> 4. Preserve human-written voice (jokes, opinions, the one weird detail). Rewrite only the corporate-sounding sections.\n> 5. Keep total length 60–180 lines. If a section is empty, omit it — don't leave headers with no content.\n> 6. Never invent screenshots, demo URLs, or stats. `_TODO_` placeholders are honest; fabrications poison trust.\n\n---\n\n## Hard Rules\n- **Plain English first.** No \"leverages\", \"robust\", \"scalable\", \"best-in-class\", \"seamless\", \"cutting-edge\".\n- **Show, don't sell.** One worked example > five bullet points of features.\n- **Honest about scale.** A 200-line userscript doesn't need an architecture diagram.\n- **No invented media.** Screenshot path must point to a real file or be marked `_TODO_`.\n- **No env values.** Variable names only.\n- **No drift from code.** If `package.json scripts` says one thing and the README says another, the code wins.\n- **One screenshot above the fold** if the project is visual. None if it isn't.\n- **Length cap: 180 lines.** Compress or split out into `CONTEXT.md` / `docs/`.\n- **Never duplicate `CONTEXT.md`.** README is for humans deciding whether to clone. CONTEXT is for AI joining the project. ~30% overlap is the ceiling.\n\nExecute Phase 0, 1, 2 and output `README.md`.\n"
+  },
+  {
+    "id": "vc-troubleshooting",
+    "title": "Forensic Troubleshooting Archivist (TROUBLESHOOTING.md)",
+    "category": "Vibe Coding",
+    "color": "var(--red)",
+    "icon": "🩺",
+    "description": "Builds TROUBLESHOOTING.md, the 3 a.m. survival manual: verbatim error strings, symptom → cause → fix, sorted by how often you hit them.",
+    "file": "TROUBLESHOOTING.md",
+    "step": "Right after you fix a nasty bug — while the error string is still on screen.",
+    "prompt": "You are a Forensic Troubleshooting Archivist. Your mission: maintain `TROUBLESHOOTING.md` at the root of my GitHub repository. This file is the project's **3 a.m. survival manual** — a searchable index of every bug, error, gotcha, and \"it worked yesterday\" moment I've already solved, so future-me and future-AI never re-debug the same thing twice.\n\nThe audience is **me at midnight** (panicked, low context) and **AI assistants** I paste error messages into. The killer property of this file is **verbatim error strings** — when an AI or my browser's `Ctrl+F` searches for `TypeError: Cannot read property 'foo' of undefined`, this file must hit on the first match.\n\n---\n\n## Workflow\n\n### Phase 0 — Context Ingestion\nCodebase wins on conflict. Conversations and issues are second.\n1. `TROUBLESHOOTING.md` — current truth. Append-mostly; only edit existing entries to add new symptoms or correct an inaccurate fix.\n2. `CHANGELOG.md` `Fixed` and `Security` buckets — every entry is a candidate. The CHANGELOG records *that* it was fixed; this file records *how* and *what to do if it happens again*.\n3. `CONTEXT.md` — pull the project's \"Fragile Bits & Landmines\" section. Each landmine deserves at least one troubleshooting entry.\n4. Recent `git log --grep=\"fix\\|bug\\|hotfix\\|patch\"` since the last entry — surface fixes the CHANGELOG might have skipped.\n5. GitHub Issues labeled `bug` (open and closed). Closed issues with a fix-in-comment are gold.\n6. Recent conversation — moments where I said \"ah, the issue was…\", \"I figured out why…\", \"it broke because…\", or pasted an error message that we then resolved.\n7. `// FIXME` / `// HACK` / `// XXX` comments in code — implicit landmines that haven't bitten yet but will.\n\n### Phase 1 — Entry Mining\nFor every candidate, decide: is this generalizable enough that I (or anyone) could hit it again?\n\n**Include:**\n- Errors with copy-pasteable strings (stack traces, console errors, build failures, runtime exceptions).\n- Browser/OS/runtime quirks I worked around (Safari date parsing, Node version mismatches, CORS preflights).\n- Configuration footguns (env var typos, wrong port, stale lockfile, missing `@grant` in userscript header).\n- \"Worked yesterday\" regressions and their root cause.\n- Deploy/build failures with non-obvious causes.\n- Race conditions, off-by-one timing, hydration mismatches.\n- API edge cases that returned an unexpected shape.\n\n**Skip:**\n- One-off typos with no diagnostic value (\"I had a typo\" is not an entry).\n- Bugs already fixed in code where the fix is self-explanatory and never recurs.\n- Generic \"have you tried turning it off and on again\" advice.\n- Bugs from external dependencies that are now patched upstream — note in CHANGELOG `Security`, not here.\n\n### Phase 2 — Synthesis\nEvery entry follows the same shape. Sort by **frequency-then-severity**, not chronologically. The bugs you hit most often go on top.\n\n- **Verbatim error string** is the entry's title prefix when one exists. AI assistants and `Ctrl+F` search by exact string match; truncating the error breaks both.\n- **Symptom** is what the user/dev *saw*, not the internal cause. \"Page is blank after clicking Submit\" — not \"useState undefined\".\n- **Cause** is the root cause in 1–3 lines. If unknown, write `_root cause unconfirmed — workaround below_`.\n- **Fix** is copy-pasteable steps or a code snippet. If the fix lives in the codebase, cite the SHA where it landed.\n- **First seen** is the date you first hit it. Don't shift dates on re-runs.\n\n---\n\n## Required Output Structure\n\n# Troubleshooting\n\n3 a.m. survival manual. Errors, gotchas, regressions, and the fixes that made them go away.\n\n**How to read this:**\n- Sorted by frequency-then-severity. Top entries are the ones you'll hit again.\n- Error strings are **verbatim** so `Ctrl+F` and pasted-into-AI lookups hit on the first match.\n- `(sha)` cites the commit where the fix landed. `git show \u003csha>` for the diff.\n\n---\n\n## Quick Index\n_(Auto-regenerate on every update. One bullet per entry, linking to its anchor. Skip if total entries \u003c 6.)_\n\n- [`TypeError: Cannot read properties of undefined (reading 'X')` after SPA navigation](#typeerror-cannot-read-properties-of-undefined-reading-x-after-spa-navigation)\n- [Userscript stops firing after 30s on chatgpt.com](#userscript-stops-firing-after-30s-on-chatgptcom)\n- _(etc.)_\n\n---\n\n## `[Verbatim error string, or short symptom if no error]`\n\n- **First seen:** YYYY-MM-DD | **Frequency:** ▲▲▲ (rare / occasional / weekly) | `(sha if fix landed)`\n- **Symptom:** What I observed. The user-visible failure. 1–2 lines.\n- **Cause:** Root cause in 1–3 lines. If multiple causes can produce the same symptom, list each as a sub-bullet.\n- **Fix:**\n  ```bash\n  # exact command, code snippet, or click-path\n  ```\n  Or: link to the line in the codebase where the fix lives — `src/foo.ts:42`.\n- **Why this happens (optional):** 1 line of mechanism if it's non-obvious or recurs in similar projects.\n- **Related:** `(other entry anchors, CHANGELOG dates, issue numbers)` if applicable.\n\n---\n\n### _Example entry — delete after first real entry is added:_\n\n## `TypeError: Cannot read properties of undefined (reading 'querySelector')` on page load\n\n- **First seen:** 2026-04-12 | **Frequency:** ▲▲▲ | `(a3f291)`\n- **Symptom:** Userscript trigger button never appears on first navigation to `chatgpt.com`. Refresh fixes it.\n- **Cause:** `@run-at document-idle` fires before ChatGPT's React tree mounts the prompt textarea. The script queries the DOM, finds nothing, and throws.\n- **Fix:**\n  ```js\n  // Use waitForElement instead of direct querySelector\n  await waitForElement('#prompt-textarea', { timeout: 5000 });\n  ```\n  See `Prompt generator.user.js:614` for the helper pattern.\n- **Why this happens:** SPAs hydrate after `document-idle`. Any script that touches their mounted DOM at idle is racing the framework.\n- **Related:** `[CHANGELOG] 2026-04-12 — Fixed`, `(#7)`.\n\n---\n\n## Update Protocol (Verbatim)\n> **For the AI Assistant:** When asked to \"Update TROUBLESHOOTING.md\":\n> 1. Re-run Phase 0 — read CHANGELOG `Fixed`, `git log --grep=\"fix\"`, GitHub bug-labeled issues, and recent conversation for \"the issue was…\" moments.\n> 2. For every candidate, apply the include/skip filter from Phase 1.\n> 3. **Always preserve verbatim error strings.** Do not paraphrase them. Do not truncate stack traces — keep at least the first 3 frames.\n> 4. **Re-sort the file** by frequency-then-severity on every update. New entries do not automatically go on top.\n> 5. **Update frequency markers** when you encounter the same entry again — bump from ▲ to ▲▲ to ▲▲▲.\n> 6. **Regenerate the Quick Index** if total entries ≥ 6.\n> 7. **Never delete entries** — bugs that \"can't happen anymore\" still help future-AI recognize an old error in a fresh codebase. Mark them `Status: archived (no longer reproducible since v1.4.0)` instead.\n> 8. **Cite SHAs** for every fix that landed in code. Cite issue numbers for every entry sourced from GitHub Issues.\n> 9. Refresh the `_Last synced_` line at the top with today's date.\n> 10. Keep the file under 800 lines. Roll archived entries (>12 months, no recurrence) into a `\u003cdetails>` block at the bottom.\n\n---\n\n## Hard Rules\n- **Verbatim error strings.** Paraphrasing breaks `Ctrl+F` and AI semantic search. Quote exactly.\n- **Symptom + Cause + Fix.** Every entry needs all three. \"Just upgrade Node\" is not a fix unless you say which version and why.\n- **Frequency-then-severity sort.** The bug I hit weekly belongs above the one I hit once last year. Re-sort on every update.\n- **No fabricated errors.** If I haven't actually hit it, it doesn't go in. This is a forensic log, not a brainstorming list.\n- **Cite the SHA.** Every fix that landed in code gets `(sha)`. Every entry sourced from GitHub gets `(#N)`.\n- **No deletion.** Outdated entries get marked `archived`, not removed.\n- **Don't fold into CHANGELOG.** CHANGELOG records *that* it was fixed. This file records *what to do when it happens again*. They serve different audiences.\n- **Length cap: 800 lines.** Old archived entries roll into the `\u003cdetails>` block.\n\nExecute Phase 0, 1, 2 and output `TROUBLESHOOTING.md`.\n"
+  },
+  {
+    "id": "vc-prompts-codex",
+    "title": "Recursive Prompt Codex (PROMPTS.md)",
+    "category": "Vibe Coding",
+    "color": "var(--blue)",
+    "icon": "🪞",
+    "description": "Registers every prompt that built or maintains the project in PROMPTS.md, so you can re-prime an AI and get output in the same style.",
+    "file": "PROMPTS.md",
+    "step": "Last — records the prompts that built the repo so you can re-prime in the same voice.",
+    "prompt": "You are a Recursive Prompt Codex Engineer. Your mission: generate or update `PROMPTS.md` at the root of my GitHub repository — a curated registry of every prompt I used to **build, maintain, and document this project**, including the prompts in my vibe-coding toolbox itself.\n\nThe audience is **future-me** (returning in 6 months wanting to extend the project in the same style) and **AI assistants** I'll re-prime so their output matches the existing voice and structure. This file is the project's **style fingerprint**: paste the right prompt back into a new chat and you get code/docs that look like they came from the same hand.\n\n---\n\n## Workflow\n\n### Phase 0 — Source Hunt\nCodebase wins on conflict. Conversations are second.\n1. `PROMPTS.md` — current truth. Update, don't restart. Numbers (`P-001`, `P-002`) are eternal once assigned.\n2. Toolbox folders in this repo (e.g., `vibe-coding-tools-101/`, `prompts/`, `all_prompts/`) — every `.md` / `.txt` prompt is a candidate. The filename is its working name.\n3. `CONTEXT.md` §5 (Rules For Editing This Code) — surfaces style invariants that the prompts enforce.\n4. `CHANGELOG.md` `Architectural` entries — prompts often produced these structural moves.\n5. `TRAJECTORY.md` `Decisions` — when a Decision was reached via prompt-driven analysis, the prompt deserves an entry.\n6. Recent conversation — prompts I pasted inline that produced code now in the repo. Lift the prompt verbatim if I quoted it in chat; reconstruct it from the output if I didn't.\n7. Inline `// AI:` or `\u003c!-- prompt: -->` comments in code — explicit anchors I left for myself.\n\n### Phase 1 — Entry Mining\n\n**Include a prompt if:**\n- It produced code, docs, or artifacts currently in the repo (the prompt is **load-bearing**).\n- It's reusable — re-running it on similar input would produce comparable output.\n- It encodes a non-obvious style choice (tone, structure, constraint set) that I'd want preserved on a re-prime.\n- It's part of a documented workflow (`Update CONTEXT.md`, `Update CHANGELOG.md`, etc.) where the AI needs the original prompt to do the next iteration correctly.\n\n**Skip:**\n- One-shot debugging prompts (\"why is X undefined\") — TROUBLESHOOTING.md territory if they generalize.\n- Pure conversation (\"explain this concept to me\").\n- Prompts that produced output later replaced or rejected — record the *replacement*, not the dead end (unless the dead end is a Graveyard-worthy lesson, in which case 1 line in §IV).\n- Generic \"act as a senior engineer\" preambles that aren't anchored to project specifics.\n\n### Phase 2 — Synthesis\nOne entry per prompt. Use prefix `P-NNN`. Numbers are eternal — never renumber, even if a prompt is deprecated.\n\n**Storage rule:** Long prompts (> 40 lines) live in their own file under `prompts/` (or the existing toolbox folder) and `PROMPTS.md` links to them. Short prompts (≤ 40 lines) embed inline in fenced code blocks.\n\n**Citation:** every entry cites either the file where the prompt lives, the artifact it produced (file path + SHA), or both.\n\n---\n\n## Required Output Structure\n\n# Prompts\n\nThe recursive registry. Every prompt that built or maintains this project — so future-me and future-AI can re-prime in the same voice.\n\n**How to read this:**\n- Numbers (`P-001`) are eternal. A deprecated prompt keeps its number and moves to §IV.\n- Long prompts link to their file. Short ones embed below.\n- \"Used to\" tells you when to reach for it. \"Last used\" tells you whether it's still active.\n\n---\n\n## I. Active Prompts — In Regular Rotation\n\n### P-001 — [Punchy Name, e.g., \"Codebase Context Engineer\"]\n- **File:** [`vibe-coding-tools-101/generate-context.md`](./vibe-coding-tools-101/generate-context.md) _(or \"embedded below\" for short prompts)_\n- **Used to:** Generate or update `CONTEXT.md`. The \"AI memory file\" prompt.\n- **Last used:** YYYY-MM-DD | **Produces:** `CONTEXT.md` `(sha)`\n- **One-line summary:** Forensic discovery → repo scan → write, with `_Not yet figured out_` for missing evidence.\n- **When to reach for this:** Onboarding a new AI, or after a significant architectural shift the existing CONTEXT.md hasn't absorbed.\n\n### P-002 — [Name]\n- **Embedded:**\n  ```\n  [paste the full prompt verbatim, only if ≤ 40 lines]\n  ```\n- **Used to:** [Purpose, 1 line]\n- **Last used:** YYYY-MM-DD | **Produces:** [artifact]\n- **One-line summary:** [what it does]\n- **When to reach for this:** [trigger condition]\n\n---\n\n## II. Workflow Chains — Prompts That Run In Sequence\n\nSome files maintain themselves through a chain of prompts. Document the order.\n\n### Chain: Documentation Refresh Cycle\n1. **P-001 (Codebase Context Engineer)** → updates `CONTEXT.md` first; downstream prompts read from it.\n2. **P-002 (Forensic Changelog Engineer)** → updates `CHANGELOG.md` from git log + diff stat.\n3. **P-003 (Forensic Trajectory Cartographer)** → updates `TRAJECTORY.md` from CHANGELOG + issues + chat.\n4. **P-00X (Vibe-Coder README Engineer)** → updates `README.md` last, pulling from CONTEXT + CHANGELOG.\n\n_Pattern: stateful prompts depend on the file produced by the previous step. Run them in order or accept drift._\n\n---\n\n## III. One-Shot Templates — Used Occasionally\n\nPrompts I reach for less than monthly but want preserved verbatim.\n\n### P-0NN — [Name]\n- **Embedded:** `\u003cfenced block>` or **File:** `\u003cpath>`\n- **Used for:** [specific situation]\n- **Don't use when:** [anti-pattern]\n\n---\n\n## IV. Deprecated — Kept for Reference, Not Active\n\nPrompts replaced by better versions, or whose output is no longer accepted. **Never delete** — they encode lessons.\n\n### P-00Y — [Original name]\n- **Status:** Deprecated YYYY-MM-DD | **Replaced by:** P-00Z _(or \"no replacement — workflow abandoned\")_\n- **Why retired:** 1 line. Honest. (\"Produced too-corporate output\", \"Drifted from CONTEXT.md voice\", \"Output broke on monorepos\".)\n- **Original prompt:** link to historical file or embedded fenced block.\n\n---\n\n## V. Style Invariants — What Every Prompt In This Repo Enforces\n\nCross-cutting rules that show up in most prompts. New prompts should respect these.\n- **Plain English first** in user-facing artifacts (README, CONTEXT §1–§2).\n- **Cite SHAs** on every changelog/trajectory entry that touched code.\n- **Append-only history** — past entries are immutable except for factual corrections.\n- **`_Not yet figured out_`** is the honest placeholder. Never fabricate.\n- **No corporate vocabulary** — no \"leverages\", \"robust\", \"scalable\", \"seamless\".\n- _(Add the actual invariants observed across this repo's prompts.)_\n\n---\n\n## Update Protocol (Verbatim)\n> **For the AI Assistant:** When asked to \"Update PROMPTS.md\":\n> 1. Re-scan toolbox folders for new `.md` / `.txt` prompt files.\n> 2. Re-read recent conversation for prompts pasted inline that produced code/docs now in the repo.\n> 3. For every new candidate, apply the include/skip filter from Phase 1.\n> 4. Assign the next sequential `P-number`. **Never reuse numbers**, even from deprecated entries.\n> 5. **Long prompts (> 40 lines):** create a file under `prompts/` (or the appropriate existing folder) and link to it. Do not embed.\n> 6. **Short prompts (≤ 40 lines):** embed verbatim in a fenced code block.\n> 7. **Update `Last used` dates** when you see evidence in `git log` or conversation that the prompt was re-run.\n> 8. **Promotions/demotions:** If an Active prompt hasn't been used in > 6 months and a successor exists, move to §IV with a 1-line \"why retired\".\n> 9. **Workflow chains:** Re-verify the sequence in §II — if a new prompt slots into an existing chain, insert it. If a chain has changed order, rewrite §II.\n> 10. **Style invariants:** When you spot a new invariant repeated across ≥ 3 prompts, add it to §V.\n> 11. Refresh the `_Last synced_` line at the top with today's date.\n\n---\n\n## Hard Rules\n- **Numbers are eternal.** `P-007` stays `P-007` even after deprecation.\n- **Verbatim or bust.** Embed prompts exactly as run. Paraphrasing breaks the re-prime guarantee.\n- **Long prompts get their own file.** Inline only ≤ 40 lines. PROMPTS.md is an index, not a library.\n- **Cite the artifact.** Every active prompt entry must point to the file/SHA it produced.\n- **No deletion.** Deprecated prompts move to §IV with a 1-line autopsy. The lesson is the value.\n- **No invented prompts.** Only prompts that actually produced something in this repo. This is a forensic registry, not a wishlist.\n- **Plain summaries.** \"What it does in one line\" — no \"leverages a multi-phase synthesis approach\". Just say what it does.\n- **Style invariants are observed, not prescribed.** §V documents what your prompts already enforce, not what you wish they did.\n- **Length cap: 400 lines** for the index file itself. Push prompt bodies into linked files.\n\nExecute Phase 0, 1, 2 and output `PROMPTS.md`.\n"
   }
 ];
 
@@ -933,7 +1080,7 @@ function renderGrid() {
 
 // ─── MODAL ───
 function openModal(id) {
-  const p = PROMPTS.find(x=>x.id===id);
+  const p = PROMPTS.find(x=>x.id===id) || MED.find(x=>x.id===id);
   if (!p) return;
   document.getElementById('modalTitle').textContent = p.title;
   document.getElementById('modalPrompt').textContent = p.prompt;
@@ -965,6 +1112,10 @@ function openCmd() {
   cmdSelectedIndex = 0;
   renderCmdResults('');
   document.body.style.overflow = 'hidden';
+  // Medical prompts join the palette once their file has loaded.
+  if (!MED.length) loadMedical().then(() => {
+    if (document.getElementById('cmdOverlay').classList.contains('open')) renderCmdResults(document.getElementById('cmdInput').value);
+  }, () => {});
 }
 
 function closeCmd() {
@@ -974,11 +1125,12 @@ function closeCmd() {
 
 function renderCmdResults(query) {
   const q = query.toLowerCase().trim();
-  const results = q ? PROMPTS.filter(p =>
+  const pool = PROMPTS.concat(MED);
+  const results = q ? pool.filter(p =>
     p.title.toLowerCase().includes(q) ||
     p.category.toLowerCase().includes(q) ||
     p.description.toLowerCase().includes(q)
-  ) : PROMPTS;
+  ) : pool;
 
   const container = document.getElementById('cmdResults');
   container.innerHTML = results.map((p, i) => `
@@ -1049,7 +1201,7 @@ document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !window.getSelection().toString()) {
       const sel = items[cmdSelectedIndex];
       if (sel) {
-        const p = PROMPTS.find(x=>x.id===sel.dataset.id);
+        const p = PROMPTS.find(x=>x.id===sel.dataset.id) || MED.find(x=>x.id===sel.dataset.id);
         if (p) copyToClipboard(p.prompt);
       }
     }
@@ -1058,7 +1210,23 @@ document.addEventListener('keydown', e => {
 
 // ─── CLIPBOARD ───
 function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => showToast('Failed to copy'));
+  // navigator.clipboard only exists on https/localhost; fall back to execCommand so
+  // copying also works when index.html is opened straight from disk (file://).
+  const viaApi = navigator.clipboard && window.isSecureContext
+    ? navigator.clipboard.writeText(text)
+    : Promise.reject();
+  return viaApi.catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (!ok) throw new Error('copy failed');
+  }).then(() => { showToast('Copied to clipboard!'); return true; })
+    .catch(() => { showToast('Failed to copy'); return false; });
 }
 
 function showToast(msg) {
@@ -1068,8 +1236,151 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
+// ─── VIBE CODING 101 ───
+function renderVibe() {
+  const vibe = PROMPTS.filter(p => p.category === 'Vibe Coding' && p.file);
+  const box = document.getElementById('vibeSteps');
+  box.innerHTML = vibe.map((p, i) => `
+    <div class="vibe-step">
+      <div class="vibe-step-top">
+        <span class="vibe-num">${i + 1}</span>
+        <span class="vibe-file">${p.file}</span>
+        <span class="vibe-name">${p.icon} ${p.prompt.split('\n').length} lines</span>
+      </div>
+      <div class="vibe-when">${p.step}</div>
+      <div class="vibe-actions">
+        <button class="btn btn-primary vibe-copy" data-id="${p.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <span>Copy prompt</span>
+        </button>
+        <button class="btn vibe-view" data-id="${p.id}">View</button>
+      </div>
+    </div>
+  `).join('');
+
+  box.querySelectorAll('.vibe-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = PROMPTS.find(x => x.id === btn.dataset.id);
+      copyToClipboard(p.prompt).then(ok => {
+        if (!ok) return;
+        const label = btn.querySelector('span');
+        btn.classList.add('copied');
+        label.textContent = 'Copied!';
+        clearTimeout(btn._t);
+        btn._t = setTimeout(() => { btn.classList.remove('copied'); label.textContent = 'Copy prompt'; }, 1500);
+      });
+    });
+  });
+  box.querySelectorAll('.vibe-view').forEach(btn => {
+    btn.addEventListener('click', () => openModal(btn.dataset.id));
+  });
+}
+
+// ─── MÉDICAL ───
+// prompt-med.user.js is both the userscript and the data: outside a userscript manager it finds
+// window.__PGM_EXPORT__ and hands over its prompt list instead of starting. Loaded on demand.
+let MED = [];
+let MED_CATS = [];
+let medCat = 'all';
+let medLoad = null;
+const escapeHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const fold = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function medDescription(prompt) {
+  const m = prompt.match(/\*\*TA MISSION\*\*\s*\n([^\n]+)/);
+  const line = (m ? m[1] : prompt.replace(/\*\*[^*]+\*\*/g, '').trim().split('\n')[0]) || '';
+  return line.length > 150 ? line.slice(0, 147).replace(/\s+\S*$/, '') + '…' : line;
+}
+
+function loadMedical() {
+  if (medLoad) return medLoad;
+  medLoad = new Promise((resolve, reject) => {
+    window.__PGM_EXPORT__ = data => {
+      MED_CATS = data.cats;
+      MED = data.prompts.map(p => ({
+        id: p.id, title: p.title, category: p.cat, catKey: p.catKey, color: p.color, icon: p.icon,
+        description: medDescription(p.prompt), prompt: p.prompt,
+        fields: ((p.prompt.split('**MON CONTEXTE**')[1] || '').split('\n\n**')[0].match(/\[[^\]\n]+\]/g) || []).length,
+      }));
+      resolve();
+    };
+    const s = document.createElement('script');
+    s.src = 'prompt-med.user.js';
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
+  medLoad.then(renderMed, () => {
+    medLoad = null;
+    document.getElementById('medGrid').innerHTML = '<div class="med-status">Impossible de charger <code>prompt-med.user.js</code>. Ouvrez cette page depuis le dossier du dépôt (le fichier doit être à côté de index.html).<br><button class="btn" onclick="loadMedical()">Réessayer</button></div>';
+  });
+  return medLoad;
+}
+
+function renderMed() {
+  const q = fold(document.getElementById('medSearch').value.trim());
+  const terms = q.split(/\s+/).filter(Boolean);
+  const inCat = medCat === 'all' ? MED : MED.filter(p => p.catKey === medCat);
+  const list = terms.length ? inCat.filter(p => {
+    const hay = fold(p.title + ' ' + p.category + ' ' + p.prompt);
+    return terms.every(t => hay.includes(t));
+  }) : inCat;
+
+  const chips = document.getElementById('medChips');
+  chips.innerHTML = [{ key: 'all', label: 'Tous', icon: '✦', n: MED.length }]
+    .concat(MED_CATS.map(c => ({ ...c, n: MED.filter(p => p.catKey === c.key).length })))
+    .map(c => `<button class="filter-chip${c.key === medCat ? ' active' : ''}" data-mcat="${escapeHtml(c.key)}">${escapeHtml(c.icon)} ${escapeHtml(c.label)} <span class="count">${c.n}</span></button>`).join('');
+  document.getElementById('medCount').textContent = `${list.length} / ${MED.length} prompts`;
+
+  const grid = document.getElementById('medGrid');
+  grid.innerHTML = list.length ? list.map(p => `
+    <div class="prompt-card" tabindex="0" data-mid="${escapeHtml(p.id)}">
+      <div class="card-header">
+        <div class="card-icon" style="background:${escapeHtml(p.color)}22;color:${escapeHtml(p.color)}">${escapeHtml(p.icon)}</div>
+        <div class="card-title">${escapeHtml(p.title)}</div>
+      </div>
+      <div class="card-desc">${escapeHtml(p.description)}</div>
+      <div class="card-footer">
+        <span class="card-meta">${escapeHtml(p.category)} · ${p.fields} [champs]</span>
+        <div class="card-actions">
+          <button class="card-btn med-copy" data-mid="${escapeHtml(p.id)}" title="Copier le prompt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`).join('') : '<div class="med-status">Aucun prompt ne correspond.</div>';
+}
+
+document.getElementById('medChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-mcat]');
+  if (!b) return;
+  medCat = b.dataset.mcat;
+  renderMed();
+});
+document.getElementById('medSearch').addEventListener('input', () => { if (MED.length) renderMed(); else loadMedical(); });
+document.getElementById('medGrid').addEventListener('click', e => {
+  const copy = e.target.closest('.med-copy');
+  if (copy) { const p = MED.find(x => x.id === copy.dataset.mid); if (p) copyToClipboard(p.prompt); return; }
+  const card = e.target.closest('[data-mid]');
+  if (card) openModal(card.dataset.mid);
+});
+document.getElementById('medGrid').addEventListener('keydown', e => {
+  const card = e.target.closest('.prompt-card[data-mid]');
+  if (card && e.key === 'Enter') openModal(card.dataset.mid);
+});
+
+// Fetch the 350 KB script only when the section comes near, or when ⌘K is used.
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entries => {
+    if (entries.some(en => en.isIntersecting)) { io.disconnect(); loadMedical(); }
+  }, { rootMargin: '600px' });
+  io.observe(document.getElementById('medical'));
+} else {
+  loadMedical();
+}
+
 // ─── INIT ───
 renderStats();
+renderVibe();
 renderFilters();
 renderGrid();
 </script>
