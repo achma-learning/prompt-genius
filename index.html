@@ -125,6 +125,29 @@ header{
 .vibe-actions .btn{flex:1;justify-content:center;padding:.5rem .75rem;font-size:.8rem}
 .vibe-copy.copied,.vibe-copy.copied:hover{background:var(--teal);border-color:var(--teal);box-shadow:none}
 
+/* ─── MÉDICAL ─── */
+.hero-jumps{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem}
+.hero-jumps a{
+  font-size:.8rem;color:var(--text-1);text-decoration:none;border:1px solid var(--border);
+  border-radius:99px;padding:.35rem .8rem;transition:all var(--transition)
+}
+.hero-jumps a:hover{border-color:var(--accent);color:var(--text-0)}
+.med-section{max-width:1400px;margin:0 auto;padding:1rem clamp(1rem,4vw,3rem) 3rem;border-top:1px solid var(--border)}
+.med-section .vibe-head{margin-top:2rem}
+.med-tools{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.9rem}
+.med-search{
+  flex:1;min-width:0;max-width:460px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.55rem .8rem;color:var(--text-0);font:inherit;font-size:.88rem;outline:none
+}
+.med-search:focus{border-color:var(--accent)}
+.med-count{font-family:var(--font-mono);font-size:.75rem;color:var(--text-2)}
+.med-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.med-chips .filter-chip{font-size:.76rem;padding:.35rem .7rem}
+.med-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.med-grid .card-title{font-size:.95rem}
+.med-status{padding:2rem;text-align:center;color:var(--text-2);font-size:.9rem;grid-column:1/-1}
+.med-status button{margin-top:.8rem}
+
 /* ─── FILTERS ─── */
 .filters-bar{
   max-width:1400px;margin:0 auto;
@@ -359,6 +382,10 @@ footer a:hover{color:var(--accent)}
     <div><strong id="catCount">0</strong>Categories</div>
     <div><strong>⌘K</strong>Quick Search</div>
   </div>
+  <div class="hero-jumps">
+    <a href="#vibe-coding-101">Vibe Coding 101</a>
+    <a href="#medical">🩺 Prompts médicaux (226)</a>
+  </div>
 </section>
 
 <!-- VIBE CODING 101 -->
@@ -378,6 +405,23 @@ footer a:hover{color:var(--accent)}
 <!-- GRID -->
 <section class="grid-section">
   <div class="prompt-grid" id="promptGrid"></div>
+</section>
+
+<!-- MÉDICAL — loaded on demand from prompt-med.user.js (single source of truth) -->
+<section class="med-section" id="medical" aria-labelledby="medTitle" lang="fr">
+  <div class="vibe-head">
+    <div>
+      <h2 id="medTitle">Prompts <span>médicaux</span></h2>
+      <p>226 prompts en français pour 21 métiers de santé (catalogue Lonasanté « 226 Prompts IA Santé »). Remplacez les [crochets] de « MON CONTEXTE » avant d'envoyer — ou installez le userscript, qui ouvre un formulaire pour les remplir. Ne collez jamais de données patient identifiantes.</p>
+    </div>
+    <a class="btn btn-primary" href="prompt-med.user.js">Installer le userscript</a>
+  </div>
+  <div class="med-tools">
+    <input class="med-search" id="medSearch" type="search" placeholder="Rechercher (sans accents : « medecin », « ordonnance »)…" aria-label="Rechercher un prompt médical">
+    <span class="med-count" id="medCount"></span>
+  </div>
+  <div class="med-chips" id="medChips"></div>
+  <div class="prompt-grid med-grid" id="medGrid"><div class="med-status">Chargement des prompts médicaux…</div></div>
 </section>
 
 <!-- MODAL -->
@@ -1036,7 +1080,7 @@ function renderGrid() {
 
 // ─── MODAL ───
 function openModal(id) {
-  const p = PROMPTS.find(x=>x.id===id);
+  const p = PROMPTS.find(x=>x.id===id) || MED.find(x=>x.id===id);
   if (!p) return;
   document.getElementById('modalTitle').textContent = p.title;
   document.getElementById('modalPrompt').textContent = p.prompt;
@@ -1068,6 +1112,10 @@ function openCmd() {
   cmdSelectedIndex = 0;
   renderCmdResults('');
   document.body.style.overflow = 'hidden';
+  // Medical prompts join the palette once their file has loaded.
+  if (!MED.length) loadMedical().then(() => {
+    if (document.getElementById('cmdOverlay').classList.contains('open')) renderCmdResults(document.getElementById('cmdInput').value);
+  }, () => {});
 }
 
 function closeCmd() {
@@ -1077,11 +1125,12 @@ function closeCmd() {
 
 function renderCmdResults(query) {
   const q = query.toLowerCase().trim();
-  const results = q ? PROMPTS.filter(p =>
+  const pool = PROMPTS.concat(MED);
+  const results = q ? pool.filter(p =>
     p.title.toLowerCase().includes(q) ||
     p.category.toLowerCase().includes(q) ||
     p.description.toLowerCase().includes(q)
-  ) : PROMPTS;
+  ) : pool;
 
   const container = document.getElementById('cmdResults');
   container.innerHTML = results.map((p, i) => `
@@ -1152,7 +1201,7 @@ document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !window.getSelection().toString()) {
       const sel = items[cmdSelectedIndex];
       if (sel) {
-        const p = PROMPTS.find(x=>x.id===sel.dataset.id);
+        const p = PROMPTS.find(x=>x.id===sel.dataset.id) || MED.find(x=>x.id===sel.dataset.id);
         if (p) copyToClipboard(p.prompt);
       }
     }
@@ -1225,6 +1274,108 @@ function renderVibe() {
   box.querySelectorAll('.vibe-view').forEach(btn => {
     btn.addEventListener('click', () => openModal(btn.dataset.id));
   });
+}
+
+// ─── MÉDICAL ───
+// prompt-med.user.js is both the userscript and the data: outside a userscript manager it finds
+// window.__PGM_EXPORT__ and hands over its prompt list instead of starting. Loaded on demand.
+let MED = [];
+let MED_CATS = [];
+let medCat = 'all';
+let medLoad = null;
+const escapeHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const fold = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function medDescription(prompt) {
+  const m = prompt.match(/\*\*TA MISSION\*\*\s*\n([^\n]+)/);
+  const line = (m ? m[1] : prompt.replace(/\*\*[^*]+\*\*/g, '').trim().split('\n')[0]) || '';
+  return line.length > 150 ? line.slice(0, 147).replace(/\s+\S*$/, '') + '…' : line;
+}
+
+function loadMedical() {
+  if (medLoad) return medLoad;
+  medLoad = new Promise((resolve, reject) => {
+    window.__PGM_EXPORT__ = data => {
+      MED_CATS = data.cats;
+      MED = data.prompts.map(p => ({
+        id: p.id, title: p.title, category: p.cat, catKey: p.catKey, color: p.color, icon: p.icon,
+        description: medDescription(p.prompt), prompt: p.prompt,
+        fields: ((p.prompt.split('**MON CONTEXTE**')[1] || '').split('\n\n**')[0].match(/\[[^\]\n]+\]/g) || []).length,
+      }));
+      resolve();
+    };
+    const s = document.createElement('script');
+    s.src = 'prompt-med.user.js';
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
+  medLoad.then(renderMed, () => {
+    medLoad = null;
+    document.getElementById('medGrid').innerHTML = '<div class="med-status">Impossible de charger <code>prompt-med.user.js</code>. Ouvrez cette page depuis le dossier du dépôt (le fichier doit être à côté de index.html).<br><button class="btn" onclick="loadMedical()">Réessayer</button></div>';
+  });
+  return medLoad;
+}
+
+function renderMed() {
+  const q = fold(document.getElementById('medSearch').value.trim());
+  const terms = q.split(/\s+/).filter(Boolean);
+  const inCat = medCat === 'all' ? MED : MED.filter(p => p.catKey === medCat);
+  const list = terms.length ? inCat.filter(p => {
+    const hay = fold(p.title + ' ' + p.category + ' ' + p.prompt);
+    return terms.every(t => hay.includes(t));
+  }) : inCat;
+
+  const chips = document.getElementById('medChips');
+  chips.innerHTML = [{ key: 'all', label: 'Tous', icon: '✦', n: MED.length }]
+    .concat(MED_CATS.map(c => ({ ...c, n: MED.filter(p => p.catKey === c.key).length })))
+    .map(c => `<button class="filter-chip${c.key === medCat ? ' active' : ''}" data-mcat="${escapeHtml(c.key)}">${escapeHtml(c.icon)} ${escapeHtml(c.label)} <span class="count">${c.n}</span></button>`).join('');
+  document.getElementById('medCount').textContent = `${list.length} / ${MED.length} prompts`;
+
+  const grid = document.getElementById('medGrid');
+  grid.innerHTML = list.length ? list.map(p => `
+    <div class="prompt-card" tabindex="0" data-mid="${escapeHtml(p.id)}">
+      <div class="card-header">
+        <div class="card-icon" style="background:${escapeHtml(p.color)}22;color:${escapeHtml(p.color)}">${escapeHtml(p.icon)}</div>
+        <div class="card-title">${escapeHtml(p.title)}</div>
+      </div>
+      <div class="card-desc">${escapeHtml(p.description)}</div>
+      <div class="card-footer">
+        <span class="card-meta">${escapeHtml(p.category)} · ${p.fields} [champs]</span>
+        <div class="card-actions">
+          <button class="card-btn med-copy" data-mid="${escapeHtml(p.id)}" title="Copier le prompt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`).join('') : '<div class="med-status">Aucun prompt ne correspond.</div>';
+}
+
+document.getElementById('medChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-mcat]');
+  if (!b) return;
+  medCat = b.dataset.mcat;
+  renderMed();
+});
+document.getElementById('medSearch').addEventListener('input', () => { if (MED.length) renderMed(); else loadMedical(); });
+document.getElementById('medGrid').addEventListener('click', e => {
+  const copy = e.target.closest('.med-copy');
+  if (copy) { const p = MED.find(x => x.id === copy.dataset.mid); if (p) copyToClipboard(p.prompt); return; }
+  const card = e.target.closest('[data-mid]');
+  if (card) openModal(card.dataset.mid);
+});
+document.getElementById('medGrid').addEventListener('keydown', e => {
+  const card = e.target.closest('.prompt-card[data-mid]');
+  if (card && e.key === 'Enter') openModal(card.dataset.mid);
+});
+
+// Fetch the 350 KB script only when the section comes near, or when ⌘K is used.
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entries => {
+    if (entries.some(en => en.isIntersecting)) { io.disconnect(); loadMedical(); }
+  }, { rootMargin: '600px' });
+  io.observe(document.getElementById('medical'));
+} else {
+  loadMedical();
 }
 
 // ─── INIT ───

@@ -80,13 +80,34 @@ The **Vibe Coding 101** section at the top has six prompts, in order, each with 
 
 The full-length versions live in [`vibe-coding-tools-101/`](./vibe-coding-tools-101).
 
+## Médical: 226 prompts for health workers (in French)
+
+![The medical palette: categories on the left, results in the middle, the prompt with its fields highlighted on the right](./docs/medical-palette.png)
+
+A second, separate userscript: **[Install Prompt Genius — Médical](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/prompt-med.user.js)**. It installs the same way as above (steps 1 and 2 still apply). It holds 226 French prompts for 21 health jobs (GP, nurse, midwife, pharmacist, physio, lab tech, care home…), from the Lonasanté catalogue « 226 Prompts IA Santé ».
+
+1. Press **`Alt+M`** (Mac: **`⌥M`**), or click the 💊 button. The two scripts can run side by side; each has its own shortcut.
+2. Type without accents (`medecin`, `ordonnance`), or pick your job on the left. `Tab` moves between categories.
+3. Press **Enter**. A form opens with one field per `[bracket]` of the prompt's « MON CONTEXTE » block. `Enter` jumps to the next field, and **`Ctrl+Enter`** inserts the filled prompt after whatever you had already typed. `Shift+Enter` inserts the prompt as it is.
+
+![The fill-in form: one labelled field per bracket, live preview on the right](./docs/medical-form.png)
+
+**⚙️ Réglages** (settings) has four tabs:
+- **🎯 Mes filtres:** pick your job, add the prompts you use from other jobs, and you get your own category, opened by default if you want. For example, a GP's « Mon cabinet » can be « Médecin généraliste » plus three prompts from « Secrétaire médicale ». While browsing, the preview's « Ajouter à un filtre » menu does the same.
+- **Prompts actifs:** switch off whole jobs or single prompts you never use. They leave the palette and the search, so both get lighter.
+- **Mes prompts:** add, import (JSON, CSV with `,` or `;`, TXT, MD) or export your own prompts.
+- **Préférences:** shortcut, floating button, preview pane, and remembering your answers (off by default).
+
+Also: `Alt+F` favourite, `Alt+C` copy, `Alt+1`–`9` jump to a result, and a « Récents » list.
+
+The landing page has the same 226 prompts in a « Prompts médicaux » section, with copy buttons. Never paste identifying patient data into an AI chat.
+
 ## What's new
 
-**v1.5.0** adds four photo-restoration prompts for Google Labs Flow (B&W repair, colorize, revive faded color, max-res upscale), plus Google Labs support. The landing page now has the Vibe Coding 101 section. [Full changelog →](./CHANGELOG.md)
+**Médical v3.1.0** rebuilds the medical palette for desktop. It adds a three-pane layout, custom filters (« Mes filtres »), on/off switches for prompts, accent-free search and favourites. It also fixes 15 bugs, including a clash with the main script, the last 26 prompts being unreachable, and wrong form filling. The landing page gained the medical section. [Full changelog →](./CHANGELOG.md)
 
 ## Also in this repo
 
-- [`prompt med.js`](./prompt%20med.js) is a separate userscript in French with 226 medical and paramedical prompts. It uses the same `Ctrl+Shift+P` palette. Its filename doesn't end in `.user.js`, so the one-click install won't trigger. Instead, open Tampermonkey's dashboard, click **+** (new script), paste the file's contents and save.
 - [`all_prompts/`](./all_prompts) holds older prompts in plain text, waiting to be promoted into the palette.
 
 ## Why I built this

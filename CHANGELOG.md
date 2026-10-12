@@ -13,6 +13,32 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 ## [Unreleased]
 _Changes since v1.4.0 (1a66963)._
 
+### Medical userscript — `prompt-med.user.js` v3.1.0 (was `prompt med.js` v3.0.0)
+
+#### Added
+- « Mes filtres »: a custom category made of one or more jobs plus hand-picked prompts from other jobs. Can be the default category on open, and prompts can be added from the preview pane.
+- Settings tab « Prompts actifs »: switch whole jobs or single prompts off. They leave the palette and the search index (lighter list, faster filtering), and nothing is deleted.
+- Desktop three-pane layout (categories | results | preview with highlighted `[placeholders]`), favourites (`Alt+F`), « Récents », `Alt+C` copy, PageUp/PageDown, hotkey choice, floating-button toggle, opt-in memory of form answers, and Tampermonkey menu commands.
+- Accent-insensitive, multi-word, ranked search. A query with no hit in the current category falls back to all categories.
+
+#### Fixed
+- Both palettes opened together when the main script was also installed. Cause: same `Ctrl+Shift+P`, same element ids (`pg-*`), same `:root` CSS variables and same button corner. Now everything is `pgm-*`, the default hotkey is `Alt+M` and the button sits higher.
+- The last 26 of 226 prompts were unreachable under « Tous». Cause: the list was silently capped at 200.
+- Filling one `[X]` filled every `[X]` of the prompt (9 prompts, e.g. as-9's five times). Cause: fields were keyed by placeholder text, not occurrence. Fields are now labelled from their line (« Contraintes — petit-déjeuner à ▢ h ») instead of « X ».
+- Enter in the first form field inserted a half-filled prompt. It now moves to the next field; `Ctrl+Enter` inserts.
+- `Alt+1–9` did nothing on macOS (Option+1 types "¡") and on AZERTY. Cause: matched `e.key`, not the physical `e.code`.
+- `Ctrl+C` with text selected in the search box copied the whole prompt. Cause: `getSelection()` doesn't see input selections.
+- Inserting into a textarea wiped the user's draft. Cause: the value was replaced, not appended. Also, the textarea setter was called on `<input>` (Illegal invocation).
+- A malformed JSON import broke the palette until storage was cleared. CSV split on every comma and ignored Excel FR's `;`.
+- Custom prompts only appeared under « Tous » (their `catKey: 'custom'` had no category).
+- Every chat page fetched Google Fonts through a CSS `@import`, which CSP blocks on several hosts anyway. Now system fonts; the palette DOM is built on first open.
+
+#### Changed
+- Renamed `prompt med.js` → `prompt-med.user.js` so userscript managers offer one-click install; added `@downloadURL`/`@updateURL`. `@name`/`@namespace` deliberately unchanged so existing installs keep their saved prompts.
+
+### Landing page
+- New « Prompts médicaux » section: 226 cards with job chips, accent-free search, copy and modal. The data is loaded on demand from `prompt-med.user.js` itself (via a `window.__PGM_EXPORT__` hook), so there is no second copy to drift. The `⌘K` palette searches them too.
+
 ### Added
 - Four photo-restoration prompts in a new `Image Restoration` category, written for Google Labs Flow (and any image model that takes a reference image): `flow-restore-bw` (B&W → B&W archival repair), `flow-colorize` (B&W → color), `flow-revive-color` (faded 70s–90s prints), `flow-upscale-free` (max-resolution rebuild with no fidelity lock).
 - `labs.google` support: new `@match https://labs.google/*` plus a `PROVIDERS` entry, so the palette opens on Flow / Whisk / ImageFX.
