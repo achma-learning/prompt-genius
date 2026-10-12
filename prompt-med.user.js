@@ -8140,8 +8140,11 @@ Structure la communication descendante et ascendante, en adaptant le format au m
       font-family: var(--pgm-font); color: var(--pgm-text); line-height: 1.4; letter-spacing: normal; text-align: left;
     }
     .pgm-scope *, .pgm-scope *::before, .pgm-scope *::after { box-sizing: border-box; }
+    /* Corner layout shared with the main Prompt Genius (Prompt generator.user.js): its P button owns
+       bottom 20–64px (+8px badge), its toast sits left of it on that row. This script stacks one row
+       higher — button at 84px, toast to its left on the same row — so neither covers the other. */
     #pgm-trigger {
-      position: fixed; bottom: 76px; right: 20px; z-index: 2147483640; width: 44px; height: 44px; border-radius: 12px;
+      position: fixed; bottom: 84px; right: 20px; z-index: 2147483640; width: 44px; height: 44px; border-radius: 12px;
       background: var(--pgm-bg); border: 1px solid var(--pgm-border); cursor: pointer; display: grid; place-items: center;
       font-size: 18px; box-shadow: var(--pgm-shadow); transition: transform 150ms ease, border-color 150ms ease; padding: 0;
     }
@@ -8151,7 +8154,7 @@ Structure la communication descendante et ascendante, en adaptant le format au m
       border-radius: 5px; padding: 1px 5px; font: 500 9px var(--pgm-mono); color: var(--pgm-text2); pointer-events: none; white-space: nowrap;
     }
     #pgm-toast {
-      position: fixed; bottom: 80px; right: 76px; z-index: 2147483646; background: var(--pgm-bg2); border: 1px solid var(--pgm-border);
+      position: fixed; bottom: 87px; right: 76px; z-index: 2147483646; background: var(--pgm-bg2); border: 1px solid var(--pgm-border);
       border-radius: 9px; padding: 9px 14px; font-size: 13px; max-width: 420px; box-shadow: 0 8px 24px rgba(0,0,0,.45);
       opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity 180ms ease, transform 180ms ease;
     }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Prompt Genius — AI Prompt Injector
 // @namespace    https://github.com/achma-learning/prompt-genius
-// @version      1.5.0
+// @version      1.5.1
 // @description  ⌘⇧P to open a command palette of curated prompts on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot) and on Google Labs / Flow
 // @author       achma-learning
 // @match        https://chatgpt.com/*
@@ -1269,10 +1269,12 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
     }
 
     /* Toast */
+    /* Toast sits on the button's row, to its left: the column above the button belongs to the
+       medical script's 💊 button (prompt-med.user.js), so nothing here may rise above ~72px. */
     #pg-toast {
       position: fixed;
-      bottom: 80px;
-      right: 20px;
+      bottom: 23px;
+      right: 76px;
       z-index: 2147483642;
       background: var(--pg-bg2);
       border: 1px solid var(--pg-border);

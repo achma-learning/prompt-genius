@@ -29,7 +29,7 @@ _Last synced: 2026-10-12 @ b03f1f5 (+ the medical v3.1.0 commit written with thi
 - **External services:** Only the AI chat hosts in the `@match` lists. The main script and `index.html` pull Google Fonts; the medical script uses system fonts on purpose. No analytics, no telemetry.
 
 ## 4. Code Map (The Important Files Only)
-- `Prompt generator.user.js` — **Main userscript** (v1.5.0, ~1970 lines, one IIFE, English).
+- `Prompt generator.user.js` — **Main userscript** (v1.5.1, ~1970 lines, one IIFE, English).
   - `BUILTIN_PROMPTS` (line 37) — 22 prompts: general, 6 Vibe Coding, 4 Image Restoration.
   - `PROVIDERS` (line 1030) — hostname → input selector. Add chat sites here **and** in `@match`.
   - `findInput()` (1557) / `injectText()` (1572) — find the visible chat box and inject (native setter or synthetic paste).
@@ -79,6 +79,7 @@ _Last synced: 2026-10-12 @ b03f1f5 (+ the medical v3.1.0 commit written with thi
   - The medical script falls back to `execCommand('insertText')`, then `textContent`.
   - The main script still falls back straight to `textContent`, which replaces the draft.
 - **Hidden inputs on Google Labs.** `findInput()` walks the selectors one by one and prefers a visible, writable element. `document.querySelector(list)` picked a hidden offscreen textarea, so prompts vanished.
+- **Shared bottom-right corner.** Both scripts pin a button there. Layout contract: main **P** button at bottom 20px, right 20px (`Prompt generator.user.js`, `#pg-trigger`); medical **💊** at bottom 84px, right 20px (`#pgm-trigger`). Each toast sits on its own button's row at `right: 76px`. Moving any of these in one script without the other brings back the overlap.
 - **Capture-phase keydown** on `document` (third arg `true`) lets the hotkeys beat site shortcuts. The medical overlay also stops keyboard events from bubbling to the host page. Switching to bubble phase lets ChatGPT eat the keys.
 - **Hotkey quirks:** `Ctrl+Shift+P` opens a private window on Firefox and may not be overridable there. The floating button (and, for the medical script, the Tampermonkey menu) is the fallback.
 - **Field labels come from line parsing.** `parseFields()` reads `- Label : … [x] …` and splits on commas outside brackets. A catalogue line with an odd shape gets a weaker label but still works. 9 prompts repeat the same placeholder text (`[X]`, `[oui / non]`, `[liste]`), which is why fields are per occurrence.

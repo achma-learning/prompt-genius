@@ -13,6 +13,9 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 ## [Unreleased]
 _Changes since v1.4.0 (1a66963)._
 
+### Both userscripts — shared bottom-right corner
+- Fixed: with both scripts installed, the main script's toast covered the 💊 button and the medical toast, and the 💊 button sat 4px above the P badge. Cause: two independent `position: fixed` layouts in one corner. Now one column: P at 20px, 💊 at 84px, each toast on its own button's row to the left. Main userscript `@version` 1.5.0 → 1.5.1.
+
 ### Medical userscript — `prompt-med.user.js` v3.1.0 (was `prompt med.js` v3.0.0)
 
 #### Added
