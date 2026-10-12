@@ -19,13 +19,20 @@ _Changes since v1.4.0 (1a66963)._
 - `all_prompts/google-labs-flow-photo-restoration.md` — bilingual (EN + FR) long-form source for the four prompts, plus notes on what was changed from the originals and when *not* to use the no-fidelity one.
 - The four new prompts also landed in `index.html`'s `PROMPTS`, copied verbatim from `BUILTIN_PROMPTS` so the two lists don't drift on day one.
 - `CONTEXT.md` at repo root — single-page brief so future AI assistants and future-me can pick up the project cold without re-reading 1840 lines of userscript. `(850f910)`
+- `index.html` gets a "Vibe Coding 101" section: the six `vc-*` prompts as numbered steps (CONTEXT → CHANGELOG → TRAJECTORY → README → TROUBLESHOOTING → PROMPTS), each with one-click copy and view. They also join the grid under a `Vibe Coding` filter, copied verbatim from `BUILTIN_PROMPTS`.
+- `README.md` rewritten for non-technical readers: step-by-step userscript-manager install (incl. Chrome Developer mode + "Allow User Scripts"), Greasy Fork install link, usage, real palette screenshot at `docs/palette.png`.
 
 ### Changed
 - `findInput()` now walks `provider.sel` one selector at a time and prefers an input that is enabled, writable and actually rendered. Symptom it fixes: on Google Labs the old `document.querySelector(provider.sel)` resolved the comma list in *document* order and landed in a hidden offscreen textarea, so the prompt went nowhere. Falls back to the first match found if nothing is visible, so existing sites behave as before.
 - Userscript `@version` 1.4.0 → 1.5.0; `@description` now mentions Google Labs / Flow.
+- Userscript `@downloadURL` / `@updateURL` now point at Greasy Fork (script 571159) instead of GitHub raw, so installed copies update from the Greasy Fork listing.
+
+### Fixed
+- Landing page scrolled sideways on phones (~400px) — long unbreakable card titles like `(TROUBLESHOOTING.md)` set the grid column's min width. Titles now wrap.
+- "Copy" silently failed when `index.html` was opened from disk — `navigator.clipboard` is undefined outside secure contexts. Falls back to `execCommand('copy')`.
 
 ### Architectural
-- Documented the prompt-list drift: `BUILTIN_PROMPTS` (userscript, 18) and `PROMPTS` (`index.html`, 11) are independent copies; landing page is behind by 7 prompts and carries 3 the userscript doesn't have. No shared source yet. `(850f910)` — still true after this change; the counts are now 22 and 15.
+- Documented the prompt-list drift: `BUILTIN_PROMPTS` (userscript, 18) and `PROMPTS` (`index.html`, 11) are independent copies; landing page is behind by 7 prompts and carries 3 the userscript doesn't have. No shared source yet. `(850f910)` — still true after this change; the counts are now 22 and 15. Now 22 and 21: the six Vibe Coding prompts were copied over.
 
 ---
 
