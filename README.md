@@ -13,7 +13,7 @@ It comes as three separate userscripts. Install only the ones you want; they run
 | Userscript | Shortcut | What's inside |
 |---|---|---|
 | **[General](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js)** | `Ctrl+Shift+P` / `⌘⇧P` | 16 everyday prompts (thinking coaches, the Feynman technique, negotiation, photo restoration for Google Labs Flow…) **plus your own, loaded from your GitHub fork** |
-| **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | the 6 Vibe Coding 101 prompts (CONTEXT.md, CHANGELOG.md…) plus 7 everyday helpers for coding with AI |
+| **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | the 6 Vibe Coding 101 prompts (CONTEXT.md, CHANGELOG.md…), a RELEASE prompt, plus 8 everyday helpers for coding with AI |
 | **[Médical](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js)** | `Alt+M` / `⌥M` | 226 French prompts for 21 health jobs |
 
 You can add your own prompts, and they stay in your browser. No account, no server, no tracking, nothing to build.
@@ -91,8 +91,11 @@ The Vibe Coding script (`Alt+V`) keeps the simple **Vibe Coding 101** system. Pa
 | `README.md` | the page for humans |
 | `TROUBLESHOOTING.md` | every bug already fixed, searchable by its exact error |
 | `PROMPTS.md` | the prompts that built the repo |
+| `RELEASE.md` | what users can install: current versions, git tags, GitHub Releases, how to roll back |
 
-Below them are **helpers** for everyday coding: Plan Before Code, Debug, Review the Diff, Refactor Safely, Security Check, Manager (several agents at once, one file per agent) and Handoff (summarizes the chat into `HANDOFF.md`). Each one reads `CONTEXT.md` and ends by updating `CONTEXT.md` and `CHANGELOG.md`. They create no other files.
+The CHANGELOG prompt also has a **Rescue** mode: say "everything is broken" or "it worked before", and it finds the commit that broke it with `git bisect`, starting from the last version marked ✅ known good.
+
+Below them are **helpers** for everyday coding: Stabilize a Prototype (turn an AI-drafted prototype into a documented baseline), Plan Before Code, Debug, Review the Diff, Refactor Safely, Security Check, Manager (several agents at once, one file per agent) and Handoff (summarizes the chat into `HANDOFF.md`). Each one reads `CONTEXT.md` and ends by updating `CONTEXT.md` and `CHANGELOG.md`. They create no other files.
 
 **Several prompts at once:** press `Tab` on each prompt you want (✓), then `Enter`. They're inserted as one numbered session, in list order.
 
@@ -136,6 +139,10 @@ The landing page has the same 226 prompts in a « Prompts médicaux » section, 
 ## What's new
 
 **Médical v3.1.0** rebuilds the medical palette for desktop. It adds a three-pane layout, custom filters (« Mes filtres »), on/off switches for prompts, accent-free search and favourites. It also fixes 15 bugs, including a clash with the main script, the last 26 prompts being unreachable, and wrong form filling. The landing page gained the medical section. [Full changelog →](./CHANGELOG.md)
+
+## Releases & older versions
+
+[`RELEASE.md`](./RELEASE.md) lists the current version of each script, with a link to install exactly that version, and how to roll back. Every release is also on the [Releases page](https://github.com/achma-learning/prompt-genius/releases). Rolling back? Turn off "Check for updates" for that script, or your userscript manager updates it again.
 
 ## Also in this repo
 
