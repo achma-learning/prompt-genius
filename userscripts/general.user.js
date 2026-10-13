@@ -2,7 +2,7 @@
 // @name         Prompt Genius — General
 // @namespace    https://github.com/achma-learning/prompt-genius
 // @version      1.0.0
-// @description  ⌘⇧P opens a command palette of general-purpose prompts (business, learning, analysis, productivity, image restoration…) on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot) and on Google Labs / Flow
+// @description  ⌘⇧P opens a command palette of general-purpose prompts — plus your own, loaded from your GitHub fork — (business, learning, analysis, productivity, image restoration…) on any AI chat (ChatGPT, Claude, Gemini, DeepSeek, Perplexity, Mistral, Grok, Copilot) and on Google Labs / Flow
 // @author       achma-learning
 // @match        https://chatgpt.com/*
 // @match        https://chat.openai.com/*
@@ -22,6 +22,9 @@
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_xmlhttpRequest
+// @connect      api.github.com
+// @connect      raw.githubusercontent.com
 // @run-at       document-idle
 // @license      MIT
 // @downloadURL  https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js
@@ -33,6 +36,7 @@
 
   // General half of "Prompt generator.user.js" (every category except Vibe Coding).
   // Vibe Coding prompts live in vibe-coding.user.js. Prefix: pgg-.
+  // Also loads prompts from a GitHub repo folder (e.g. your fork's all_prompts/): see GITHUB PROMPTS.
 
   // ═══════════════════════════════════════════════════════════
   //  PROMPT DATABASE — edit / extend freely
@@ -602,6 +606,14 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
       display: block;
       margin-top: 8px;
     }
+    .pgg-modal-card { font-family: var(--pgg-font); color: var(--pgg-text); }
+    .pgg-btn-primary:hover { background: var(--pgg-accent); color: #000; }
+    .pgg-gh-text { font-size: 12px; color: var(--pgg-text2); line-height: 1.5; margin: 0 0 12px; }
+    ol.pgg-gh-text { padding-left: 18px; }
+    .pgg-gh-text a { color: var(--pgg-accent); }
+    .pgg-gh-text code { font-family: var(--pgg-mono); font-size: 11px; }
+    .pgg-gh-status { font-size: 12px; color: var(--pgg-text3); margin: 0 0 14px; }
+    .pgg-gh-status.pgg-gh-err { color: #ff4d6a; }
     .pgg-divider {
       margin: 20px 0;
       border-top: 1px solid var(--pgg-border);
@@ -620,7 +632,129 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
     GM_setValue('pg_custom_prompts', JSON.stringify(prompts));
   }
   function getAllPrompts() {
-    return [...BUILTIN_PROMPTS, ...getCustomPrompts()];
+    return [...BUILTIN_PROMPTS, ...getRepoPrompts(), ...getCustomPrompts()];
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  GITHUB PROMPTS — every .md / .txt / .json file in a repo folder becomes a prompt.
+  //  Fork achma-learning/prompt-genius, edit all_prompts/ in your fork, enter it here.
+  //  Read-only GETs; cached, and refreshed at most every GH_TTL (GitHub allows
+  //  60 unauthenticated API calls per hour, and one sync costs one API call).
+  // ═══════════════════════════════════════════════════════════
+  const GH_DEFAULT = { repo: '', branch: 'main', folder: 'all_prompts' };
+  const GH_TTL = 6 * 3600 * 1000;
+  const GH_MAX_FILES = 150;
+  const GH_MAX_BYTES = 200 * 1024;
+  const GH_FORK_URL = 'https://github.com/achma-learning/prompt-genius/fork';
+
+  function ghConf() {
+    try { return { ...GH_DEFAULT, ...JSON.parse(GM_getValue('pgg_github', '{}')) }; } catch { return { ...GH_DEFAULT }; }
+  }
+  function ghCache() {
+    try { return JSON.parse(GM_getValue('pgg_github_cache', '{}')) || {}; } catch { return {}; }
+  }
+  function ghKey(c) { return `${c.repo}@${c.branch}:${c.folder}`; }
+  function getRepoPrompts() {
+    const c = ghConf(), cache = ghCache();
+    return c.repo && cache.key === ghKey(c) && Array.isArray(cache.prompts) ? cache.prompts : [];
+  }
+
+  // "owner/repo", "github.com/owner/repo" or a folder URL like
+  // https://github.com/owner/repo/tree/main/all_prompts (branch and folder are taken from it).
+  function parseRepoInput(value) {
+    const v = String(value || '').trim().replace(/\/+$/, '');
+    const m = v.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([^/\s]+)\/([^/\s]+?)(?:\.git)?(?:\/tree\/([^/\s]+)(?:\/(.+))?)?$/)
+           || v.match(/^([^/\s]+)\/([^/\s]+)$/);
+    if (!m) return null;
+    const [, owner, repo, branch, folder] = m;
+    if (!/^[A-Za-z0-9-]+$/.test(owner) || !/^[A-Za-z0-9._-]+$/.test(repo)) return null;
+    const out = { repo: `${owner}/${repo}` };
+    if (branch) out.branch = decodeURIComponent(branch);
+    if (folder) out.folder = decodeURIComponent(folder);
+    return out;
+  }
+
+  function ghGet(url, asJson) {
+    return new Promise((resolve, reject) => GM_xmlhttpRequest({
+      method: 'GET',
+      url,
+      timeout: 15000,
+      headers: asJson ? { Accept: 'application/vnd.github+json' } : {},
+      onload: r => {
+        if (r.status >= 200 && r.status < 300) {
+          try { resolve(asJson ? JSON.parse(r.responseText) : r.responseText); } catch (e) { reject(e); }
+        } else if (r.status === 403 || r.status === 429) {
+          reject(new Error('GitHub rate limit reached — try again in an hour'));
+        } else if (r.status === 404) {
+          reject(new Error('Repo, branch or folder not found (is the repo public?)'));
+        } else {
+          reject(new Error('GitHub answered HTTP ' + r.status));
+        }
+      },
+      onerror: () => reject(new Error('Network error')),
+      ontimeout: () => reject(new Error('GitHub timed out')),
+    }));
+  }
+
+  // Colors end up inside a style attribute, so only plain hex colors are accepted.
+  function safeColor(c) { return /^#[0-9a-fA-F]{3,8}$/.test(String(c)) ? c : '#4d9fff'; }
+
+  // One prompt per .md/.txt file (title = first "# heading", else the file name);
+  // a .json file holds one prompt object or an array of them (same shape as Export).
+  // Sub-folders become categories.
+  function promptsFromFile(path, text, folder) {
+    const name = path.split('/').pop();
+    const sub = path.slice(folder.length + 1).split('/').slice(0, -1).join(' / ');
+    const cat = sub || 'My GitHub';
+    if (/\.json$/i.test(name)) {
+      const data = JSON.parse(text);
+      return (Array.isArray(data) ? data : [data])
+        .filter(p => p && typeof p.prompt === 'string' && p.prompt.trim())
+        .map((p, i) => ({
+          id: `gh:${path}#${i}`,
+          title: String(p.title || name).slice(0, 120),
+          cat: String(p.cat || p.category || cat).slice(0, 60),
+          icon: String(p.icon || '📂').slice(0, 4),
+          color: safeColor(p.color),
+          prompt: p.prompt,
+        }));
+    }
+    const body = text.replace(/^\uFEFF/, '').trim();
+    if (!body) return [];
+    const h1 = body.match(/^#\s+(.+)$/m);
+    const title = h1 ? h1[1].trim() : name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+    return [{ id: `gh:${path}`, title: title.slice(0, 120), cat, icon: '📂', color: '#4d9fff', prompt: body }];
+  }
+
+  let ghSyncing = null;
+  function ghSync(force) {
+    const c = ghConf();
+    if (!c.repo) return Promise.resolve(0);
+    const cache = ghCache();
+    if (!force && cache.key === ghKey(c) && Date.now() - (cache.at || 0) < GH_TTL) return Promise.resolve(getRepoPrompts().length);
+    if (ghSyncing) return ghSyncing;
+    ghSyncing = (async () => {
+      const [owner, repo] = c.repo.split('/');
+      const folder = c.folder.replace(/^\/+|\/+$/g, '');
+      const enc = s => s.split('/').map(encodeURIComponent).join('/');
+      // One API call lists the whole repo; the files themselves come from raw.githubusercontent.com.
+      const tree = await ghGet(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(c.branch)}?recursive=1`, true);
+      const files = (tree.tree || []).filter(t =>
+        t.type === 'blob' && t.path.startsWith(folder + '/') && t.size <= GH_MAX_BYTES
+        && /(\.(md|markdown|txt|json)|\/[^./]+)$/i.test(t.path)     // known text types, or no extension
+        && !/(^|\/)readme(\.[^/]*)?$/i.test(t.path)).slice(0, GH_MAX_FILES);
+      const prompts = [];
+      for (let i = 0; i < files.length; i += 6) {                     // 6 downloads at a time
+        const batch = await Promise.all(files.slice(i, i + 6).map(f =>
+          ghGet(`https://raw.githubusercontent.com/${owner}/${repo}/${enc(c.branch)}/${enc(f.path)}`)
+            .then(text => promptsFromFile(f.path, text, folder))
+            .catch(e => { console.warn('[Prompt Genius] skipped', f.path, e.message); return []; })));
+        batch.forEach(list => prompts.push(...list));
+      }
+      GM_setValue('pgg_github_cache', JSON.stringify({ key: ghKey(c), at: Date.now(), prompts }));
+      return prompts.length;
+    })().finally(() => { ghSyncing = null; });
+    return ghSyncing;
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -856,6 +990,10 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
           <button class="pgg-modal-close">&times;</button>
         </div>
         <div class="pgg-modal-body">
+          <div class="pgg-section-title">Prompts from GitHub</div>
+          <button class="pgg-btn" id="pgg-open-github">📂 GitHub prompts…</button>
+          <span class="pgg-gh-text" style="margin-left:8px">${ghConf().repo ? escapeHtml(ghConf().repo) + ' · ' + getRepoPrompts().length + ' prompt(s)' : 'not connected'}</span>
+          <div class="pgg-divider"></div>
           <div class="pgg-section-title">Your Custom Prompts</div>
           <div class="pgg-custom-list" id="pgg-custom-list"></div>
 
@@ -903,6 +1041,8 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
     `;
     document.body.appendChild(modal);
     managerModal = modal;
+
+    modal.querySelector('#pgg-open-github').addEventListener('click', () => openGithubDialog(false));
 
     const closeBtn = modal.querySelector('.pgg-modal-close');
     const listDiv = modal.querySelector('#pgg-custom-list');
@@ -1065,6 +1205,104 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
     document.addEventListener('keydown', handleManagerKey);
   }
 
+  // GitHub source dialog: shown once after install (firstRun) and from ⚙️.
+  function openGithubDialog(firstRun) {
+    closeManager();
+    const c = ghConf(), cache = ghCache(), n = getRepoPrompts().length;
+    const status = c.repo
+      ? `Connected to <b>${escapeHtml(c.repo)}</b> · ${escapeHtml(c.branch)} · ${escapeHtml(c.folder)}/ — ${n} prompt(s)` +
+        (cache.at ? `, synced ${escapeHtml(new Date(cache.at).toLocaleString())}` : '')
+      : 'Not connected.';
+    const modal = document.createElement('div');
+    modal.className = 'pgg-modal';
+    modal.innerHTML = `
+      <div class="pgg-modal-card">
+        <div class="pgg-modal-header">
+          <h3>📂 ${firstRun ? 'Load your own prompts from GitHub?' : 'GitHub prompts'}</h3>
+          <button class="pgg-modal-close">&times;</button>
+        </div>
+        <div class="pgg-modal-body">
+          <p class="pgg-gh-text">Keep your prompts in your own GitHub repo instead of in this browser. They show up here on every AI site, and editing the repo updates them everywhere.</p>
+          <ol class="pgg-gh-text">
+            <li><a href="${GH_FORK_URL}" target="_blank" rel="noopener">Fork prompt-genius</a> (or use any public repo).</li>
+            <li>Add or edit prompt files in its <code>all_prompts/</code> folder: one <code>.md</code> or <code>.txt</code> file per prompt (the first <code># heading</code> is the title), or a <code>.json</code> list. Sub-folders become categories.</li>
+            <li>Enter your repo below: <code>your-name/prompt-genius</code>, or paste the folder's URL.</li>
+          </ol>
+          <div class="pgg-form-group">
+            <label>Repository</label>
+            <input type="text" id="pgg-gh-repo" placeholder="your-name/prompt-genius" spellcheck="false">
+          </div>
+          <div style="display:flex; gap:10px;">
+            <div class="pgg-form-group" style="flex:1"><label>Branch</label><input type="text" id="pgg-gh-branch" spellcheck="false"></div>
+            <div class="pgg-form-group" style="flex:2"><label>Folder</label><input type="text" id="pgg-gh-folder" spellcheck="false"></div>
+          </div>
+          <div class="pgg-gh-status" id="pgg-gh-status">${status}</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="pgg-btn pgg-btn-primary" id="pgg-gh-save">Load my prompts</button>
+            <button class="pgg-btn" id="pgg-gh-default">Use achma-learning's prompts</button>
+            ${c.repo ? '<button class="pgg-btn" id="pgg-gh-off">Disconnect</button>' : ''}
+            ${firstRun ? '<button class="pgg-btn" id="pgg-gh-later">Not now</button>' : ''}
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    managerModal = modal;
+    document.addEventListener('keydown', handleManagerKey);
+    GM_setValue('pgg_github_asked', true);
+
+    const $ = sel => modal.querySelector(sel);
+    $('#pgg-gh-repo').value = c.repo;
+    $('#pgg-gh-branch').value = c.branch;
+    $('#pgg-gh-folder').value = c.folder;
+    const setStatus = (msg, isErr) => { const s = $('#pgg-gh-status'); s.textContent = msg; s.classList.toggle('pgg-gh-err', !!isErr); };
+
+    // Pasting a folder URL fills branch and folder too.
+    $('#pgg-gh-repo').addEventListener('change', () => {
+      const p = parseRepoInput($('#pgg-gh-repo').value);
+      if (p && p.branch) $('#pgg-gh-branch').value = p.branch;
+      if (p && p.folder) $('#pgg-gh-folder').value = p.folder;
+    });
+
+    async function connect(repoText) {
+      const p = parseRepoInput(repoText);
+      if (!p) { setStatus('Enter owner/repo, e.g. your-name/prompt-genius, or a github.com folder URL.', true); return; }
+      const conf = {
+        repo: p.repo,
+        branch: p.branch || $('#pgg-gh-branch').value.trim() || GH_DEFAULT.branch,
+        folder: (p.folder || $('#pgg-gh-folder').value.trim() || GH_DEFAULT.folder).replace(/^\/+|\/+$/g, ''),
+      };
+      GM_setValue('pgg_github', JSON.stringify(conf));
+      setStatus(`Loading ${conf.repo}…`);
+      try {
+        const count = await ghSync(true);
+        closeManager();
+        render(searchInput.value);
+        showToast(`Loaded ${count} prompt(s) from ${conf.repo}`);
+      } catch (e) {
+        setStatus(e.message, true);
+      }
+    }
+    $('#pgg-gh-save').addEventListener('click', () => connect($('#pgg-gh-repo').value));
+    $('#pgg-gh-repo').addEventListener('keydown', e => { if (e.key === 'Enter') connect($('#pgg-gh-repo').value); });
+    $('#pgg-gh-default').addEventListener('click', () => {
+      $('#pgg-gh-branch').value = GH_DEFAULT.branch;
+      $('#pgg-gh-folder').value = GH_DEFAULT.folder;
+      connect('achma-learning/prompt-genius');
+    });
+    const off = $('#pgg-gh-off');
+    if (off) off.addEventListener('click', () => {
+      GM_setValue('pgg_github', JSON.stringify({ ...GH_DEFAULT }));
+      GM_setValue('pgg_github_cache', '{}');
+      closeManager();
+      showToast('GitHub prompts disconnected');
+    });
+    const later = $('#pgg-gh-later');
+    if (later) later.addEventListener('click', () => { closeManager(); showToast('Later: ⚙️ → GitHub prompts'); });
+    $('.pgg-modal-close').addEventListener('click', closeManager);
+    modal.addEventListener('click', e => { if (e.target === modal) closeManager(); });
+    setTimeout(() => $('#pgg-gh-repo').focus(), 50);
+  }
+
   function closeManager() {
     if (managerModal) {
       managerModal.remove();
@@ -1149,6 +1387,11 @@ OUTPUT: a single maximum-resolution photorealistic image of the same scene, rebu
   // ═══════════════════════════════════════════════════════════
   //  INITIAL STATE
   // ═══════════════════════════════════════════════════════════
+  ghSync(false)
+    .then(() => { if (overlay.classList.contains('pgg-open')) render(searchInput.value); })
+    .catch(e => console.warn('[Prompt Genius] GitHub prompts:', e.message));
+  if (!GM_getValue('pgg_github_asked', false)) setTimeout(() => openGithubDialog(true), 1500);
+
   console.log(`[Prompt Genius — General] Loaded for ${provider.name} — ⌘⇧P to open`);
 
 })();

@@ -12,8 +12,8 @@ It comes as three separate userscripts. Install only the ones you want; they run
 
 | Userscript | Shortcut | What's inside |
 |---|---|---|
-| **[General](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js)** | `Ctrl+Shift+P` / `⌘⇧P` | 16 everyday prompts: thinking coaches, the Feynman technique, negotiation, photo restoration for Google Labs Flow… |
-| **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | 30 prompts that work as one system for building software with AI (Claude Code, Codex, Cursor, Antigravity…). [How it works →](./docs/vibe-coding-system.md) |
+| **[General](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js)** | `Ctrl+Shift+P` / `⌘⇧P` | 16 everyday prompts (thinking coaches, the Feynman technique, negotiation, photo restoration for Google Labs Flow…) **plus your own, loaded from your GitHub fork** |
+| **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | 31 prompts that work as one system for building software with AI (Claude Code, Codex, Cursor, Antigravity…). [How it works →](./docs/vibe-coding-system.md) |
 | **[Médical](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js)** | `Alt+M` / `⌥M` | 226 French prompts for 21 health jobs |
 
 You can add your own prompts, and they stay in your browser. No account, no server, no tracking, nothing to build.
@@ -68,6 +68,13 @@ Open [chatgpt.com](https://chatgpt.com) (or reload it if it was already open). A
 
 **Your own prompts:** open the palette and click ⚙️. You can add a prompt, delete one, or import a `.json`, `.csv`, `.txt` or `.md` file. Export saves everything to a JSON file for backup.
 
+**Your prompts from GitHub (General script):** keep your prompts in your own repository instead of in one browser.
+1. [Fork this repo](https://github.com/achma-learning/prompt-genius/fork).
+2. Put one prompt per `.md` or `.txt` file in the fork's [`all_prompts/`](./all_prompts) folder. The first `# heading` becomes the title, and sub-folders become categories. A `.json` file can also hold a list of prompts.
+3. Enter `your-name/prompt-genius` in the window that appears once after install, or later under ⚙️ → **GitHub prompts…**. You can also paste the folder's URL.
+
+Edits to the repo show up everywhere within 6 hours, or right away with **Load my prompts**. Only public repos work, and the script only reads from GitHub.
+
 If `Ctrl+Shift+P` does something else in your browser (on Firefox it opens a private window), just click the **P** button.
 
 **Works on:** ChatGPT, Claude, Gemini, Google Labs (Flow, Whisk, ImageFX), DeepSeek, Perplexity, Mistral, Grok, Copilot, You.com, Poe.
@@ -83,6 +90,8 @@ Most prompt lists overlap: three prompts each write the stack into a different f
 | `docs/ARCHITECTURE.md` | How is it built and why? (stack, structure, data model, decisions) |
 | `MEMORY.md` | Where are we now? (current task, next step) |
 | `CHANGELOG.md` | What changed, and when? |
+
+Optional: `TRAJECTORY.md` (where it's going: now / next / later / never, with the reason each idea was killed), `TROUBLESHOOTING.md`, `README.md`, `MANAGER.md`.
 
 The prompts are grouped as **Start → Loop → Harden → Sync → Craft**:
 - **Start:** a quick start for small projects, or the four-step research → PRD → tech design → agent setup workflow.
@@ -111,7 +120,7 @@ The **Vibe Coding 101** section at the top has six prompts, in order, each with 
 5. `TROUBLESHOOTING.md`: every bug you already fixed, searchable by its exact error message
 6. `PROMPTS.md`: the prompts that built the repo
 
-The full-length versions live in [`vibe-coding-tools-101/`](./vibe-coding-tools-101), together with [`manager.md`](./vibe-coding-tools-101/manager.md), the multi-agent Manager prompt.
+The full-length versions live in [`vibe-coding-tools-101/`](./vibe-coding-tools-101). All 31 prompts of the Vibe Coding script are also there as ready-to-copy `.md` files, in [`vibe-coding-tools-101/system/`](./vibe-coding-tools-101/system/README.md), including [`manager.md`](./vibe-coding-tools-101/system/manager.md).
 
 ## Médical: 226 prompts for health workers (in French)
 

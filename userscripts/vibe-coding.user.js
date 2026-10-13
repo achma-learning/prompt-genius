@@ -2,7 +2,7 @@
 // @name         Prompt Genius — Vibe Coding
 // @namespace    https://github.com/achma-learning/prompt-genius
 // @version      1.0.0
-// @description  ⌥V / Alt+V opens a palette of 30 vibe coding prompts that work as one system: each prompt owns one project file (AGENTS.md, PRD, ARCHITECTURE, MEMORY, CHANGELOG), names the next step, and stays consistent across Claude Code, Codex, Cursor, Antigravity and any AI chat — plus a Manager for running several agents safely.
+// @description  ⌥V / Alt+V opens a palette of 31 vibe coding prompts that work as one system: each prompt owns one project file (AGENTS.md, PRD, ARCHITECTURE, MEMORY, CHANGELOG), names the next step, and stays consistent across Claude Code, Codex, Cursor, Antigravity and any AI chat — plus a Manager for running several agents safely.
 // @author       achma-learning
 // @match        https://chatgpt.com/*
 // @match        https://chat.openai.com/*
@@ -74,7 +74,7 @@ Ask me these one at a time, offering a sensible default whenever I'm unsure:
 
 If two answers conflict, say so before writing. Then output these files, each in its own block with its path as the heading:
 
-**\`docs/PRD.md\`** — purpose (1 sentence) · users & roles (role → can view / can edit) · v1 must-haves, each with a "Given…, when…, then…" check · out of scope · later.
+**\`docs/PRD.md\`** — purpose (1 sentence) · users & roles (role → can view / can edit) · v1 must-haves, each with a "Given…, when…, then…" check · out of scope for v1.
 **\`docs/ARCHITECTURE.md\`** — stack with versions and why · folder structure · data model (entities, fields, relations) · how a request flows through the system · decisions log (one line each: decision — why — rejected alternative).
 **\`AGENTS.md\`** — ≤ 60 lines: what this is (1 line, link PRD) · exact commands (install, dev, test, lint, build) · coding rules · don'ts · "before you finish" checklist · links to the other files.
 **\`MEMORY.md\`** — current task: "build the first slice" · next steps (the v1 must-haves in build order) · blockers: none · last result: project planned.
@@ -3721,7 +3721,7 @@ Stop after setup. Do not begin implementation or deployment unless the user's re
    - **drift** — claims the code contradicts (commands that don't exist, wrong versions, dead paths);
    - **gaps** — core files missing or empty;
    - **adapters that copy** instead of pointing to AGENTS.md.
-3. **Plan** — a move table: content · from → to · action (move / link / delete / create). Every fact ends up in exactly one owning file; others link to it. Legacy files (CONTEXT.md, NOTES.md, ROADMAP.md…) get merged into the core files, then deleted or reduced to a pointer.
+3. **Plan** — a move table: content · from → to · action (move / link / delete / create). Every fact ends up in exactly one owning file; others link to it. Legacy files get merged, then deleted or reduced to a pointer: CONTEXT.md → AGENTS.md + docs/ARCHITECTURE.md + MEMORY.md; DECISIONS.md → the ARCHITECTURE.md decisions log; ROADMAP.md / NOTES.md / TODO.md → TRAJECTORY.md.
 4. Wait for my approval, then apply the plan. Create missing core files from the code (never invent: write \`TODO\` for unknowns).
 5. Report: files created / changed / removed, and the remaining TODOs.
 `
@@ -4078,7 +4078,7 @@ No invented commands or rules — write \`TODO: not found in repo\` instead.
     },
     {
       id:'vc-architecture', title:'ARCHITECTURE.md Keeper (structure + decisions)', cat:'Sync', icon:'🗺️', color:'#a855f7',
-      reads:['the codebase', 'docs/ARCHITECTURE.md', 'docs/PRD.md', 'git log', 'CHANGELOG.md'], writes:['docs/ARCHITECTURE.md'], next:'vc-changelog',
+      reads:['the codebase', 'docs/ARCHITECTURE.md', 'docs/PRD.md', 'git log', 'CHANGELOG.md'], writes:['docs/ARCHITECTURE.md'], next:'vc-trajectory',
       prompt:`Create or update \`docs/ARCHITECTURE.md\` so a new developer — or an AI — understands how this system is built and why in 5 minutes. Derive it from the code, not from memory. Codebase beats docs; note conflicts.
 
 Required sections:
@@ -4091,7 +4091,69 @@ Required sections:
 7. **Decisions log** — numbered ADR lines, newest first: \`D-007 · 2026-05-02 · Chose X over Y — because Z · consequence/trade-off · (commit or PR)\`. Superseded decisions stay, marked \`superseded by D-00N\`.
 8. **Operations** — how it's deployed, configured (env var names only), monitored, backed up and rolled back. \`TODO\` if unknown.
 
-Rules: describe what IS, not what's planned (plans live in MEMORY.md / PRD "later"). Cite file paths for non-obvious claims. Update only sections the code changed; never delete decisions. Proportionate: a 300-line project gets a short file.
+Rules: describe what IS, not what's planned (plans live in TRAJECTORY.md and MEMORY.md). Cite file paths for non-obvious claims. Update only sections the code changed; never delete decisions. Proportionate: a 300-line project gets a short file.
+`
+    },
+    {
+      id:'vc-trajectory', title:'TRAJECTORY.md Keeper (now · next · later · never)', cat:'Sync', icon:'🧭', color:'#ff4d6a',
+      reads:['TRAJECTORY.md', 'docs/PRD.md', 'docs/ARCHITECTURE.md (decisions log)', 'MEMORY.md', 'CHANGELOG.md [Unreleased]', 'git log', 'GitHub issues', 'TODO/FIXME comments', 'this conversation'], writes:['TRAJECTORY.md', 'docs/ARCHITECTURE.md (decisions log: resolved decisions only)'], next:'vc-changelog',
+      prompt:`You are a Forensic Trajectory Cartographer. Maintain \`TRAJECTORY.md\`: the project's **direction** — what's being built now, what's next, what's parked, and what was killed and why. It exists so neither I nor any AI re-suggests work I already rejected, or loses an idea I parked.
+
+**What lives where (don't duplicate):**
+- The steps of the current task → MEMORY.md. TRAJECTORY only names the feature and links there.
+- Decisions already made (X chosen over Y) → the decisions log in docs/ARCHITECTURE.md. TRAJECTORY only holds *pending* decisions.
+- v1 scope → docs/PRD.md. TRAJECTORY starts where the PRD's scope ends.
+- What shipped → CHANGELOG.md. A shipped item leaves TRAJECTORY.
+
+## Phase 0 — Gather (codebase and issues beat memory)
+1. \`TRAJECTORY.md\` — existing entries. IDs are permanent; killed items keep their ID.
+2. docs/PRD.md (scope, out of scope), MEMORY.md (current task), CHANGELOG.md \`[Unreleased]\`, and the ARCHITECTURE.md decisions log.
+3. \`git log --pretty=format:"%h %ad %s" --date=short\` since the last sync — look for reverts, abandoned branches, "WIP" features.
+4. GitHub issues, open and closed (\`gh issue list --state all --limit 200 --json number,title,state,stateReason,labels,body,comments,closedAt\`, or the GitHub MCP tools; otherwise ask me to paste them). If unreachable, write \`_Issues skipped this run_\` at the top and continue.
+5. TODO / FIXME / XXX comments — implicit backlog.
+6. This conversation — "next I'll…", "later we should…", "let's not…", "I tried X, going back to Y".
+
+## Phase 1 — Sort every item into one lane
+- **Now** — being built. Must have a *catalyst* (the user pain, issue or decision that triggered it) and a link to MEMORY.md if it's the current task. Max 3 — more means nothing is really "now".
+- **Next** — committed and ordered. Max 5. Each has *done when* (one checkable line) and a size (S / M / L).
+- **Later** — parked ideas. Each has a *trigger to start* ("when we pass 100 users", "after auth ships"). No trigger → ask me, or it's a wish, not a plan.
+- **Never** — killed. Each has an *autopsy*: why, in one honest line, quoted from the closing comment or conversation when possible. No reason recorded → \`_autopsy missing — ask_\`. A closed issue labeled wontfix / not planned lands here.
+- **Pending decisions** — open questions with real alternatives (issues labeled discussion / rfc / proposal). Once resolved, move the outcome to the ARCHITECTURE.md decisions log and the work into a lane.
+
+Skip: shipped work (CHANGELOG), bugs without direction impact (TROUBLESHOOTING), duplicates, noise.
+Deduplicate across sources: an issue, a TODO and a chat line are often the same item — one entry, all citations.
+
+## Phase 2 — Write
+\`\`\`markdown
+# TRAJECTORY — [project]
+_Last synced: YYYY-MM-DD @ <short sha>_ · Read before proposing new work.
+
+## Now
+### P012 — [title] · M · \`(#14, a3f291)\`
+- Catalyst: [pain / issue / decision] · Task: see MEMORY.md
+
+## Next (in order)
+### P015 — [title] · S · \`(#21)\`
+- Done when: [one checkable line]
+
+## Later
+### P020 — [title] · L · \`(chat)\`
+- Trigger to start: [condition]
+
+## Never
+### P007 — [title] · killed YYYY-MM-DD · \`(#9, b7d104)\`
+- Autopsy: [why, in one line]
+
+## Pending decisions
+- [question] — options: A / B · blocking: P015 · \`(#30)\`
+\`\`\`
+
+## Rules
+- Citations on every entry: \`(sha)\`, \`(#N)\`, \`(chat)\` or \`(no commit yet)\`.
+- Never delete an entry: shipped items move to CHANGELOG (note the ID there), killed ones move to Never.
+- Re-order Next by value ÷ effort on every sync and say what moved and why.
+- No invented items: if it isn't in a source above, it isn't on the map.
+- Keep it under 250 lines; roll Never entries older than 12 months into a \`<details>\` block.
 `
     },
     {
@@ -4372,7 +4434,7 @@ Execute Phase 0, 1, 2 and output \`TROUBLESHOOTING.md\`.
       reads:['the codebase', 'AGENTS.md', 'docs/PRD.md', 'CHANGELOG.md'], writes:['README.md'], next:'vc-handoff',
       prompt:`You are a Vibe-Coder README Engineer. Your mission: generate or rewrite \`README.md\` at the root of my GitHub repository so a stranger lands on the page and understands — in under 20 seconds — what this thing is, whether they want it, and how to run it.
 
-The audience is **humans on GitHub** (not future-AI — that's \`AGENTS.md\`'s job). Recruiters, curious devs, search engines, my future self showing the repo to a friend. Keep the corporate bloat out: no badges-and-tables-of-contents wall, no "leverages cutting-edge", no faux changelog, no roadmap (plans live in \`MEMORY.md\` and the PRD).
+The audience is **humans on GitHub** (not future-AI — that's \`AGENTS.md\`'s job). Recruiters, curious devs, search engines, my future self showing the repo to a friend. Keep the corporate bloat out: no badges-and-tables-of-contents wall, no "leverages cutting-edge", no faux changelog, no roadmap (link to \`TRAJECTORY.md\` for that).
 
 ---
 
@@ -4444,8 +4506,9 @@ One line on the most recent shipped change. Pull from \`CHANGELOG.md\`'s top dat
 ## See also
 
 - [\`AGENTS.md\`](./AGENTS.md) — for AI assistants joining the project
+- [\`docs/ARCHITECTURE.md\`](./docs/ARCHITECTURE.md) — how it's built, and the decisions behind it
 - [\`CHANGELOG.md\`](./CHANGELOG.md) — what shipped when
-- [\`docs/ARCHITECTURE.md\`](./docs/ARCHITECTURE.md) — how it's built and why
+- [\`TRAJECTORY.md\`](./TRAJECTORY.md) — where it's going, and what got killed
 _(Omit links to files that don't exist. Don't list a doc just to look thorough.)_
 
 ---
@@ -4543,7 +4606,7 @@ Output the new file(s) only, plus one line per convention followed.
     ['MEMORY.md', 'where we are now: current task + plan, state, blockers, next step (rewrite it, ≤ 60 lines)'],
     ['CHANGELOG.md', 'what changed and when (append-only)'],
   ];
-  function contractOn() { return GM_getValue('pgv_contract', true) !== false; }
+  function contractOn() { return typeof GM_getValue === 'undefined' || GM_getValue('pgv_contract', true) !== false; }
   // ps: the prompts being inserted (one, or several picked with Tab). Built-in prompts
   // carry reads / writes / next; custom ones don't and get no footer.
   function contractFooter(ps) {
@@ -4556,7 +4619,7 @@ Output the new file(s) only, plus one line per convention followed.
       '', '---',
       'PROJECT MEMORY — one question per file. Link to the file that owns a fact; never copy it.',
       ...CORE_FILES.map(([f, what]) => `• ${f} — ${what}`),
-      '• Optional: TROUBLESHOOTING.md (solved errors, verbatim) · README.md (for humans) · MANAGER.md (only when several agents work in parallel)',
+      '• Optional: TRAJECTORY.md (where we are going: now / next / later / never) · TROUBLESHOOTING.md (solved errors, verbatim) · README.md (for humans) · MANAGER.md (only when several agents work in parallel)',
       'Tools: AGENTS.md is the one shared rulebook. Claude Code reads CLAUDE.md and Gemini CLI reads GEMINI.md, so each holds just "@AGENTS.md"; Codex, Cursor, Copilot, Antigravity and most other agents read AGENTS.md directly. A tool-specific rules file is a pointer, never a copy.',
       `${sys.length > 1 ? 'These steps' : 'This step'} — reads: ${reads.join(', ')} · writes: ${writes.join(', ')}.`,
       ...sys.map(p => p.note).filter(Boolean),
@@ -4573,6 +4636,13 @@ Output the new file(s) only, plus one line per convention followed.
       `Run these ${n} prompts in order, as one session. Finish each step — including its checks — before starting the next. If a step says to wait for my approval, stop there and continue after I reply.`,
       ...ps.map((p, i) => `\n## Step ${i + 1} of ${n} — ${p.title}\n\n${p.prompt.trim()}`),
     ].join('\n') + '\n' + contractFooter(ps);
+  }
+
+  // Loaded as a plain script (no userscript manager), e.g. by scripts/export-vibe-prompts.js:
+  // hand over the prompts and the text builder, and stop before touching the page.
+  if (typeof GM_addStyle === 'undefined' && typeof window !== 'undefined' && typeof window.__PGV_EXPORT__ === 'function') {
+    window.__PGV_EXPORT__({ prompts: BUILTIN_PROMPTS, groups: GROUP_LABELS, fullText });
+    return;
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -4801,6 +4871,8 @@ Output the new file(s) only, plus one line per convention followed.
       color: var(--pgv-accent);
     }
     .pgv-group:first-child { padding-top: 4px; }
+    .pgv-modal-card { font-family: var(--pgv-font); color: var(--pgv-text); }
+    .pgv-btn-primary:hover { background: var(--pgv-accent); color: #000; }
     .pgv-pick {
       width: 16px;
       height: 16px;

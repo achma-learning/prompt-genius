@@ -31,7 +31,9 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 
 ## 4. Code Map (The Important Files Only)
 - `userscripts/general.user.js` — **General** (v1.0.0, `Ctrl/⌘+Shift+P`, prefix `pgg-`). The 16 non–vibe coding prompts. Split from the original script, so the engine is the same as below.
-- `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.0.0, `Alt+V`, prefix `pgv-`). 30 prompts as one system; see `docs/vibe-coding-system.md`.
+  - GITHUB PROMPTS section: `ghSync()` reads a repo folder (one git-trees API call plus raw downloads, 6 h cache in `pgg_github_cache`; config in `pgg_github`). `openGithubDialog()` runs once after install (`pgg_github_asked`) and from ⚙️. Needs `GM_xmlhttpRequest` and both `@connect` lines.
+- `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.0.0, `Alt+V`, prefix `pgv-`). 31 prompts as one system; see `docs/vibe-coding-system.md`.
+  - `__PGV_EXPORT__` hook (after `fullText()`): `node scripts/export-vibe-prompts.js` uses it to regenerate `vibe-coding-tools-101/system/*.md`. Re-run it after editing prompts; never edit those files by hand.
   - Each built-in prompt has `reads` / `writes` / `next` (and optional `note`). `contractFooter()` builds the shared footer from them, so the rules live in one place. `GROUP_LABELS` gives the Start / Loop / Harden / Sync / Craft headers.
   - `Tab` picks several prompts (`picked` set); `fullText()` joins them as numbered steps in list order with one merged footer.
   - Search ranks title hits, then category / written files, then body text.
@@ -57,7 +59,7 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
   - `renderVibe()` (1240) — Vibe Coding 101 steps with copy buttons.
   - `loadMedical()` (1295) — lazy-loads `userscripts/medical.user.js` for the « Prompts médicaux » section.
   - `copyToClipboard()` (1212) has a `file://` fallback.
-- `vibe-coding-tools-101/*.md` — long-form sources of the six original Vibe Coding prompts (the original script and `index.html` carry copies, ids `vc-*`), plus `manager.md`, the multi-agent Manager prompt.
+- `vibe-coding-tools-101/*.md` — long-form sources of the six original Vibe Coding prompts (the original script and `index.html` carry copies, ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/system/` is generated (see above).
 - `all_prompts/` — older prompt archive, plus the bilingual source of the Image Restoration prompts (`google-labs-flow-photo-restoration.md`).
 - `docs/*.png` — real screenshots used by `README.md`, taken by running the scripts headless. Retake them rather than editing by hand.
 - `README.md` (human install guide), `CHANGELOG.md` (what shipped), `LICENSE` (MIT).

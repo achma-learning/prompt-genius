@@ -1,6 +1,6 @@
 # The vibe coding prompt system
 
-`userscripts/vibe-coding.user.js` (⌥V / Alt+V) holds 30 prompts that work as one system instead of a pile of overlapping prompts. This page explains the design so you can judge it, extend it, or run it by hand.
+`userscripts/vibe-coding.user.js` (⌥V / Alt+V) holds 31 prompts that work as one system instead of a pile of overlapping prompts. This page explains the design so you can judge it, extend it, or run it by hand.
 
 ## One rule: one question per file, one owner per file
 
@@ -14,14 +14,14 @@ The project's memory lives in five core files. Each one answers exactly one ques
 | `MEMORY.md` | Where are we **now**? (current task and plan, state, blockers, next step) | Quick Start / Vibe Workflow 4 | Every Loop prompt; rewritten by Session Handoff |
 | `CHANGELOG.md` | What changed, and when? (past, append-only) | Build One Slice (one line per change) | CHANGELOG prompt |
 
-Optional: `TROUBLESHOOTING.md` (solved errors, verbatim), `README.md` (for humans), `MANAGER.md` (only when several agents work in parallel).
+Optional: `TRAJECTORY.md` (where it's going: now / next / later / never, kept by the TRAJECTORY.md Keeper), `TROUBLESHOOTING.md` (solved errors, verbatim), `README.md` (for humans), `MANAGER.md` (only when several agents work in parallel).
 
 Things that used to overlap, and where they live now:
 - **CONTEXT.md** is split up. Its rules and commands go to AGENTS.md, its code map to ARCHITECTURE.md, and its "current state" to MEMORY.md.
-- **TRAJECTORY.md**: decisions go to the ARCHITECTURE.md decisions log; plans go to MEMORY.md and the PRD's "later" list.
+- **TRAJECTORY.md** keeps only the future: Now / Next / Later / Never. Decisions already made go to the ARCHITECTURE.md decisions log, and the current task's steps go to MEMORY.md. Your notes in `vibe-coding-tools-101/101.md` asked for exactly this split: DECISIONS plus a ROADMAP with a "Killed" lane.
 - **PLAN.md**: the plan for a change is the "Current task" checklist in MEMORY.md.
 
-The long CONTEXT, TRAJECTORY and PROMPTS prompts are still available in the original script (`Prompt generator.user.js`) and in `vibe-coding-tools-101/`.
+The long CONTEXT and PROMPTS prompts, and the original TRAJECTORY prompt, are still available in the original script (`Prompt generator.user.js`) and in `vibe-coding-tools-101/`. Every prompt of this system is also exported as a `.md` file to [`vibe-coding-tools-101/system/`](../vibe-coding-tools-101/system/README.md), by `node scripts/export-vibe-prompts.js`.
 
 ## Same files in every coding tool
 
@@ -62,7 +62,7 @@ flowchart LR
   end
   subgraph Sync["Sync (keep it true)"]
     H[Session Handoff] --> PC
-    AS[AGENTS.md Keeper] --> AR[ARCHITECTURE.md Keeper] --> CL[CHANGELOG] --> TS[TROUBLESHOOTING] --> RM[README]
+    AS[AGENTS.md Keeper] --> AR[ARCHITECTURE.md Keeper] --> TJ[TRAJECTORY.md Keeper] --> CL[CHANGELOG] --> TS[TROUBLESHOOTING] --> RM[README]
   end
 ```
 
@@ -71,7 +71,7 @@ flowchart LR
 | **Start** | Quick Start · Vibe Workflow 1–4 · Project Memory Audit · Manager | Once per project, or when adopting an existing repo |
 | **Loop** | Plan the Change → Build One Slice → Verify → Review · Debug · Tests · Refactor · UI Polish | Every change, one slice at a time |
 | **Harden** | Security · Performance · Error Handling · Mobile · Accessibility · Launch Checklist | Before real users; Launch only checks what the other five don't cover |
-| **Sync** | Session Handoff · AGENTS.md Keeper · ARCHITECTURE.md Keeper · CHANGELOG · TROUBLESHOOTING · README | End of a session, or when docs drift |
+| **Sync** | Session Handoff · AGENTS.md Keeper · ARCHITECTURE.md Keeper · TRAJECTORY.md Keeper · CHANGELOG · TROUBLESHOOTING · README | End of a session, or when docs drift |
 | **Craft** | Prompt Composer · Compare Approaches · Follow the Existing Pattern | Whenever a request is fuzzy |
 
 Choose your lane:
@@ -99,7 +99,7 @@ The steps follow the palette's order, which is the workflow order, no matter whi
 
 ## Several agents at once: the Manager
 
-With more than one agent, the dangerous files are the shared ones. Ten agents appending to `MEMORY.md` at the same time will overwrite each other. The **Manager** prompt (`vibe-coding-tools-101/manager.md`) creates `MANAGER.md` and enforces one writer per file:
+With more than one agent, the dangerous files are the shared ones. Ten agents appending to `MEMORY.md` at the same time will overwrite each other. The **Manager** prompt ([`vibe-coding-tools-101/system/manager.md`](../vibe-coding-tools-101/system/manager.md)) creates `MANAGER.md` and enforces one writer per file:
 
 1. **Roster.** Each role runs one prompt and is the only writer of its files. The Manager alone writes MANAGER.md, MEMORY.md, CHANGELOG.md and TROUBLESHOOTING.md.
 2. **Leases.** Each task gets an explicit set of files or globs. A path appears in at most one active lease (the Locks table). Overlapping tasks run one after another, never in parallel.
