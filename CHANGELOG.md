@@ -6,12 +6,28 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 - Dates are commit dates.
 - `(a3f291)` is a short SHA — `git show a3f291` to see the diff.
 - Entries explain symptom + cause, not just "fixed."
-- The shipping artifact's version is the userscript's `@version` header (`Prompt generator.user.js:11`). There is no `package.json`.
+- Each userscript has its own version (`@version` header) and tag prefix: `original-v`, `medical-v`, `vibe-v`. There is no `package.json`. Current versions and install links: [`RELEASE.md`](./RELEASE.md). _(Corrected 2026-10-13: this line used to name only `Prompt generator.user.js`.)_
+- Last known-good commit: search for `✅`. The first hit from the top is the newest version or change that was checked and worked. _(None yet: the first tags come with the first release.)_
 
 ---
 
 ## [Unreleased]
 _Changes since v1.4.0 (1a66963)._
+
+### Rescue mode, releases and the Stabilize helper
+
+#### Added
+- CHANGELOG prompt, Rescue mode: "rescue", "everything is broken" or "it worked before" → stash uncommitted work, `git bisect` from the newest ✅ or release tag, report the first bad commit, then revert or fix forward on my OK. Never `reset --hard`, force-push or move tags. `(c261733)`
+- CHANGELOG prompt, known-good markers: released headings carry `tag <tag> (<sha>) ✅ known good`; `[Unreleased]` entries get `✅ verified (sha)` only when confirmed. `(c261733)`
+- RELEASE prompt (`vibe-coding-tools-101/generate-release.md`, `vc-release`): GitHub Release Manager for `RELEASE.md`, per-track tags, semver bumps, `gh release create` (REST fallback). Stops for my OK before anything ships. `(c261733)`
+- `RELEASE.md` draft: the three tracks (`original-v`, `medical-v`, `vibe-v`), pinned install links, rollback steps, release checklist and the planned historic tags. No tag exists yet. `(c261733)`
+- Vibe Coding helper 🧱 Stabilize a Prototype (`vc-stabilize`): commit the AI-drafted prototype as a baseline, document it without refactoring, run CONTEXT → CHANGELOG (full) → TRAJECTORY, then mark it ✅ and propose `v0.1.0`. `(c261733)`
+- README: "Releases & older versions" section. `(c261733)`
+
+#### Changed
+- `userscripts/vibe-coding.user.js` v1.0.0 → v1.1.0: seven doc prompts and eight helpers. The Debug helper now points to Rescue mode for "it worked a few commits ago". `(c261733)`
+- `scripts/sync-vibe-prompts.js` copies `generate-release.md` too (`DOC_FILES`); `helpers/` gains `stabilize.md`. `(c261733)`
+- `Prompt generator.user.js` and `index.html` keep their older prompt copies, by design (open question in TRAJECTORY). `(c261733)`
 
 ### Three userscripts in `userscripts/`
 
