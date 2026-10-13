@@ -24,6 +24,7 @@ _Nothing yet._
 
 ### Changed
 - RELEASE prompt works on **any repo**, not only userscripts. A new Phase 1 lists release candidates (`apk`, `zip`, `js`, `pdf`, `exe`…) and **asks** which files ship, where each comes from (in the repo, built, or from my computer), the version scheme (SemVer or date) and how users update. Answers go into `RELEASE.md` → Tracks, so later runs don't ask again. Phases renumbered: Read, Ask, Decide, Prepare, STOP, Ship. `(4c69e7c)`
+- RELEASE prompt works in **any AI**: it first says its mode. 🤖 **Agent** (Claude Code, Codex, Cursor…) does the work itself. 🧭 **Manual** (ChatGPT, Claude.ai, Gemini…) reads the repo through the public GitHub API or asks me to paste it, asks which files ship, then guides me with numbered **file cards** (path + full content, or exact find → replace, + the buttons to click) and click-by-click release steps on the GitHub website, waiting for my "done" after each. **Mixed**: an agent that can't create releases hands those steps to me. `RELEASE.md` gains a "How to release" section. `(3de1bbd)`
 - RELEASE prompt: more version sources (`build.gradle` `versionName`/`versionCode`, `pubspec.yaml`, `*.csproj`, `manifest.json`, `VERSION`); install and rollback notes per file type; SHA-256 for binaries; a verify step after the release; pinned links for release assets (`releases/download/<tag>/<file>`). `(4c69e7c)`
 
 ### Added
