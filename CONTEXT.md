@@ -97,7 +97,8 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 - **Working on now:** PR #11 on branch `claude/laughing-hypatia-i37zcf`. See `HANDOFF.md`.
   - The three userscripts in `userscripts/`.
   - General: GitHub prompts (#1).
-  - Vibe Coding: the original 6 plus 7 helpers (#4).
+  - Vibe Coding: the original 6 (TRAJECTORY rewritten as a final goal + to-do list) plus 7 helpers (#4).
+- **To-do list:** `TRAJECTORY.md`.
 - **Next up:**
   1. Reconcile `index.html` `PROMPTS` with the main `BUILTIN_PROMPTS`, ideally with the same export-hook trick the medical script uses.
   2. Port the medical script's fixes back to the main script: draft-preserving insert, `Ctrl+C` selection check, `e.code` for Alt keys, JSON/CSV import validation.

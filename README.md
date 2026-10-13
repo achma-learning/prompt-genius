@@ -87,7 +87,7 @@ The Vibe Coding script (`Alt+V`) keeps the simple **Vibe Coding 101** system. Pa
 |---|---|
 | `CONTEXT.md` | the **present**: what the project is, how to run it, the code map, rules, landmines, current state |
 | `CHANGELOG.md` | the **past**: what changed and why, decoded from git history |
-| `TRAJECTORY.md` | the **future**: decisions, work in progress, ideas killed |
+| `TRAJECTORY.md` | the **future**: the final goal plus a to-do list (now / next / later / done / won't do), built from your requests and the repo's GitHub issues |
 | `README.md` | the page for humans |
 | `TROUBLESHOOTING.md` | every bug already fixed, searchable by its exact error |
 | `PROMPTS.md` | the prompts that built the repo |
@@ -155,5 +155,6 @@ MIT. See [`LICENSE`](./LICENSE).
 ## See also
 
 - [`CONTEXT.md`](./CONTEXT.md) is for AI assistants joining the project
+- [`TRAJECTORY.md`](./TRAJECTORY.md) is the project's final goal and to-do list
 - [`HANDOFF.md`](./HANDOFF.md) summarizes the latest working session
 - [`CHANGELOG.md`](./CHANGELOG.md) lists what shipped when

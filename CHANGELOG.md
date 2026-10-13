@@ -27,12 +27,14 @@ _Changes since v1.4.0 (1a66963)._
   - Helpers: Plan Before Code, Debug, Review the Diff, Refactor Safely, Security Check, Manager, Handoff.
   - Each helper reads CONTEXT.md and ends by updating CONTEXT.md §7 and CHANGELOG.md, so no new files are needed. Manager adds `MANAGER.md` (one file per agent at a time), and Handoff writes `HANDOFF.md` (a summary of the chat).
   - `Tab` picks several prompts; `Enter` inserts them as one numbered session. Search ranks title matches first.
+  - TRAJECTORY prompt rewritten (#4): it now produces a **final goal plus a to-do list** (Now / Next / Later / Done / Won't Do / Questions), built from the user's requests in the conversation and the repo's GitHub issues, with one cited line per item. Source: `vibe-coding-tools-101/generate-trajectory.md`. The original script keeps the old version.
   - A first draft with 31 prompts and new files (AGENTS.md, MEMORY.md, PRD, ARCHITECTURE…) was dropped before release as too complicated.
 
 #### Changed
 - The medical script moved to `userscripts/medical.user.js`, and its `@downloadURL`/`@updateURL` follow it. Installs from the old root URL stop updating; reinstall once from the README link. `@name`/`@namespace` are unchanged, so saved prompts and settings stay. `index.html` loads it from the new path.
 - Each split script has its own CSS/id prefix (`pgg-`, `pgv-`, `pgm-`), shortcut and button, so all of them run on the same page without clashing.
 - `vibe-coding-tools-101/101.txt` and `102.txt` renamed to `.md` (#4).
+- `TRAJECTORY.md` added for this repo, made with the new prompt. `HANDOFF.md` summarizes the session.
 - `Prompt generator.user.js` is unchanged and stays available for existing Greasy Fork installs. Don't run it together with General: both use `Ctrl+Shift+P`.
 
 ### Medical userscript — `prompt-med.user.js` v3.1.0 (was `prompt med.js` v3.0.0)

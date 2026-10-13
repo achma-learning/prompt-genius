@@ -8,7 +8,7 @@ Split the repo's prompts into three separate userscripts (general, medical, vibe
 - **Original kept:** `Prompt generator.user.js` is unchanged, for existing Greasy Fork installs. Don't run it together with General: both use `Ctrl+Shift+P`.
 - **Medical moved** from `prompt-med.user.js` to `userscripts/medical.user.js`. `@name`/`@namespace` are unchanged, so saved data stays. Old installs need one reinstall to keep getting updates.
 - **Vibe coding: keep it simple.** A first design was dropped as too complicated: 31 prompts, new files (AGENTS.md, MEMORY.md, PRD, ARCHITECTURE), a shared footer, stages and a KhazP workflow. The final version has:
-  - your original 6 doc prompts (CONTEXT, CHANGELOG, TRAJECTORY, README, TROUBLESHOOTING, PROMPTS), byte-identical to the original script;
+  - your original 6 doc prompts (CONTEXT, CHANGELOG, TRAJECTORY, README, TROUBLESHOOTING, PROMPTS). Five are byte-identical to the original script; TRAJECTORY now writes a final goal + to-do list;
   - 7 helpers: Plan Before Code, Debug, Review the Diff, Refactor Safely, Security Check, Manager, Handoff. They only read CONTEXT.md and update CONTEXT.md §7 and CHANGELOG.md.
 - **Several agents:** the Manager helper keeps `MANAGER.md`. Each agent may edit only its own files, on its own branch. Only the Manager edits shared docs (CONTEXT, CHANGELOG…).
 - **Several prompts at once:** `Tab` picks prompts and `Enter` inserts them as one numbered session, in list order.
@@ -26,12 +26,12 @@ Split the repo's prompts into three separate userscripts (general, medical, vibe
 - Checks: `node --check` on all scripts, plus a Playwright run with 36 checks, all passing (all scripts on one page, GitHub sync with a stubbed network, multi-select, original prompts unchanged).
 
 ## Not done / open
-- Issue #4 also asked to *improve the TRAJECTORY prompt*. It's left unchanged on purpose, to keep the original 6 as they are. An improved draft existed (lanes Now / Next / Later / Never, each item with a reason); it can be brought back if you want it.
+- The TRAJECTORY prompt is now a final goal plus a to-do list built from requests and issues (#4). The original script and `index.html` still carry the old version. See `TRAJECTORY.md` for the to-do list and open questions.
 - The userscripts are built from `Prompt generator.user.js` by scripts in the working session, not in the repo. From now on, edit the files in `userscripts/` directly.
 - GitHub prompts only work with public repos (no token support).
 
 ## Next step
-Review and merge PR #11. Then install the three scripts from the README links and try them on a real chat site.
+Review and merge PR #11, then follow `TRAJECTORY.md` (T014 onwards).
 
 ## How to continue
-"Read HANDOFF.md, CONTEXT.md and CHANGELOG.md, then do the next step above."
+"Read HANDOFF.md, CONTEXT.md, CHANGELOG.md and TRAJECTORY.md, then do the next step above."
