@@ -94,7 +94,7 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 
 ## 7. Current State
 - **Last shipped:** Medical v3.1.0 and the landing page's « Prompts médicaux » section (merged in PR #9).
-- **Working on now:** PR #11 on branch `claude/laughing-hypatia-i37zcf`.
+- **Working on now:** PR #12 (follow-up to #11) on branch `claude/laughing-hypatia-i37zcf`.
   - The three userscripts in `userscripts/`.
   - General: GitHub prompts (#1).
   - Vibe Coding: the original 6 (TRAJECTORY rewritten as a final goal + to-do list) plus 7 helpers (#4).
