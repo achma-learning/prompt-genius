@@ -31,11 +31,11 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 
 ## 4. Code Map (The Important Files Only)
 - `userscripts/general.user.js` — **General** (v1.0.0, `Ctrl/⌘+Shift+P`, prefix `pgg-`). The 16 non–vibe coding prompts. Split from the original script, so the engine is the same as below.
-- `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.0.0, `Alt+V`, prefix `pgv-`). 30 prompts as one system; see `docs/vibe-coding-system.md`.
-  - Each built-in prompt has `reads` / `writes` / `next` (and optional `note`). `contractFooter()` builds the shared footer from them, so the rules live in one place. `GROUP_LABELS` gives the Start / Loop / Harden / Sync / Craft headers.
-  - `Tab` picks several prompts (`picked` set); `fullText()` joins them as numbered steps in list order with one merged footer.
-  - Search ranks title hits, then category / written files, then body text.
-  - Vibe Workflow 1–4 (`vw-*`) are verbatim KhazP files (MIT notice above them). Don't edit them; put adjustments in their `note`.
+  - GITHUB PROMPTS section: `ghSync()` reads a repo folder (one git-trees API call plus raw downloads, 6 h cache in `pgg_github_cache`; config in `pgg_github`). `openGithubDialog()` runs once after install (`pgg_github_asked`) and from ⚙️. Needs `GM_xmlhttpRequest` and both `@connect` lines.
+- `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.0.0, `Alt+V`, prefix `pgv-`). The six Vibe Coding 101 prompts (cat `Docs`, text copied from `vibe-coding-tools-101/*.md`) plus seven helpers (cat `Helpers`) that only read/update CONTEXT.md and CHANGELOG.md.
+  - `Tab` picks several prompts (`picked` set); `fullText()` joins them as numbered steps in list order.
+  - `node scripts/sync-vibe-prompts.js` keeps prompts and files in sync. It copies the six doc prompts from `vibe-coding-tools-101/*.md` (their source) into the userscript, then writes the helpers (source: the userscript) to `vibe-coding-tools-101/helpers/*.md` through the `__PGV_EXPORT__` hook. Run it after editing either side; never edit `helpers/*.md` by hand.
+  - `GROUP_LABELS` gives the two list headers. Search ranks title hits, then category, then body text.
 - `Prompt generator.user.js` — **Original all-in-one userscript** (v1.5.0, ~1970 lines, one IIFE, English). Kept unchanged for existing Greasy Fork installs. New work goes to `userscripts/`.
   - `BUILTIN_PROMPTS` (line 37) — 22 prompts: general, 6 Vibe Coding, 4 Image Restoration.
   - `PROVIDERS` (line 1030) — hostname → input selector. Add chat sites here **and** in `@match`.
@@ -57,7 +57,7 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
   - `renderVibe()` (1240) — Vibe Coding 101 steps with copy buttons.
   - `loadMedical()` (1295) — lazy-loads `userscripts/medical.user.js` for the « Prompts médicaux » section.
   - `copyToClipboard()` (1212) has a `file://` fallback.
-- `vibe-coding-tools-101/*.md` — long-form sources of the six original Vibe Coding prompts (the original script and `index.html` carry copies, ids `vc-*`), plus `manager.md`, the multi-agent Manager prompt.
+- `vibe-coding-tools-101/*.md` — the source of the six Vibe Coding doc prompts. The Vibe Coding script gets them through `sync-vibe-prompts.js`; the original script and `index.html` still carry the older copies (ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/helpers/` is generated (see above).
 - `all_prompts/` — older prompt archive, plus the bilingual source of the Image Restoration prompts (`google-labs-flow-photo-restoration.md`).
 - `docs/*.png` — real screenshots used by `README.md`, taken by running the scripts headless. Retake them rather than editing by hand.
 - `README.md` (human install guide), `CHANGELOG.md` (what shipped), `LICENSE` (MIT).
@@ -93,12 +93,12 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 - **Look removable but aren't:** `vibe-coding-tools-101/*.md` and `senior-userscript-engineer.md` (canonical long-form sources); `all_prompts/photoshop ai.jpeg` (goes with the `photoshop-chatgpt` page prompt); `chatGPT CODES.TXT` (source of « Prompt Power Codes»; odd filename, don't rename); `docs/*.png` (README images).
 
 ## 7. Current State
-- **Last shipped:** Main v1.5.0 (Image Restoration prompts, Google Labs support, Greasy Fork update URLs) and the landing page's Vibe Coding 101 section, in an open PR on branch `claude/jolly-franklin-t5jakb`.
-- **Working on now:** Medical v3.1.0 on the same branch:
-  - desktop three-pane palette, « Mes filtres » and the prompt on/off settings;
-  - per-occurrence form fields and 15 bug fixes (see `CHANGELOG.md`);
-  - the « Prompts médicaux » section in `index.html`;
-  - the rename `prompt med.js` → `userscripts/medical.user.js`.
+- **Last shipped:** Medical v3.1.0 and the landing page's « Prompts médicaux » section (merged in PR #9).
+- **Working on now:** PR #12 (follow-up to #11) on branch `claude/laughing-hypatia-i37zcf`.
+  - The three userscripts in `userscripts/`.
+  - General: GitHub prompts (#1).
+  - Vibe Coding: the original 6 (TRAJECTORY rewritten as a final goal + to-do list) plus 7 helpers (#4).
+- **To-do list:** `TRAJECTORY.md`.
 - **Next up:**
   1. Reconcile `index.html` `PROMPTS` with the main `BUILTIN_PROMPTS`, ideally with the same export-hook trick the medical script uses.
   2. Port the medical script's fixes back to the main script: draft-preserving insert, `Ctrl+C` selection check, `e.code` for Alt keys, JSON/CSV import validation.

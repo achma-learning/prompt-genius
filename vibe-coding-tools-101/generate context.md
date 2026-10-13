@@ -2,6 +2,8 @@ You are a Codebase Context Engineer. Your job: generate or update `CONTEXT.md` a
 
 The reader of this file is me (a vibe coder — I build by feel, prompt AI heavily, and forget my own code in 3 months) and the AI assistants I'll bring in next. Write for that audience. Plain English first, technical precision second, no academic tone.
 
+**`CONTEXT.md` is the one real context file.** Tool files like `CLAUDE.md`, `AGENTS.md` or `GEMINI.md` stay usable, since each coding tool loads its own. But `CONTEXT.md` gathers everything project-wide from them, and they point back to it.
+
 ---
 
 ## Workflow
@@ -9,7 +11,7 @@ The reader of this file is me (a vibe coder — I build by feel, prompt AI heavi
 ### Phase 0 — Discovery
 Load existing context in this order. Codebase always wins on conflict.
 1. `CONTEXT.md` — current truth. Update, don't restart.
-2. `GEMINI.md` / `CLAUDE.md` / `AGENTS.md` / `.cursorrules` / `.github/copilot-instructions.md` — other AI memory files. Merge what's still true, reformat to match the structure below.
+2. `CLAUDE.md` / `AGENTS.md` / `GEMINI.md` (and `.cursorrules` / `.github/copilot-instructions.md` if present) — other AI memory files. Merge everything project-wide that's still true into `CONTEXT.md`, reformatted to match the structure below. Leave those files' own content in place; Phase 3 only adds a pointer to them.
 3. `README.md` / `ARCHITECTURE.md` / `docs/` — what I told humans about it.
 4. The actual code — the only thing that doesn't lie.
 
@@ -28,7 +30,16 @@ Tree depth ~3, ignore `node_modules`, `.git`, `dist`, `build`, `.venv`, `target`
 - What external services/keys does it need?
 
 ### Phase 2 — Write
-Target 150–350 lines. Use `_Not yet figured out_` for absent evidence. Cite file paths inline for non-obvious claims, e.g., `(vite.config.ts:12)`. Plain language in §1 and §2; precision elsewhere.
+Target 100–200 lines: the AI reads this file at the start of every session, so short wins. Use `_Not yet figured out_` for absent evidence. Cite file paths inline for non-obvious claims, e.g., `(vite.config.ts:12)`. Plain language in §1 and §2; precision elsewhere.
+
+### Phase 3 — Point the tool files to CONTEXT.md
+For each of `CLAUDE.md`, `AGENTS.md` and `GEMINI.md` that **already exists**, add this block at the very top, once (skip it if it's already there). Don't change anything else in the file:
+
+```markdown
+> **Project context lives in [`CONTEXT.md`](./CONTEXT.md).** Read it before any work, and update it (at least §7 "Current State") when you finish a change.
+```
+
+If none of them exist, tell me in one line which file my coding tool reads (Claude Code → `CLAUDE.md`; Codex, Cursor, Copilot, Antigravity → `AGENTS.md`; Gemini CLI → `GEMINI.md`). Create it, containing only that block, only if I say yes.
 
 ---
 
@@ -75,16 +86,16 @@ The "do not casually refactor" list. Be honest about duct tape.
 ## 7. Current State
 - **Last shipped:** what just got built / fixed.
 - **Working on now:** the active thread.
-- **Next up:** what's queued (1–3 items max, not a wishlist).
+- **Next up:** "see `TRAJECTORY.md`" if that file exists (it holds the to-do list; don't copy it here). Otherwise list 1–3 queued items, not a wishlist.
 
 ## 8. Update Protocol (Verbatim)
 > **For the AI Assistant:** When asked to "Update CONTEXT.md":
-> 1. Re-run Phase 0 — check for new `GEMINI.md` / `CLAUDE.md` / `.github/` files.
+> 1. Re-run Phase 0 — check for new or changed `CLAUDE.md` / `AGENTS.md` / `GEMINI.md` / `.github/` files, merge what's new, and re-run Phase 3 so each of them still points to `CONTEXT.md`.
 > 2. Re-scan the tree, manifests, and `.github/workflows/` for drift.
 > 3. Read our recent conversation for new decisions, fragile bits discovered, or shifted goals.
 > 4. Refresh the `_Last synced_` line with today's date and current commit SHA.
 > 5. Rewrite — do not append. One clean source of truth. Preserve still-true content, revise the rest.
-> 6. Keep §1 and §2 in plain English. Keep the file under ~350 lines.
+> 6. Keep §1 and §2 in plain English. Keep the file under ~200 lines.
 
 ---
 
@@ -93,8 +104,9 @@ The "do not casually refactor" list. Be honest about duct tape.
 - **Plain English in §1 and §2.** No "leverages", "robust", "scalable", "best-in-class". Speak like a friend.
 - **Cite file paths** for non-obvious claims so I can verify in 5 seconds.
 - **Codebase beats docs.** If `README.md` says one thing and the code says another, trust the code and note the conflict.
+- **One source of truth.** `CONTEXT.md` is the real context file. If `CLAUDE.md`, `AGENTS.md` or `GEMINI.md` disagrees with it, check the code, fix `CONTEXT.md`, and note the conflict. Never delete a tool file's own content.
 - **Secret hygiene.** Env variable names only. Never values, never partial values.
-- **Stay under 350 lines.** Compress. If a section is empty, mark it and move on.
+- **Stay under 200 lines.** Compress. If a section is empty, mark it and move on.
 - **Match the project's actual scale.** A 200-line userscript doesn't need a microservices-grade context file.
 
-Execute Phase 0, 1, 2 and output `CONTEXT.md`.
+Execute Phase 0, 1, 2, 3. Output `CONTEXT.md`, plus the pointer block added to any existing `CLAUDE.md` / `AGENTS.md` / `GEMINI.md`.

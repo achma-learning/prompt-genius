@@ -17,18 +17,28 @@ _Changes since v1.4.0 (1a66963)._
 
 #### Added
 - `userscripts/general.user.js` v1.0.0 (`Ctrl/⌘+Shift+P`): the 16 non–vibe coding prompts of the original script.
-- `userscripts/vibe-coding.user.js` v1.0.0 (`Alt/⌥+V`): 30 prompts that work as one system.
-  - Each prompt owns one project file (AGENTS.md, docs/PRD.md, docs/ARCHITECTURE.md, MEMORY.md, CHANGELOG.md) and names the next step.
-  - A footer generated from each prompt's `reads` / `writes` / `next` states the shared rules once: core files, tool adapters for Claude Code / Codex / Cursor / Antigravity, plain-chat fallback, multi-agent leases. It can be turned off in ⚙️.
-  - Groups: Start → Loop → Harden → Sync → Craft. Vibe Workflow 1–4 are verbatim from KhazP/vibe-coding-prompt-template (MIT).
-  - Multi-select: `Tab` picks prompts, and `Enter` inserts them as one numbered session in workflow order, with a single merged footer.
-  - Search ranks title matches above body matches; the toast names the next step.
-  - Design: `docs/vibe-coding-system.md`.
-- Manager prompt (`vibe-coding-tools-101/manager.md`, also in the Vibe Coding script): coordinates several AI agents through `MANAGER.md` (roster, file leases, locks, merge queue) so no file has two writers at once.
+- General loads prompts from a GitHub repo folder, such as your fork's `all_prompts/` (#1).
+  - A window shown once after install asks for `owner/repo` or a folder URL; it's also under ⚙️ → GitHub prompts.
+  - Files: one `.md` / `.txt` file per prompt (title = first `# heading`), or `.json` lists; sub-folders become categories.
+  - One API call per sync, files from raw.githubusercontent.com, cached for 6 h (the unauthenticated limit is 60 calls/h); clear errors for rate limits and wrong repos.
+  - Read-only GETs, limited by `@connect` to api.github.com and raw.githubusercontent.com. Colors from remote files are restricted to hex values.
+- `vibe-coding-tools-101/helpers/`: the helper prompts as ready-to-copy `.md` files (#4). `node scripts/sync-vibe-prompts.js` writes them from the userscript, and copies the six doc prompts the other way, from `vibe-coding-tools-101/*.md` into the userscript. The script uses the `__PGV_EXPORT__` hook, the same trick the medical script uses for `index.html`.
+- `userscripts/vibe-coding.user.js` v1.0.0 (`Alt/⌥+V`): the six Vibe Coding 101 doc prompts (CONTEXT.md, CHANGELOG.md, TRAJECTORY.md, README.md, TROUBLESHOOTING.md, PROMPTS.md), plus seven helpers.
+  - Helpers: Plan Before Code, Debug, Review the Diff, Refactor Safely, Security Check, Manager, Handoff.
+  - Each helper reads CONTEXT.md and ends by updating CONTEXT.md §7 and CHANGELOG.md, so no new files are needed. Manager adds `MANAGER.md` (one file per agent at a time), and Handoff writes `HANDOFF.md` (a summary of the chat).
+  - `Tab` picks several prompts; `Enter` inserts them as one numbered session. Search ranks title matches first.
+  - The six doc prompts now read their text from `vibe-coding-tools-101/*.md`, so each prompt has a single source. The original script and `index.html` keep the old copies.
+  - CONTEXT prompt: `CONTEXT.md` is the one real context file. It merges what's true from `CLAUDE.md` / `AGENTS.md` / `GEMINI.md` and adds a "read and update CONTEXT.md" pointer to the ones that exist, without touching their own content. §7 "Next up" points to TRAJECTORY.md. Target ≤ 200 lines.
+  - CHANGELOG prompt: keeps the **complete history** (no 600-line cap, no 12-month archive), for AI troubleshooting and human readers. Six buckets (Added, Changed, Fixed, Removed, Security, Broken); `Architectural:` and `Deprecated:` become prefixes under Changed. Quick mode (new commits only) by default; full rebuild on request. Exact error messages are quoted so they can be searched.
+  - README prompt: a 3-step **Quick start** line at the top, kept in sync with "Install & run".
+  - TRAJECTORY prompt rewritten (#4): it now produces a **final goal plus a to-do list** (Now / Next / Later / Done / Won't Do / Questions), built from the user's requests in the conversation and the repo's GitHub issues, with one cited line per item. Source: `vibe-coding-tools-101/generate-trajectory.md`. The original script keeps the old version.
+  - A first draft with 31 prompts and new files (AGENTS.md, MEMORY.md, PRD, ARCHITECTURE…) was dropped before release as too complicated.
 
 #### Changed
 - The medical script moved to `userscripts/medical.user.js`, and its `@downloadURL`/`@updateURL` follow it. Installs from the old root URL stop updating; reinstall once from the README link. `@name`/`@namespace` are unchanged, so saved prompts and settings stay. `index.html` loads it from the new path.
 - Each split script has its own CSS/id prefix (`pgg-`, `pgv-`, `pgm-`), shortcut and button, so all of them run on the same page without clashing.
+- `vibe-coding-tools-101/101.txt` and `102.txt` renamed to `.md` (#4).
+- `TRAJECTORY.md` added for this repo, made with the new prompt.
 - `Prompt generator.user.js` is unchanged and stays available for existing Greasy Fork installs. Don't run it together with General: both use `Ctrl+Shift+P`.
 
 ### Medical userscript — `prompt-med.user.js` v3.1.0 (was `prompt med.js` v3.0.0)
