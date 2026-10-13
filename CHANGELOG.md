@@ -20,6 +20,33 @@ _Nothing yet._
 
 ---
 
+## [general v1.1.0] — 2026-10-13
+
+### Added
+- « ChatGPT Photoshop Guide » (`photoshop-chatgpt`, category Creative), until now only on the landing page. `(a405fc6)`
+- `window.__PGG_EXPORT__` hook: loaded as a plain script (no userscript manager), the script hands its prompt list to `index.html` and stops before any `GM_*` call. No change inside Tampermonkey / Violentmonkey. `(a405fc6)`
+
+### Changed
+- Eight prompts take the landing page's fuller text, which follows the `all_prompts/` sources more closely: Chris Voss negotiation (tone and output constraints), Feynman (the full `<System>` / `<Context>` loop), learning cards, multidisciplinary expert, critical thinking coach, honest responses, focus (the seven prompts written out), prompt codes. Ids unchanged. `(a405fc6)`
+
+---
+
+## 2026-10-13 — landing page loads the userscripts
+
+### Changed
+- Architectural: `index.html` has no prompt list of its own anymore (T016). It loads `userscripts/general.user.js` and `userscripts/vibe-coding.user.js` through their export hooks, like the medical section, so the page always shows what the scripts ship: 32 prompts instead of 21, now with the RELEASE prompt and the eight helpers. Short card blurbs and the "when to run it" lines stay in the page as `DESCRIPTIONS` / `VIBE_STEPS` (page copy, not prompt text). `(a405fc6)`
+- Vibe Coding 101 section: seven numbered doc prompts, then the helpers under their own heading, plus an "Install the userscript" button. The doc prompts are the current versions from `vibe-coding-tools-101/*.md`, not the March copies. `(a405fc6)`
+- The page ids `average-search`, `focus-recovery` and `chatgpt-codes` became the scripts' `honest-search`, `focus` and `prompt-codes`. `(a405fc6)`
+
+### Fixed
+- Card icons on the landing page had no tinted background: the colour was `var(--red)` and the code appended `22` for transparency, which is invalid CSS. Colours now come from the scripts as `#rrggbb`. `(a405fc6)`
+- If a userscript file can't be loaded (page opened without its `userscripts/` folder), the grid says which file is missing and offers "Try again", instead of staying empty. `(a405fc6)`
+
+### Security
+- Titles, categories, icons and ids from the scripts are escaped before they reach `innerHTML` in the grid, the Vibe Coding cards and the `⌘K` palette; card colours must match `#rrggbb`. `(a405fc6)`
+
+---
+
 ## [vibe v1.3.0] — 2026-10-13
 
 ### Changed

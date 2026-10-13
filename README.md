@@ -12,7 +12,7 @@ It comes as three separate userscripts. Install only the ones you want; they run
 
 | Userscript | Shortcut | What's inside |
 |---|---|---|
-| **[General](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js)** | `Ctrl+Shift+P` / `⌘⇧P` | 16 everyday prompts (thinking coaches, the Feynman technique, negotiation, photo restoration for Google Labs Flow…) **plus your own, loaded from your GitHub fork** |
+| **[General](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js)** | `Ctrl+Shift+P` / `⌘⇧P` | 17 everyday prompts (thinking coaches, the Feynman technique, negotiation, photo restoration for Google Labs Flow…) **plus your own, loaded from your GitHub fork** |
 | **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | the 6 Vibe Coding 101 prompts (CONTEXT.md, CHANGELOG.md…), a RELEASE prompt, plus 8 everyday helpers for coding with AI |
 | **[Médical](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js)** | `Alt+M` / `⌥M` | 226 French prompts for 21 health jobs |
 
@@ -101,9 +101,9 @@ Below them are **helpers** for everyday coding: Stabilize a Prototype (turn an A
 
 ## No install? Just copy
 
-Download [`index.html`](./index.html) and open it in any browser. It's the same prompt library as a web page. Press `Ctrl+K` to search, and click the copy icon on any card.
+Download the repository (**Code → Download ZIP**), unzip it and open `index.html` in any browser. It's the same prompt library as a web page: it reads the prompts straight from the three userscripts, so keep the `userscripts/` folder next to `index.html`. Press `Ctrl+K` to search, and click the copy icon on any card.
 
-The **Vibe Coding 101** section at the top has six prompts, in order, each with a one-click copy button. Paste them into your AI coding assistant (Claude Code, Cursor, Copilot…) with your repo open, and each one writes one file:
+The **Vibe Coding 101** section at the top has seven prompts, in order, each with a one-click copy button, and the helpers below them. Paste them into your AI coding assistant (Claude Code, Cursor, Copilot…) with your repo open, and each one writes one file:
 
 1. `CONTEXT.md`: what the project is, for the next AI that opens it
 2. `CHANGELOG.md`: what changed and why, decoded from your git history
@@ -111,6 +111,7 @@ The **Vibe Coding 101** section at the top has six prompts, in order, each with 
 4. `README.md`: the page you're reading (made with prompt #4)
 5. `TROUBLESHOOTING.md`: every bug you already fixed, searchable by its exact error message
 6. `PROMPTS.md`: the prompts that built the repo
+7. `RELEASE.md`: ships a version: tag, GitHub Release, install links
 
 The full-length versions live in [`vibe-coding-tools-101/`](./vibe-coding-tools-101), and the helpers in [`vibe-coding-tools-101/helpers/`](./vibe-coding-tools-101/helpers/README.md).
 
