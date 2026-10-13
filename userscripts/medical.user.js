@@ -26,8 +26,8 @@
 // @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // @license      MIT
-// @downloadURL  https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/prompt-med.user.js
-// @updateURL    https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/prompt-med.user.js
+// @downloadURL  https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js
+// @updateURL    https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js
 // ==/UserScript==
 
 // Keep @name and @namespace unchanged: the userscript manager identifies the script by them,
