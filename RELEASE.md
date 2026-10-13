@@ -18,7 +18,7 @@ Three userscripts, each with its own version and tag prefix. **General** (`users
 |---|---|---|---|---|---|
 | Original | v1.5.0 | `original-v1.5.0` | 2026-08-24 | [Greasy Fork](https://update.greasyfork.org/scripts/571159/Prompt%20Genius%20%E2%80%94%20AI%20Prompt%20Injector.user.js) | [v1.5.0](https://github.com/achma-learning/prompt-genius/raw/original-v1.5.0/Prompt%20generator.user.js) |
 | Medical | v3.1.0 | `medical-v3.1.0` | 2026-10-12 | [main](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js) | [v3.1.0](https://github.com/achma-learning/prompt-genius/raw/medical-v3.1.0/prompt-med.user.js) |
-| Vibe Coding | v1.1.0 | `vibe-v1.1.0` | _on release_ | [main](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js) | [v1.1.0](https://github.com/achma-learning/prompt-genius/raw/vibe-v1.1.0/userscripts/vibe-coding.user.js) |
+| Vibe Coding | v1.2.0 | `vibe-v1.2.0` | _on release_ | [main](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js) | [v1.2.0](https://github.com/achma-learning/prompt-genius/raw/vibe-v1.2.0/userscripts/vibe-coding.user.js) |
 
 Pinned link format: `https://github.com/achma-learning/prompt-genius/raw/<tag>/<path>`, where `<path>` is the file's path **at that tag** (spaces as `%20`).
 
@@ -56,7 +56,8 @@ Newest first. **Planned** — nothing is tagged yet. Historic versions get tags 
 
 | Date | Tag | Commit | Path at that tag | Release? |
 |---|---|---|---|---|
-| _on release_ | `vibe-v1.1.0` | _merge of this PR_ | `userscripts/vibe-coding.user.js` | ✅ |
+| _on release_ | `vibe-v1.2.0` | _merge of the Keep a Changelog PR_ | `userscripts/vibe-coding.user.js` | ✅ |
+| 2026-10-13 | `vibe-v1.1.0` | `c261733` | `userscripts/vibe-coding.user.js` | tag only |
 | 2026-10-13 | `vibe-v1.0.0` | `6550c38` | `userscripts/vibe-coding.user.js` | tag only |
 | 2026-10-12 | `medical-v3.1.0` | `1c2efb7` | `prompt-med.user.js` | ✅ |
 | 2026-09-24 | `medical-v3.0.0` | `befa51d` | `prompt med.js` | tag only |
@@ -68,4 +69,4 @@ Newest first. **Planned** — nothing is tagged yet. Historic versions get tags 
 | 2026-04-12 | `original-v1.1.0` | `8c7063e` | `Prompt generator.user.js` | tag only |
 | 2026-03-26 | `original-v1.0.0` | `34a7a31` | `Prompt generator.user.js` | tag only |
 
-Same version, later commits: `original-v1.5.0` → `b03f1f5` changed only the update URLs; `medical-v3.1.0` → `6550c38` only moved the file and its URLs; `vibe-v1.0.0` → the 26-prompt first draft, replaced by the 13-prompt version (`2ee8de9`) without a bump.
+Same version, later commits: `original-v1.5.0` → `b03f1f5` changed only the update URLs; `medical-v3.1.0` → `6550c38` only moved the file and its URLs; `vibe-v1.0.0` → the 30-prompt first draft, replaced by the 13-prompt version (`2ee8de9`) without a bump. `medical-v2.0.0` is a header-only stub that never ran (`SyntaxError: Unexpected end of input`): tagged so every version has one, never marked ✅.

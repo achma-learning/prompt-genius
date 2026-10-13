@@ -4,9 +4,22 @@ The audience is a high-velocity developer who treats this file as working memory
 
 **This is the complete history.** Every notable change since the first commit stays here, forever. The file is allowed to grow: a long, searchable history is the point. Nothing is trimmed, archived or deleted.
 
+**Format: [Keep a Changelog](https://keepachangelog.com/en/)** (version 1.1.0: https://keepachangelog.com/en/1.1.0/). Read it if you don't know it. This prompt follows its principles and adds four things for vibe coding: a SHA on every entry, a `Broken` bucket, ✅ known-good markers, and Rescue mode.
+
+**Keep a Changelog principles (apply all of them):**
+- Changelogs are for humans, not machines: write what changed for the person using or maintaining it.
+- Every version gets its own section, even one that was never tagged. Mark a pulled version `[YANKED]`.
+- Changes of the same type are grouped, in the same bucket order every time.
+- Versions are linkable: link references at the bottom of the file, one per version.
+- Latest version first. Each version shows its date, in ISO 8601 (`YYYY-MM-DD`), never a regional format.
+- Say whether the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- An `[Unreleased]` section on top collects what's coming, so it's easy to move into the next version.
+- Not a commit log dump: one entry per noteworthy change, often several commits.
+- Never hide deprecations, removals or breaking changes. If you do nothing else, list those.
+
 **Three modes:**
 - **Quick (default):** add only what happened since the newest SHA already in the file. Use it after every work session.
-- **Full rebuild:** only when I say "full changelog", or when `CHANGELOG.md` doesn't exist yet. Walk the whole `git log` from the first commit, oldest to newest, and write every dated section.
+- **Full rebuild:** only when I say "full changelog", or when `CHANGELOG.md` doesn't exist yet. Walk the whole `git log` from the first commit, oldest to newest, and write every version section and every dated section. Keep a Changelog allows improving an existing changelog: add missing versions, move entries filed under the wrong version, add a missed breaking change. Keep each entry's text, and note every correction inline.
 - **Rescue:** when I say "rescue", "everything is broken" or "it worked before". Find the commit that broke it with `git bisect`, then log it. See **Rescue Mode** below.
 
 ---
@@ -39,15 +52,30 @@ For every commit since the last entry:
 
 ### Phase 2 — Categorization & Versioning
 
-**Buckets (six, in this order):**
-- **Added** — new functionality. Lead with user/developer benefit, not implementation.
-- **Changed** — observable behavior shift, with what triggered it. Two kinds of change get a prefix: `Architectural:` for structure, build tooling, file moves or renames (the "future-AI must know this" changes), and `Deprecated:` for something still working but being phased out (name the replacement).
-- **Fixed** — format: `[Symptom] — caused by [Root Cause]`. The symptom is what someone *saw*, not the internal bug. If there was an error message, quote it exactly in backticks so a human or an AI can search for it.
+**Buckets (Keep a Changelog's six, in its order, plus `Broken`):**
+- **Added** — new features. Lead with user/developer benefit, not implementation.
+- **Changed** — changes to existing behavior, with what triggered it. `Architectural:` prefix for structure, build tooling, file moves or renames (the "future-AI must know this" changes).
+- **Deprecated** — still works, but will be removed: name the replacement and, if known, when it goes.
 - **Removed** — what's gone and why it's not coming back.
-- **Security** — auth, secrets, sanitization, CSP, dependency CVEs. Always its own bucket — never folded into Fixed.
-- **Broken** — knowingly broken or regressed, not yet fixed. Be brutally honest. This is gold for troubleshooting. When it gets fixed, add a Fixed entry that names the Broken entry's SHA.
+- **Fixed** — format: `[Symptom] — caused by [Root Cause]`. The symptom is what someone *saw*, not the internal bug. If there was an error message, quote it exactly in backticks so a human or an AI can search for it.
+- **Security** — vulnerabilities: auth, secrets, sanitization, CSP, dependency CVEs. Always its own bucket — never folded into Fixed.
+- **Broken** _(our addition)_ — knowingly broken or regressed, not yet fixed. Be brutally honest. This is gold for troubleshooting. When it gets fixed, add a Fixed entry that names the Broken entry's SHA.
 
-**Version-bump trigger:** when `package.json` (or equivalent manifest) version changes, close the `[Unreleased]` section. Date-stamp it with the commit that bumped the version, and tag it with the new version: `## [v1.4.0] — 2026-04-26`. Open a fresh `[Unreleased]` above. Once the version has a git tag, add the known-good marker (next section).
+**Breaking changes** (saved data, config, a shortcut, an API, an install or update URL) start with `**Breaking:**` and come first in their bucket.
+
+**Version headings:** `## [v1.4.0] — 2026-04-26`: the version in brackets (it becomes a link), then the ISO date of the commit that bumped it. A pulled version keeps its section: `## [v0.0.5] — 2026-01-13 [YANKED]`.
+- **Several tracks** (one repo shipping several things, each with its own version): put the track in the brackets, `## [medical v3.1.0] — 2026-10-12`, and keep all tracks in one list, newest first.
+- **Work outside every version** (docs, website, CI, or a change shipped without a version bump): a dated section without brackets, `## 2026-10-12 — landing page`.
+
+**Version-bump trigger:** when `package.json` (or equivalent manifest, or a userscript `@version`) changes, move the `[Unreleased]` entries for it into a new version section, dated with the commit that bumped the version. Leave `[Unreleased]` in place, empty. Once the version has a git tag, add the known-good marker (next section).
+
+**Link references** (bottom of the file, one per version, compare links between tags):
+```
+[Unreleased]: https://github.com/OWNER/REPO/compare/v1.4.0...HEAD
+[v1.4.0]: https://github.com/OWNER/REPO/compare/v1.3.0...v1.4.0
+[v1.0.0]: https://github.com/OWNER/REPO/releases/tag/v1.0.0
+```
+The first version of a track links to its tag. A version without a tag gets no link yet.
 
 **Size discipline:** every entry ≤ 2 lines. If you need more, the entry is two entries. There is **no limit on the file's length**: the history is kept in full.
 
@@ -85,7 +113,9 @@ For "rescue", "everything is broken" or "it worked before". Goal: find the first
 
 # Changelog
 
-Working journal of notable changes. Format adapted from [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). _(If it doesn't, say so here.)_
 
 **How to read this:**
 - Newest first. Dates are commit dates. The whole history is here; search it (`Ctrl+F`) for an error message, a file name or a feature.
@@ -96,12 +126,13 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 ---
 
 ## [Unreleased]
-_Changes since the last dated section or version tag._
+_Changes since the last version._
 
 ### Added
 ### Changed
-### Fixed
+### Deprecated
 ### Removed
+### Fixed
 ### Security
 ### Broken
 
@@ -110,18 +141,22 @@ _(Omit empty buckets in the actual output — list them here only as a template 
 ---
 
 ## [v1.4.0] — YYYY-MM-DD — tag v1.4.0 (sha) ✅ known good
-_(Or, without a version: `## YYYY-MM-DD — [descriptive milestone like "search rewrite"]`.)_
+_(Or, for work outside every version: `## YYYY-MM-DD — [descriptive milestone like "search rewrite"]`.)_
 
 ### Added
 - [Feature]: short description + why it was needed. `(sha)`
 
+### Changed
+- **Breaking:** [what no longer works as before] — what to do instead. `(sha)`
+- Architectural: [what shifted] — why the old structure was insufficient. `(sha)`
+  - _Example:_ "Architectural: migrated CJS → ESM — needed top-level `await` for config loader. `(b7d104)`"
+
+### Deprecated
+- [What] — use [replacement] instead; removed in [version], if known. `(sha)`
+
 ### Fixed
 - [Observed symptom] — caused by [root cause in 4-8 words]. `(sha)`
   - _Example:_ "Prayer times off by 1 hour during DST — Mawaqit returns UTC, treated as local. `(a3f291)`"
-
-### Changed
-- Architectural: [what shifted] — why the old structure was insufficient. `(sha)`
-  - _Example:_ "Architectural: migrated CJS → ESM — needed top-level `await` for config loader. `(b7d104)`"
 
 ### Security
 - [What changed] — what threat it closes. `(sha)`
@@ -138,6 +173,11 @@ _(Every dated section from the newest down to the very first commit stays in the
 
 ---
 
+[Unreleased]: https://github.com/OWNER/REPO/compare/v1.4.0...HEAD
+[v1.4.0]: https://github.com/OWNER/REPO/compare/v1.3.0...v1.4.0
+
+---
+
 ## Update Protocol (Verbatim)
 > **For the AI Assistant:** When asked to "Update CHANGELOG.md":
 > 1. Quick mode (default): find the most recent SHA cited in the existing file. Full rebuild (only if I ask, or there's no file): start from the first commit.
@@ -145,11 +185,12 @@ _(Every dated section from the newest down to the very first commit stays in the
 > 3. Apply the WIP Decoder — derive intent from diffs when commit messages are vague.
 > 4. Group consecutive same-intent commits into single entries; split when intent changes.
 > 5. Skip noise (lockfiles, formatter passes, typos, no-op commits).
-> 6. Detect version bumps in manifests — if found, close `[Unreleased]` into a dated + version-tagged section.
-> 7. Append new entries above existing ones. **Never rewrite past entries** except to fix factual errors (and note the correction inline).
+> 6. Detect version bumps in manifests — if found, move the `[Unreleased]` entries into a `## [vX.Y.Z] — YYYY-MM-DD` section and add its link reference at the bottom.
+> 7. Append new entries above existing ones. **Never rewrite past entries** except to fix factual errors or repair the Keep a Changelog shape (and note the correction inline).
 > 8. Keep every past section, however old. Never trim, archive or delete history.
 > 9. Keep every entry under 2 lines. The file itself has no length limit.
 > 10. Add ✅ markers only for tagged versions and for changes I confirmed or a check passed. For "rescue", follow Rescue Mode.
+> 11. Follow [Keep a Changelog](https://keepachangelog.com/en/): bucket order, ISO dates, link references, `[YANKED]`, deprecations and breaking changes always listed.
 
 ---
 
@@ -158,8 +199,10 @@ _(Every dated section from the newest down to the very first commit stays in the
 - **Symptom + cause.** "Fixed bug" is banned. Always: what was observed, what caused it.
 - **SHA on every entry.** `(short-sha)` — multiple SHAs allowed for grouped entries.
 - **Logic over logs.** Bad commit messages are decoded from the diff, not echoed.
-- **Append-only history.** Old entries are immutable except for factual corrections.
+- **Append-only history.** Old entries are immutable except for factual corrections and Keep a Changelog repairs (a missing version, a misfiled entry, a missed breaking change), each noted inline.
 - **Security gets its own bucket.** Never fold into Fixed.
+- **Keep a Changelog shape.** [Keep a Changelog](https://keepachangelog.com/en/) bucket order, `## [version] — YYYY-MM-DD` headings, ISO 8601 dates, link references at the bottom, SemVer statement on top.
+- **Nothing hidden.** Deprecations, removals and breaking changes are always listed, even when nothing else is.
 - **Commit dates, not write dates.** Re-running the prompt must not shift past entries.
 - **Two-line cap per entry.** Forensic ≠ verbose. If you need a third line, you have two entries.
 - **Complete history.** No file-length cap, no archive, no deletion. Old entries are exactly what a troubleshooting AI needs.

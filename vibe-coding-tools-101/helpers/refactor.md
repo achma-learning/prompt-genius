@@ -10,4 +10,4 @@ Refactor [file / function] to [goal: easier to read, remove duplication, split a
 5. No new features, no new dependencies, no renaming of things other code uses.
 6. Found a bug on the way? Don't fix it silently — list it at the end.
 
-When done: if files moved or were split, update `CONTEXT.md` §4 "Code Map", and add one line under `### Architectural` in `CHANGELOG.md`.
+When done: if files moved or were split, update `CONTEXT.md` §4 "Code Map", and add one line under `### Changed` in `CHANGELOG.md`, starting with `Architectural:`.

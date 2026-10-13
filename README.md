@@ -86,7 +86,7 @@ The Vibe Coding script (`Alt+V`) keeps the simple **Vibe Coding 101** system. Pa
 | File | What it holds |
 |---|---|
 | `CONTEXT.md` | the **present**, and the one real context file: what the project is, how to run it, the code map, rules, landmines, current state. If `CLAUDE.md`, `AGENTS.md` or `GEMINI.md` exist, it gathers what's in them and adds a line to each telling the AI to read and update CONTEXT.md |
-| `CHANGELOG.md` | the **past**: the complete history of what changed and why, decoded from git history and never trimmed, so humans and AI agents can troubleshoot |
+| `CHANGELOG.md` | the **past**: the complete history of what changed and why, decoded from git history and never trimmed, so humans and AI agents can troubleshoot. Follows [Keep a Changelog](https://keepachangelog.com/en/): one section per version, newest first |
 | `TRAJECTORY.md` | the **future**: the final goal plus a to-do list (now / next / later / done / won't do), built from your requests and the repo's GitHub issues |
 | `README.md` | the page for humans |
 | `TROUBLESHOOTING.md` | every bug already fixed, searchable by its exact error |
