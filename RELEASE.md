@@ -18,7 +18,7 @@ Three userscripts, each with its own version and tag prefix. **General** (`users
 |---|---|---|---|---|---|
 | Original | v1.5.0 | `original-v1.5.0` | 2026-08-24 | [Greasy Fork](https://update.greasyfork.org/scripts/571159/Prompt%20Genius%20%E2%80%94%20AI%20Prompt%20Injector.user.js) | [v1.5.0](https://github.com/achma-learning/prompt-genius/raw/original-v1.5.0/Prompt%20generator.user.js) |
 | Medical | v3.1.0 | `medical-v3.1.0` | 2026-10-12 | [main](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js) | [v3.1.0](https://github.com/achma-learning/prompt-genius/raw/medical-v3.1.0/prompt-med.user.js) |
-| Vibe Coding | v1.2.0 | `vibe-v1.2.0` | _on release_ | [main](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js) | [v1.2.0](https://github.com/achma-learning/prompt-genius/raw/vibe-v1.2.0/userscripts/vibe-coding.user.js) |
+| Vibe Coding | v1.3.0 | `vibe-v1.3.0` | _on release_ | [main](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js) | [v1.3.0](https://github.com/achma-learning/prompt-genius/raw/vibe-v1.3.0/userscripts/vibe-coding.user.js) |
 
 Pinned link format: `https://github.com/achma-learning/prompt-genius/raw/<tag>/<path>`, where `<path>` is the file's path **at that tag** (spaces as `%20`).
 
@@ -56,7 +56,8 @@ Newest first. **Planned** — nothing is tagged yet. Historic versions get tags 
 
 | Date | Tag | Commit | Path at that tag | Release? |
 |---|---|---|---|---|
-| _on release_ | `vibe-v1.2.0` | _merge of the Keep a Changelog PR_ | `userscripts/vibe-coding.user.js` | ✅ |
+| _on release_ | `vibe-v1.3.0` | _merge of the generic RELEASE prompt PR_ | `userscripts/vibe-coding.user.js` | ✅ |
+| 2026-10-13 | `vibe-v1.2.0` | `8fd07fc` | `userscripts/vibe-coding.user.js` | tag only |
 | 2026-10-13 | `vibe-v1.1.0` | `c261733` | `userscripts/vibe-coding.user.js` | tag only |
 | 2026-10-13 | `vibe-v1.0.0` | `6550c38` | `userscripts/vibe-coding.user.js` | tag only |
 | 2026-10-12 | `medical-v3.1.0` | `1c2efb7` | `prompt-med.user.js` | ✅ |

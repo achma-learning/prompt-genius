@@ -61,7 +61,7 @@ _Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.
   - `copyToClipboard()` (1212) has a `file://` fallback.
 - `vibe-coding-tools-101/*.md` — the source of the seven Vibe Coding doc prompts. The Vibe Coding script gets them through `sync-vibe-prompts.js`; the original script and `index.html` still carry the older copies of the first six (ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/helpers/` is generated (see above).
   - `changelogs builder.md` follows [Keep a Changelog](https://keepachangelog.com/en/) 1.1.0 (bucket order + `Broken`, `## [track vX.Y.Z] — date` headings, link references at the bottom) and has three modes: Quick, Full rebuild, and **Rescue** (`git bisect` from the newest ✅ known-good marker or release tag; never rewrites history).
-  - `generate-release.md` — the RELEASE prompt (GitHub Release Manager): tracks, semver bump, tags, `gh release create`, `RELEASE.md`. Generic, reusable in other repos.
+  - `generate-release.md` — the RELEASE prompt (GitHub Release Manager): works on any repo; asks which files ship (`apk`, `zip`, `js`, `pdf`…), then tracks, bump, tags, `gh release create` with those files attached, `RELEASE.md`. Stops for my OK before shipping.
 - `all_prompts/` — older prompt archive, plus the bilingual source of the Image Restoration prompts (`google-labs-flow-photo-restoration.md`).
 - `docs/*.png` — real screenshots used by `README.md`, taken by running the scripts headless. Retake them rather than editing by hand.
 - `README.md` (human install guide), `CHANGELOG.md` (what shipped), `RELEASE.md` (current versions, tags, pinned install links, rollback, release checklist), `TRAJECTORY.md` (goal + to-do), `LICENSE` (MIT).

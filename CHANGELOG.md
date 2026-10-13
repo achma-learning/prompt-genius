@@ -20,6 +20,20 @@ _Nothing yet._
 
 ---
 
+## [vibe v1.3.0] — 2026-10-13
+
+### Changed
+- RELEASE prompt works on **any repo**, not only userscripts. A new Phase 1 lists release candidates (`apk`, `zip`, `js`, `pdf`, `exe`…) and **asks** which files ship, where each comes from (in the repo, built, or from my computer), the version scheme (SemVer or date) and how users update. Answers go into `RELEASE.md` → Tracks, so later runs don't ask again. Phases renumbered: Read, Ask, Decide, Prepare, STOP, Ship. `(4c69e7c)`
+- RELEASE prompt: more version sources (`build.gradle` `versionName`/`versionCode`, `pubspec.yaml`, `*.csproj`, `manifest.json`, `VERSION`); install and rollback notes per file type; SHA-256 for binaries; a verify step after the release; pinned links for release assets (`releases/download/<tag>/<file>`). `(4c69e7c)`
+
+### Added
+- RELEASE prompt, "How to ship": `gh` → `gh api` (REST) → a GitHub tool that can create releases → otherwise a ready-to-run script for me, with the release marked `_pending_` — never a pretend release. Found in a cloud session whose GitHub MCP tools can only read releases. `(4c69e7c)`
+
+### Security
+- RELEASE prompt: never commit built files to release them, and never attach keystores, `.env` or a zip that contains them; list a zip's contents before attaching it. `(4c69e7c)`
+
+---
+
 ## [vibe v1.2.0] — 2026-10-13
 
 ### Changed
