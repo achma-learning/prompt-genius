@@ -2,6 +2,7 @@
 # 🔍 Debug — paste the error
 
 Fix this bug. Evidence first, edits second.
+Everything is broken, or it worked a few commits ago? Use the CHANGELOG prompt in Rescue mode instead.
 
 What I did: [command or clicks]
 What happened (exact error, not shortened):

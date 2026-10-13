@@ -18,6 +18,7 @@ const DOC_FILES = {
   'vc-readme': 'generate-readme.md',
   'vc-troubleshooting': 'generate-troubleshooting.md',
   'vc-prompts-codex': 'generate-prompts-codex.md',
+  'vc-release': 'generate-release.md',
 };
 
 // ── 1. .md → userscript (doc prompts) ──
@@ -50,7 +51,7 @@ fs.mkdirSync(outDir, { recursive: true });
 for (const p of helpers) fs.writeFileSync(path.join(outDir, slug(p) + '.md'), `${banner}\n# ${p.icon} ${p.title}\n\n${p.prompt.trim()}\n`);
 fs.writeFileSync(path.join(outDir, 'README.md'), [
   banner, '# Helpers', '',
-  'Everyday coding prompts. They read `CONTEXT.md` and finish by updating `CONTEXT.md` §7 and `CHANGELOG.md`, so they work with the six doc prompts in the folder above.',
+  'Everyday coding prompts. They read `CONTEXT.md` and finish by updating `CONTEXT.md` §7 and `CHANGELOG.md`, so they work with the seven doc prompts in the folder above.',
   '', ...helpers.map(p => `- ${p.icon} [${p.title}](./${slug(p)}.md)`), '',
 ].join('\n'));
 console.log(`helpers: wrote ${helpers.length} files + README.md to vibe-coding-tools-101/helpers/`);

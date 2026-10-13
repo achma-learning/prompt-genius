@@ -4,9 +4,10 @@ The audience is a high-velocity developer who treats this file as working memory
 
 **This is the complete history.** Every notable change since the first commit stays here, forever. The file is allowed to grow: a long, searchable history is the point. Nothing is trimmed, archived or deleted.
 
-**Two modes:**
+**Three modes:**
 - **Quick (default):** add only what happened since the newest SHA already in the file. Use it after every work session.
 - **Full rebuild:** only when I say "full changelog", or when `CHANGELOG.md` doesn't exist yet. Walk the whole `git log` from the first commit, oldest to newest, and write every dated section.
+- **Rescue:** when I say "rescue", "everything is broken" or "it worked before". Find the commit that broke it with `git bisect`, then log it. See **Rescue Mode** below.
 
 ---
 
@@ -46,9 +47,37 @@ For every commit since the last entry:
 - **Security** — auth, secrets, sanitization, CSP, dependency CVEs. Always its own bucket — never folded into Fixed.
 - **Broken** — knowingly broken or regressed, not yet fixed. Be brutally honest. This is gold for troubleshooting. When it gets fixed, add a Fixed entry that names the Broken entry's SHA.
 
-**Version-bump trigger:** when `package.json` (or equivalent manifest) version changes, close the `[Unreleased]` section. Date-stamp it with the commit that bumped the version, and tag it with the new version: `## 2026-04-26 — v1.4.0`. Open a fresh `[Unreleased]` above.
+**Version-bump trigger:** when `package.json` (or equivalent manifest) version changes, close the `[Unreleased]` section. Date-stamp it with the commit that bumped the version, and tag it with the new version: `## [v1.4.0] — 2026-04-26`. Open a fresh `[Unreleased]` above. Once the version has a git tag, add the known-good marker (next section).
 
 **Size discipline:** every entry ≤ 2 lines. If you need more, the entry is two entries. There is **no limit on the file's length**: the history is kept in full.
+
+### Known-Good Markers
+Rescue needs a "this worked" anchor, so the CHANGELOG records one.
+- **Released versions:** the heading carries the tag and its SHA: `## [medical v3.1.0] — 2026-10-13 — tag medical-v3.1.0 (abc1234) ✅ known good`. One project with one version? Drop the track name: `## [v1.4.0] — … — tag v1.4.0 (abc1234) ✅ known good`.
+- **Inside `[Unreleased]`:** an entry gets `✅ verified (sha)` only when I say it works or a check passed (tests, `node --check`, a build). Silence is not verification.
+- Never add ✅ to a version without a tag, and never remove one. If a ✅ version turns out broken, add a `### Broken` entry; the marker stays.
+
+---
+
+## Rescue Mode
+For "rescue", "everything is broken" or "it worked before". Goal: find the first bad commit without losing anything.
+
+1. **Stop editing code.** Run `git status`. If there are uncommitted changes, `git stash push -m "rescue-<date>"`. Never discard them, and tell me the stash name.
+2. **Symptom + check.** Get the symptom in one line, and a check that tells good from bad: a command (`npm test`, `node --check file.js`, a script that exits non-zero on failure), or a manual check I do in the browser.
+3. **Good and bad.** Bad = `HEAD`. Good = the newest ✅ in `CHANGELOG.md`, or the newest release tag (`git tag -l --sort=-creatordate`). If there is neither, ask me for a commit or a date when it worked.
+4. **Bisect.** `git bisect start` → `git bisect bad` → `git bisect good <sha>`.
+   - Automatic check: `git bisect run <check>`.
+   - Manual check: at each step, show me the commit message and its CHANGELOG line, and ask "good or bad?". `git bisect skip` if I can't test that commit.
+5. **Report** the first bad commit: SHA, its CHANGELOG entry, `git show --stat <sha>`, and the likely cause in 1–3 lines. Then `git bisect reset`.
+6. **Offer two options** and wait for my OK:
+   - **Revert:** `git revert <sha>` (`git revert -m 1 <sha>` for a merge commit). Safe, adds a new commit.
+   - **Forward fix:** a new commit that fixes the cause and keeps the good part of the change.
+7. **Never:** `git reset --hard` on a pushed branch, force-push, rebase pushed commits, delete or move tags. History stays intact.
+8. **Log it:**
+   - `### Broken`: the symptom, the exact error text in backticks, "introduced in `sha`, found by bisect".
+   - `### Fixed`: the same symptom, with the revert or fix SHA, and the Broken entry's SHA.
+   - Suggest a `TROUBLESHOOTING.md` entry with the exact error, so the next search finds it.
+   - If I stashed changes in step 1, remind me: `git stash list`, then `git stash pop` when ready.
 
 ---
 
@@ -62,6 +91,7 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 - Newest first. Dates are commit dates. The whole history is here; search it (`Ctrl+F`) for an error message, a file name or a feature.
 - `(a3f291)` is a short SHA — `git show a3f291` to see the diff.
 - Entries explain symptom + cause, not just "fixed."
+- Last known-good commit: search for `✅`. The first hit from the top is the newest version or change that was checked and worked.
 
 ---
 
@@ -79,7 +109,8 @@ _(Omit empty buckets in the actual output — list them here only as a template 
 
 ---
 
-## YYYY-MM-DD — [optional: v1.4.0 or descriptive milestone like "search rewrite"]
+## [v1.4.0] — YYYY-MM-DD — tag v1.4.0 (sha) ✅ known good
+_(Or, without a version: `## YYYY-MM-DD — [descriptive milestone like "search rewrite"]`.)_
 
 ### Added
 - [Feature]: short description + why it was needed. `(sha)`
@@ -118,6 +149,7 @@ _(Every dated section from the newest down to the very first commit stays in the
 > 7. Append new entries above existing ones. **Never rewrite past entries** except to fix factual errors (and note the correction inline).
 > 8. Keep every past section, however old. Never trim, archive or delete history.
 > 9. Keep every entry under 2 lines. The file itself has no length limit.
+> 10. Add ✅ markers only for tagged versions and for changes I confirmed or a check passed. For "rescue", follow Rescue Mode.
 
 ---
 
@@ -132,5 +164,6 @@ _(Every dated section from the newest down to the very first commit stays in the
 - **Two-line cap per entry.** Forensic ≠ verbose. If you need a third line, you have two entries.
 - **Complete history.** No file-length cap, no archive, no deletion. Old entries are exactly what a troubleshooting AI needs.
 - **Searchable.** Exact error messages, file names and feature names go in backticks.
+- **Rescue never rewrites history.** No `reset --hard` on pushed branches, no force-push, no moved or deleted tags. Revert or fix forward.
 
 Execute Phase 0, 1, 2 and output `CHANGELOG.md`.
