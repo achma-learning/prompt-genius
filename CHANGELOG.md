@@ -13,6 +13,24 @@ Working journal of notable changes. Format adapted from [Keep a Changelog](https
 ## [Unreleased]
 _Changes since v1.4.0 (1a66963)._
 
+### Three userscripts in `userscripts/`
+
+#### Added
+- `userscripts/general.user.js` v1.0.0 (`Ctrl/⌘+Shift+P`): the 16 non–vibe coding prompts of the original script.
+- `userscripts/vibe-coding.user.js` v1.0.0 (`Alt/⌥+V`): 30 prompts that work as one system.
+  - Each prompt owns one project file (AGENTS.md, docs/PRD.md, docs/ARCHITECTURE.md, MEMORY.md, CHANGELOG.md) and names the next step.
+  - A footer generated from each prompt's `reads` / `writes` / `next` states the shared rules once: core files, tool adapters for Claude Code / Codex / Cursor / Antigravity, plain-chat fallback, multi-agent leases. It can be turned off in ⚙️.
+  - Groups: Start → Loop → Harden → Sync → Craft. Vibe Workflow 1–4 are verbatim from KhazP/vibe-coding-prompt-template (MIT).
+  - Multi-select: `Tab` picks prompts, and `Enter` inserts them as one numbered session in workflow order, with a single merged footer.
+  - Search ranks title matches above body matches; the toast names the next step.
+  - Design: `docs/vibe-coding-system.md`.
+- Manager prompt (`vibe-coding-tools-101/manager.md`, also in the Vibe Coding script): coordinates several AI agents through `MANAGER.md` (roster, file leases, locks, merge queue) so no file has two writers at once.
+
+#### Changed
+- The medical script moved to `userscripts/medical.user.js`, and its `@downloadURL`/`@updateURL` follow it. Installs from the old root URL stop updating; reinstall once from the README link. `@name`/`@namespace` are unchanged, so saved prompts and settings stay. `index.html` loads it from the new path.
+- Each split script has its own CSS/id prefix (`pgg-`, `pgv-`, `pgm-`), shortcut and button, so all of them run on the same page without clashing.
+- `Prompt generator.user.js` is unchanged and stays available for existing Greasy Fork installs. Don't run it together with General: both use `Ctrl+Shift+P`.
+
 ### Medical userscript — `prompt-med.user.js` v3.1.0 (was `prompt med.js` v3.0.0)
 
 #### Added

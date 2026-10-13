@@ -407,14 +407,14 @@ footer a:hover{color:var(--accent)}
   <div class="prompt-grid" id="promptGrid"></div>
 </section>
 
-<!-- MÉDICAL — loaded on demand from prompt-med.user.js (single source of truth) -->
+<!-- MÉDICAL — loaded on demand from userscripts/medical.user.js (single source of truth) -->
 <section class="med-section" id="medical" aria-labelledby="medTitle" lang="fr">
   <div class="vibe-head">
     <div>
       <h2 id="medTitle">Prompts <span>médicaux</span></h2>
       <p>226 prompts en français pour 21 métiers de santé (catalogue Lonasanté « 226 Prompts IA Santé »). Remplacez les [crochets] de « MON CONTEXTE » avant d'envoyer — ou installez le userscript, qui ouvre un formulaire pour les remplir. Ne collez jamais de données patient identifiantes.</p>
     </div>
-    <a class="btn btn-primary" href="prompt-med.user.js">Installer le userscript</a>
+    <a class="btn btn-primary" href="userscripts/medical.user.js">Installer le userscript</a>
   </div>
   <div class="med-tools">
     <input class="med-search" id="medSearch" type="search" placeholder="Rechercher (sans accents : « medecin », « ordonnance »)…" aria-label="Rechercher un prompt médical">
@@ -1277,7 +1277,7 @@ function renderVibe() {
 }
 
 // ─── MÉDICAL ───
-// prompt-med.user.js is both the userscript and the data: outside a userscript manager it finds
+// userscripts/medical.user.js is both the userscript and the data: outside a userscript manager it finds
 // window.__PGM_EXPORT__ and hands over its prompt list instead of starting. Loaded on demand.
 let MED = [];
 let MED_CATS = [];
@@ -1305,13 +1305,13 @@ function loadMedical() {
       resolve();
     };
     const s = document.createElement('script');
-    s.src = 'prompt-med.user.js';
+    s.src = 'userscripts/medical.user.js';
     s.onerror = reject;
     document.body.appendChild(s);
   });
   medLoad.then(renderMed, () => {
     medLoad = null;
-    document.getElementById('medGrid').innerHTML = '<div class="med-status">Impossible de charger <code>prompt-med.user.js</code>. Ouvrez cette page depuis le dossier du dépôt (le fichier doit être à côté de index.html).<br><button class="btn" onclick="loadMedical()">Réessayer</button></div>';
+    document.getElementById('medGrid').innerHTML = '<div class="med-status">Impossible de charger <code>userscripts/medical.user.js</code>. Ouvrez cette page depuis le dossier du dépôt (le dossier <code>userscripts/</code> doit être à côté de index.html).<br><button class="btn" onclick="loadMedical()">Réessayer</button></div>';
   });
   return medLoad;
 }
