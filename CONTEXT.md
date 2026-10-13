@@ -32,9 +32,9 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 ## 4. Code Map (The Important Files Only)
 - `userscripts/general.user.js` — **General** (v1.0.0, `Ctrl/⌘+Shift+P`, prefix `pgg-`). The 16 non–vibe coding prompts. Split from the original script, so the engine is the same as below.
   - GITHUB PROMPTS section: `ghSync()` reads a repo folder (one git-trees API call plus raw downloads, 6 h cache in `pgg_github_cache`; config in `pgg_github`). `openGithubDialog()` runs once after install (`pgg_github_asked`) and from ⚙️. Needs `GM_xmlhttpRequest` and both `@connect` lines.
-- `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.0.0, `Alt+V`, prefix `pgv-`). The six Vibe Coding 101 prompts (cat `Docs`, same text as the original script) plus seven helpers (cat `Helpers`) that only read/update CONTEXT.md and CHANGELOG.md.
+- `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.0.0, `Alt+V`, prefix `pgv-`). The six Vibe Coding 101 prompts (cat `Docs`, text copied from `vibe-coding-tools-101/*.md`) plus seven helpers (cat `Helpers`) that only read/update CONTEXT.md and CHANGELOG.md.
   - `Tab` picks several prompts (`picked` set); `fullText()` joins them as numbered steps in list order.
-  - `__PGV_EXPORT__` hook (after `fullText()`): `node scripts/export-vibe-prompts.js` uses it to regenerate `vibe-coding-tools-101/helpers/*.md`. Re-run it after editing a helper; never edit those files by hand.
+  - `node scripts/sync-vibe-prompts.js` keeps prompts and files in sync. It copies the six doc prompts from `vibe-coding-tools-101/*.md` (their source) into the userscript, then writes the helpers (source: the userscript) to `vibe-coding-tools-101/helpers/*.md` through the `__PGV_EXPORT__` hook. Run it after editing either side; never edit `helpers/*.md` by hand.
   - `GROUP_LABELS` gives the two list headers. Search ranks title hits, then category, then body text.
 - `Prompt generator.user.js` — **Original all-in-one userscript** (v1.5.0, ~1970 lines, one IIFE, English). Kept unchanged for existing Greasy Fork installs. New work goes to `userscripts/`.
   - `BUILTIN_PROMPTS` (line 37) — 22 prompts: general, 6 Vibe Coding, 4 Image Restoration.
@@ -57,7 +57,7 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
   - `renderVibe()` (1240) — Vibe Coding 101 steps with copy buttons.
   - `loadMedical()` (1295) — lazy-loads `userscripts/medical.user.js` for the « Prompts médicaux » section.
   - `copyToClipboard()` (1212) has a `file://` fallback.
-- `vibe-coding-tools-101/*.md` — long-form sources of the six original Vibe Coding prompts (the original script and `index.html` carry copies, ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/helpers/` is generated (see above).
+- `vibe-coding-tools-101/*.md` — the source of the six Vibe Coding doc prompts. The Vibe Coding script gets them through `sync-vibe-prompts.js`; the original script and `index.html` still carry the older copies (ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/helpers/` is generated (see above).
 - `all_prompts/` — older prompt archive, plus the bilingual source of the Image Restoration prompts (`google-labs-flow-photo-restoration.md`).
 - `docs/*.png` — real screenshots used by `README.md`, taken by running the scripts headless. Retake them rather than editing by hand.
 - `README.md` (human install guide), `CHANGELOG.md` (what shipped), `LICENSE` (MIT).
@@ -94,7 +94,7 @@ _Last synced: 2026-10-13 @ 8e1e102 (+ the three-userscript split written with th
 
 ## 7. Current State
 - **Last shipped:** Medical v3.1.0 and the landing page's « Prompts médicaux » section (merged in PR #9).
-- **Working on now:** PR #11 on branch `claude/laughing-hypatia-i37zcf`. See `HANDOFF.md`.
+- **Working on now:** PR #11 on branch `claude/laughing-hypatia-i37zcf`.
   - The three userscripts in `userscripts/`.
   - General: GitHub prompts (#1).
   - Vibe Coding: the original 6 (TRAJECTORY rewritten as a final goal + to-do list) plus 7 helpers (#4).

@@ -35,6 +35,9 @@ Target 60–180 lines total. Plain English everywhere. Lead with the screenshot/
 
 > One sentence. What it does. Said to a smart friend at a bar, not a recruiter on LinkedIn.
 
+**Quick start:** 1. [install / clone] · 2. [run] · 3. [what you'll see].
+_(Exactly 3 short steps on one line, for readers who won't scroll. They must match "Install & run" below.)_
+
 ![screenshot or GIF](./docs/preview.png)
 _(If no media exists yet: `_TODO: add a screenshot or GIF showing the main flow_` — never fabricate a path.)_
 
@@ -73,7 +76,7 @@ One line on the most recent shipped change. Pull from `CHANGELOG.md`'s top dated
 
 - [`CONTEXT.md`](./CONTEXT.md) — for AI assistants joining the project
 - [`CHANGELOG.md`](./CHANGELOG.md) — what shipped when
-- [`TRAJECTORY.md`](./TRAJECTORY.md) — decisions, what's cooking, what got killed
+- [`TRAJECTORY.md`](./TRAJECTORY.md) — the final goal and the to-do list
 _(Omit links to files that don't exist. Don't list a doc just to look thorough.)_
 
 ---
@@ -82,7 +85,7 @@ _(Omit links to files that don't exist. Don't list a doc just to look thorough.)
 > **For the AI Assistant:** When asked to "Update README.md":
 > 1. Re-read `README.md`, `CONTEXT.md`, manifest files, and `CHANGELOG.md`'s top section.
 > 2. Refresh the "What's new" line from the latest dated `CHANGELOG.md` entry.
-> 3. Verify install/run commands by reading the entry-point file and `package.json` `scripts`. If they drift from the README, **trust the code** and rewrite the README.
+> 3. Verify install/run commands by reading the entry-point file and `package.json` `scripts`. If they drift from the README, **trust the code** and rewrite the README. Make the **Quick start** line match.
 > 4. Preserve human-written voice (jokes, opinions, the one weird detail). Rewrite only the corporate-sounding sections.
 > 5. Keep total length 60–180 lines. If a section is empty, omit it — don't leave headers with no content.
 > 6. Never invent screenshots, demo URLs, or stats. `_TODO_` placeholders are honest; fabrications poison trust.

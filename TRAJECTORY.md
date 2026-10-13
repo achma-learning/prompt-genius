@@ -1,5 +1,5 @@
 # TRAJECTORY
-_Last synced: 2026-10-13 @ dff0c1d · built from: my requests (chat) + GitHub issues #1, #4 (no closed issues) + CONTEXT.md §7_
+_Last synced: 2026-10-13 @ a870531 · built from: my requests (chat) + GitHub issues #1, #4 (no closed issues) + CONTEXT.md §7_
 
 ## 🎯 Final Goal
 Prompt Genius keeps my prompts **one shortcut away on any AI chat**. It comes as three userscripts (general, medical, vibe coding) that are **simple, powerful, stable and consistent**. Anyone can load their own prompts from **their own GitHub fork**. The vibe coding script is a **simple** project memory: CONTEXT.md (present), CHANGELOG.md (past), TRAJECTORY.md (final goal + to-do). It works the same in Claude Code, Codex, Cursor and Antigravity, even with several agents at once.
@@ -14,7 +14,7 @@ Prompt Genius keeps my prompts **one shortcut away on any AI chat**. It comes as
 
 ### Now
 - [ ] **T013** — Review and merge PR #11 — everything below under Done ships with it · `(chat)`
-- [ ] **T014** — Install the three scripts from the README links and try them on real chat sites — medical users must reinstall once from the new URL · `(chat, HANDOFF.md)`
+- [ ] **T014** — Install the three scripts from the README links and try them on real chat sites — medical users must reinstall once from the new URL · `(chat)`
 
 ### Next
 - [ ] **T015** — Port the medical script's fixes to General and Vibe Coding: keep the user's draft when inserting, `Ctrl+C` selection check, `e.code` for Alt keys, safer JSON/CSV import · `(CONTEXT §7)`
@@ -25,21 +25,22 @@ Prompt Genius keeps my prompts **one shortcut away on any AI chat**. It comes as
 _(empty: nothing parked yet)_
 
 ## ✔️ Done (latest 10)
+- [x] **T019** — CHANGELOG keeps the complete history, for AI troubleshooting and human readers · `(chat)`
+- [x] **T018** — CONTEXT.md is the one real context file; existing CLAUDE.md / AGENTS.md / GEMINI.md get a pointer to it · `(chat)`
 - [x] **T012** — TRAJECTORY.md as a to-do list plus a final goal, built from my requests and the repo's issues · `(#4, chat)`
-- [x] **T011** — HANDOFF.md, plus a Handoff helper that summarizes a chat · `(chat, dff0c1d)`
+- [x] **T011** — Handoff helper that summarizes a chat into HANDOFF.md, on demand only · `(chat, dff0c1d)`
 - [x] **T010** — Bring back the simple CONTEXT.md / CHANGELOG.md system; keep the original 6 prompts word for word · `(chat, dff0c1d)`
 - [x] **T009** — Prompts as `.md` files in `vibe-coding-tools-101/` (helpers/), and `101`/`102` renamed to `.md` · `(#4, eeccabb, dff0c1d)`
 - [x] **T008** — General loads prompts from the user's GitHub fork (`all_prompts/`) · `(#1, eeccabb)`
 - [x] **T007** — Insert several prompts at once (`Tab` to pick, `Enter` to insert) · `(chat, dff0c1d)`
 - [x] **T006** — Manager for several AI agents: one file is edited by one agent at a time · `(chat, dff0c1d)`
 - [x] **T005** — Helpers that work the same in Claude Code, Codex, Cursor and Antigravity: plan, debug, review, refactor, security · `(chat, #4, dff0c1d)`
-- [x] **T004** — Three distinct userscripts: general, medical, vibe-coding, in `userscripts/` · `(chat, 6550c38)`
-- [x] **T003** — Split the original script into general + vibe coding, and keep the original · `(chat, 6550c38)`
 
 ## ❌ Won't Do
+- **T020** — A separate repo `HANDOFF.md` kept up to date — why not: not always needed; the Handoff helper makes one on demand · `(chat)`
 - **T002** — A 31-prompt system with AGENTS.md, MEMORY.md, PRD, ARCHITECTURE.md, a shared footer and stages — why not: too complicated, I prefer the old simple system · `(chat, 6550c38 → dff0c1d)`
 - **T001** — A separate `dynamique-prompt.js` userscript — why not: built into General instead, to keep three scripts · `(#1, eeccabb)`
 
 ## ❓ Questions for me
-- Should the original `Prompt generator.user.js` also get the new TRAJECTORY prompt, or stay frozen for Greasy Fork users? (The landing page is covered by T016.)
+- Should the original `Prompt generator.user.js` also get the improved CONTEXT / CHANGELOG / README / TRAJECTORY prompts, or stay frozen for Greasy Fork users? (The landing page is covered by T016.)
 - Issue #4 also says "improve the prompt genius". Is anything specific still missing after PR #11?

@@ -37,12 +37,14 @@
   //  PROMPT DATABASE — edit / extend freely
   // ═══════════════════════════════════════════════════════════
   const BUILTIN_PROMPTS = [
-    // ── Your docs: the Vibe Coding 101 prompts (TRAJECTORY from vibe-coding-tools-101/generate-trajectory.md) ──
+    // ── Your docs: the Vibe Coding 101 prompts. Source of each text: vibe-coding-tools-101/*.md ──
     {
-      id:'vc-context', title:"Codebase Context Engineer (CONTEXT.md)", cat:'Docs', icon:'🗺️', color:'#c8ff00',
+      id:'vc-context', title:'Codebase Context Engineer (CONTEXT.md)', cat:'Docs', icon:'🗺️', color:'#c8ff00',
       prompt:`You are a Codebase Context Engineer. Your job: generate or update \`CONTEXT.md\` at the root of my GitHub repository so that any future AI assistant can pick up the project cold and be useful within one read.
 
 The reader of this file is me (a vibe coder — I build by feel, prompt AI heavily, and forget my own code in 3 months) and the AI assistants I'll bring in next. Write for that audience. Plain English first, technical precision second, no academic tone.
+
+**\`CONTEXT.md\` is the one real context file.** Tool files like \`CLAUDE.md\`, \`AGENTS.md\` or \`GEMINI.md\` stay usable, since each coding tool loads its own. But \`CONTEXT.md\` gathers everything project-wide from them, and they point back to it.
 
 ---
 
@@ -51,7 +53,7 @@ The reader of this file is me (a vibe coder — I build by feel, prompt AI heavi
 ### Phase 0 — Discovery
 Load existing context in this order. Codebase always wins on conflict.
 1. \`CONTEXT.md\` — current truth. Update, don't restart.
-2. \`GEMINI.md\` / \`CLAUDE.md\` / \`AGENTS.md\` / \`.cursorrules\` / \`.github/copilot-instructions.md\` — other AI memory files. Merge what's still true, reformat to match the structure below.
+2. \`CLAUDE.md\` / \`AGENTS.md\` / \`GEMINI.md\` (and \`.cursorrules\` / \`.github/copilot-instructions.md\` if present) — other AI memory files. Merge everything project-wide that's still true into \`CONTEXT.md\`, reformatted to match the structure below. Leave those files' own content in place; Phase 3 only adds a pointer to them.
 3. \`README.md\` / \`ARCHITECTURE.md\` / \`docs/\` — what I told humans about it.
 4. The actual code — the only thing that doesn't lie.
 
@@ -70,7 +72,16 @@ Tree depth ~3, ignore \`node_modules\`, \`.git\`, \`dist\`, \`build\`, \`.venv\`
 - What external services/keys does it need?
 
 ### Phase 2 — Write
-Target 150–350 lines. Use \`_Not yet figured out_\` for absent evidence. Cite file paths inline for non-obvious claims, e.g., \`(vite.config.ts:12)\`. Plain language in §1 and §2; precision elsewhere.
+Target 100–200 lines: the AI reads this file at the start of every session, so short wins. Use \`_Not yet figured out_\` for absent evidence. Cite file paths inline for non-obvious claims, e.g., \`(vite.config.ts:12)\`. Plain language in §1 and §2; precision elsewhere.
+
+### Phase 3 — Point the tool files to CONTEXT.md
+For each of \`CLAUDE.md\`, \`AGENTS.md\` and \`GEMINI.md\` that **already exists**, add this block at the very top, once (skip it if it's already there). Don't change anything else in the file:
+
+\`\`\`markdown
+> **Project context lives in [\`CONTEXT.md\`](./CONTEXT.md).** Read it before any work, and update it (at least §7 "Current State") when you finish a change.
+\`\`\`
+
+If none of them exist, tell me in one line which file my coding tool reads (Claude Code → \`CLAUDE.md\`; Codex, Cursor, Copilot, Antigravity → \`AGENTS.md\`; Gemini CLI → \`GEMINI.md\`). Create it, containing only that block, only if I say yes.
 
 ---
 
@@ -117,16 +128,16 @@ The "do not casually refactor" list. Be honest about duct tape.
 ## 7. Current State
 - **Last shipped:** what just got built / fixed.
 - **Working on now:** the active thread.
-- **Next up:** what's queued (1–3 items max, not a wishlist).
+- **Next up:** "see \`TRAJECTORY.md\`" if that file exists (it holds the to-do list; don't copy it here). Otherwise list 1–3 queued items, not a wishlist.
 
 ## 8. Update Protocol (Verbatim)
 > **For the AI Assistant:** When asked to "Update CONTEXT.md":
-> 1. Re-run Phase 0 — check for new \`GEMINI.md\` / \`CLAUDE.md\` / \`.github/\` files.
+> 1. Re-run Phase 0 — check for new or changed \`CLAUDE.md\` / \`AGENTS.md\` / \`GEMINI.md\` / \`.github/\` files, merge what's new, and re-run Phase 3 so each of them still points to \`CONTEXT.md\`.
 > 2. Re-scan the tree, manifests, and \`.github/workflows/\` for drift.
 > 3. Read our recent conversation for new decisions, fragile bits discovered, or shifted goals.
 > 4. Refresh the \`_Last synced_\` line with today's date and current commit SHA.
 > 5. Rewrite — do not append. One clean source of truth. Preserve still-true content, revise the rest.
-> 6. Keep §1 and §2 in plain English. Keep the file under ~350 lines.
+> 6. Keep §1 and §2 in plain English. Keep the file under ~200 lines.
 
 ---
 
@@ -135,18 +146,25 @@ The "do not casually refactor" list. Be honest about duct tape.
 - **Plain English in §1 and §2.** No "leverages", "robust", "scalable", "best-in-class". Speak like a friend.
 - **Cite file paths** for non-obvious claims so I can verify in 5 seconds.
 - **Codebase beats docs.** If \`README.md\` says one thing and the code says another, trust the code and note the conflict.
+- **One source of truth.** \`CONTEXT.md\` is the real context file. If \`CLAUDE.md\`, \`AGENTS.md\` or \`GEMINI.md\` disagrees with it, check the code, fix \`CONTEXT.md\`, and note the conflict. Never delete a tool file's own content.
 - **Secret hygiene.** Env variable names only. Never values, never partial values.
-- **Stay under 350 lines.** Compress. If a section is empty, mark it and move on.
+- **Stay under 200 lines.** Compress. If a section is empty, mark it and move on.
 - **Match the project's actual scale.** A 200-line userscript doesn't need a microservices-grade context file.
 
-Execute Phase 0, 1, 2 and output \`CONTEXT.md\`.
+Execute Phase 0, 1, 2, 3. Output \`CONTEXT.md\`, plus the pointer block added to any existing \`CLAUDE.md\` / \`AGENTS.md\` / \`GEMINI.md\`.
 `
     },
     {
-      id:'vc-changelog', title:"Forensic Changelog Engineer (CHANGELOG.md)", cat:'Docs', icon:'📓', color:'#2dd4bf',
+      id:'vc-changelog', title:'Forensic Changelog Engineer (CHANGELOG.md)', cat:'Docs', icon:'📓', color:'#2dd4bf',
       prompt:`You are a Forensic Changelog Engineer. Your mission: maintain a \`CHANGELOG.md\` that serves as the project's "Black Box." A human or AI must be able to reconstruct the *why* behind any change in under 30 seconds.
 
-The audience is a high-velocity developer who treats this file as working memory, not as marketing. AI-handoff readiness is a primary goal — future assistants pick up the project cold from this file plus \`CONTEXT.md\`.
+The audience is a high-velocity developer who treats this file as working memory, not as marketing, **and the AI agents that troubleshoot this project**. AI-handoff readiness is a primary goal — future assistants pick up the project cold from this file plus \`CONTEXT.md\`.
+
+**This is the complete history.** Every notable change since the first commit stays here, forever. The file is allowed to grow: a long, searchable history is the point. Nothing is trimmed, archived or deleted.
+
+**Two modes:**
+- **Quick (default):** add only what happened since the newest SHA already in the file. Use it after every work session.
+- **Full rebuild:** only when I say "full changelog", or when \`CHANGELOG.md\` doesn't exist yet. Walk the whole \`git log\` from the first commit, oldest to newest, and write every dated section.
 
 ---
 
@@ -155,7 +173,7 @@ The audience is a high-velocity developer who treats this file as working memory
 ### Phase 0 — Context Ingestion
 1. \`CHANGELOG.md\` — current truth. Append-only on history; correct only factual errors, never rewrite past entries for style.
 2. \`CONTEXT.md\` & \`README.md\` — pull the project's core philosophy (e.g., zero-dependency, keyboard-driven, privacy-first). Use it to decide what counts as "notable."
-3. \`git log --pretty=format:"%h | %ad | %s" --date=short\` since the last changelog entry — the raw timeline.
+3. \`git log --pretty=format:"%h | %ad | %s" --date=short\` since the newest SHA in the file (quick mode), or from the first commit (full rebuild) — the raw timeline.
 4. \`git diff --stat <last-sha>..HEAD\` for vague commits — file-level intent signal.
 5. \`package.json\` / \`pyproject.toml\` / \`Cargo.toml\` etc. — detect version bumps and dependency churn.
 
@@ -178,20 +196,17 @@ For every commit since the last entry:
 
 ### Phase 2 — Categorization & Versioning
 
-**Buckets:**
+**Buckets (six, in this order):**
 - **Added** — new functionality. Lead with user/developer benefit, not implementation.
-- **Changed** — observable behavior shift. Note what triggered the change.
-- **Fixed** — format: \`[Symptom] — caused by [Root Cause]\`. The symptom is what someone *saw*, not the internal bug.
+- **Changed** — observable behavior shift, with what triggered it. Two kinds of change get a prefix: \`Architectural:\` for structure, build tooling, file moves or renames (the "future-AI must know this" changes), and \`Deprecated:\` for something still working but being phased out (name the replacement).
+- **Fixed** — format: \`[Symptom] — caused by [Root Cause]\`. The symptom is what someone *saw*, not the internal bug. If there was an error message, quote it exactly in backticks so a human or an AI can search for it.
 - **Removed** — what's gone and why it's not coming back.
-- **Deprecated** — still works, being phased out, name the replacement.
 - **Security** — auth, secrets, sanitization, CSP, dependency CVEs. Always its own bucket — never folded into Fixed.
-- **Architectural** — structure, build tooling, directory layout, module-system shifts. The "future-AI must know this" bucket.
-- **Broken** — knowingly broken or regressed, not yet fixed. Be brutally honest. This is gold for handoff.
-- **Experimenting** — behind a flag, in trial, may get deleted. Move to Added when stable, delete the entry when abandoned.
+- **Broken** — knowingly broken or regressed, not yet fixed. Be brutally honest. This is gold for troubleshooting. When it gets fixed, add a Fixed entry that names the Broken entry's SHA.
 
 **Version-bump trigger:** when \`package.json\` (or equivalent manifest) version changes, close the \`[Unreleased]\` section. Date-stamp it with the commit that bumped the version, and tag it with the new version: \`## 2026-04-26 — v1.4.0\`. Open a fresh \`[Unreleased]\` above.
 
-**Size discipline:** every entry ≤ 2 lines. If you need more, the entry is two entries. Total file ≤ 600 lines — roll entries older than 12 months from today's date into the \`<details>\` archive.
+**Size discipline:** every entry ≤ 2 lines. If you need more, the entry is two entries. There is **no limit on the file's length**: the history is kept in full.
 
 ---
 
@@ -202,7 +217,7 @@ For every commit since the last entry:
 Working journal of notable changes. Format adapted from [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 **How to read this:**
-- Dates are commit dates.
+- Newest first. Dates are commit dates. The whole history is here; search it (\`Ctrl+F\`) for an error message, a file name or a feature.
 - \`(a3f291)\` is a short SHA — \`git show a3f291\` to see the diff.
 - Entries explain symptom + cause, not just "fixed."
 
@@ -214,10 +229,9 @@ _Changes since the last dated section or version tag._
 ### Added
 ### Changed
 ### Fixed
+### Removed
 ### Security
-### Architectural
 ### Broken
-### Experimenting
 
 _(Omit empty buckets in the actual output — list them here only as a template reference.)_
 
@@ -232,9 +246,9 @@ _(Omit empty buckets in the actual output — list them here only as a template 
 - [Observed symptom] — caused by [root cause in 4-8 words]. \`(sha)\`
   - _Example:_ "Prayer times off by 1 hour during DST — Mawaqit returns UTC, treated as local. \`(a3f291)\`"
 
-### Architectural
-- [What shifted] — why the old structure was insufficient. \`(sha)\`
-  - _Example:_ "Migrated CJS → ESM — needed top-level \`await\` for config loader. \`(b7d104)\`"
+### Changed
+- Architectural: [what shifted] — why the old structure was insufficient. \`(sha)\`
+  - _Example:_ "Architectural: migrated CJS → ESM — needed top-level \`await\` for config loader. \`(b7d104)\`"
 
 ### Security
 - [What changed] — what threat it closes. \`(sha)\`
@@ -244,26 +258,24 @@ _(Omit empty buckets in the actual output — list them here only as a template 
 
 ---
 
-<details>
-<summary>Archive — entries older than 12 months</summary>
+## YYYY-MM-DD — [the first commit]
+- Project started: [what the first version did]. \`(sha)\`
 
-_(Roll older entries here verbatim. Preserve SHA citations and dates.)_
-
-</details>
+_(Every dated section from the newest down to the very first commit stays in the file. Nothing is archived or removed.)_
 
 ---
 
 ## Update Protocol (Verbatim)
 > **For the AI Assistant:** When asked to "Update CHANGELOG.md":
-> 1. Find the most recent SHA cited in the existing file.
+> 1. Quick mode (default): find the most recent SHA cited in the existing file. Full rebuild (only if I ask, or there's no file): start from the first commit.
 > 2. Run \`git log\` and \`git diff --stat\` for everything since that SHA.
 > 3. Apply the WIP Decoder — derive intent from diffs when commit messages are vague.
 > 4. Group consecutive same-intent commits into single entries; split when intent changes.
 > 5. Skip noise (lockfiles, formatter passes, typos, no-op commits).
 > 6. Detect version bumps in manifests — if found, close \`[Unreleased]\` into a dated + version-tagged section.
 > 7. Append new entries above existing ones. **Never rewrite past entries** except to fix factual errors (and note the correction inline).
-> 8. Roll entries older than 12 months from today's date into the \`<details>\` archive.
-> 9. Keep the file under 600 lines and every entry under 2 lines.
+> 8. Keep every past section, however old. Never trim, archive or delete history.
+> 9. Keep every entry under 2 lines. The file itself has no length limit.
 
 ---
 
@@ -276,7 +288,8 @@ _(Roll older entries here verbatim. Preserve SHA citations and dates.)_
 - **Security gets its own bucket.** Never fold into Fixed.
 - **Commit dates, not write dates.** Re-running the prompt must not shift past entries.
 - **Two-line cap per entry.** Forensic ≠ verbose. If you need a third line, you have two entries.
-- **600-line cap on the file.** Older than 12 months → \`<details>\`.
+- **Complete history.** No file-length cap, no archive, no deletion. Old entries are exactly what a troubleshooting AI needs.
+- **Searchable.** Exact error messages, file names and feature names go in backticks.
 
 Execute Phase 0, 1, 2 and output \`CHANGELOG.md\`.
 `
@@ -383,7 +396,7 @@ _Last synced: YYYY-MM-DD @ [short sha] · built from: my requests (chat) + GitHu
 `
     },
     {
-      id:'vc-readme', title:"Vibe-Coder README Engineer (README.md)", cat:'Docs', icon:'📖', color:'#ff8c42',
+      id:'vc-readme', title:'Vibe-Coder README Engineer (README.md)', cat:'Docs', icon:'📖', color:'#ff8c42',
       prompt:`You are a Vibe-Coder README Engineer. Your mission: generate or rewrite \`README.md\` at the root of my GitHub repository so a stranger lands on the page and understands — in under 20 seconds — what this thing is, whether they want it, and how to run it.
 
 The audience is **humans on GitHub** (not future-AI — that's \`CONTEXT.md\`'s job). Recruiters, curious devs, search engines, my future self showing the repo to a friend. Keep the corporate bloat out: no badges-and-tables-of-contents wall, no "leverages cutting-edge", no faux changelog, no roadmap (link to \`TRAJECTORY.md\` for that).
@@ -420,6 +433,9 @@ Target 60–180 lines total. Plain English everywhere. Lead with the screenshot/
 # [Project Name]
 
 > One sentence. What it does. Said to a smart friend at a bar, not a recruiter on LinkedIn.
+
+**Quick start:** 1. [install / clone] · 2. [run] · 3. [what you'll see].
+_(Exactly 3 short steps on one line, for readers who won't scroll. They must match "Install & run" below.)_
 
 ![screenshot or GIF](./docs/preview.png)
 _(If no media exists yet: \`_TODO: add a screenshot or GIF showing the main flow_\` — never fabricate a path.)_
@@ -459,7 +475,7 @@ One line on the most recent shipped change. Pull from \`CHANGELOG.md\`'s top dat
 
 - [\`CONTEXT.md\`](./CONTEXT.md) — for AI assistants joining the project
 - [\`CHANGELOG.md\`](./CHANGELOG.md) — what shipped when
-- [\`TRAJECTORY.md\`](./TRAJECTORY.md) — decisions, what's cooking, what got killed
+- [\`TRAJECTORY.md\`](./TRAJECTORY.md) — the final goal and the to-do list
 _(Omit links to files that don't exist. Don't list a doc just to look thorough.)_
 
 ---
@@ -468,7 +484,7 @@ _(Omit links to files that don't exist. Don't list a doc just to look thorough.)
 > **For the AI Assistant:** When asked to "Update README.md":
 > 1. Re-read \`README.md\`, \`CONTEXT.md\`, manifest files, and \`CHANGELOG.md\`'s top section.
 > 2. Refresh the "What's new" line from the latest dated \`CHANGELOG.md\` entry.
-> 3. Verify install/run commands by reading the entry-point file and \`package.json\` \`scripts\`. If they drift from the README, **trust the code** and rewrite the README.
+> 3. Verify install/run commands by reading the entry-point file and \`package.json\` \`scripts\`. If they drift from the README, **trust the code** and rewrite the README. Make the **Quick start** line match.
 > 4. Preserve human-written voice (jokes, opinions, the one weird detail). Rewrite only the corporate-sounding sections.
 > 5. Keep total length 60–180 lines. If a section is empty, omit it — don't leave headers with no content.
 > 6. Never invent screenshots, demo URLs, or stats. \`_TODO_\` placeholders are honest; fabrications poison trust.
@@ -490,7 +506,7 @@ Execute Phase 0, 1, 2 and output \`README.md\`.
 `
     },
     {
-      id:'vc-troubleshooting', title:"Forensic Troubleshooting Archivist (TROUBLESHOOTING.md)", cat:'Docs', icon:'🩺', color:'#ff4d6a',
+      id:'vc-troubleshooting', title:'Forensic Troubleshooting Archivist (TROUBLESHOOTING.md)', cat:'Docs', icon:'🩺', color:'#ff4d6a',
       prompt:`You are a Forensic Troubleshooting Archivist. Your mission: maintain \`TROUBLESHOOTING.md\` at the root of my GitHub repository. This file is the project's **3 a.m. survival manual** — a searchable index of every bug, error, gotcha, and "it worked yesterday" moment I've already solved, so future-me and future-AI never re-debug the same thing twice.
 
 The audience is **me at midnight** (panicked, low context) and **AI assistants** I paste error messages into. The killer property of this file is **verbatim error strings** — when an AI or my browser's \`Ctrl+F\` searches for \`TypeError: Cannot read property 'foo' of undefined\`, this file must hit on the first match.
@@ -622,7 +638,7 @@ Execute Phase 0, 1, 2 and output \`TROUBLESHOOTING.md\`.
 `
     },
     {
-      id:'vc-prompts-codex', title:"Recursive Prompt Codex (PROMPTS.md)", cat:'Docs', icon:'🪞', color:'#4d9fff',
+      id:'vc-prompts-codex', title:'Recursive Prompt Codex (PROMPTS.md)', cat:'Docs', icon:'🪞', color:'#4d9fff',
       prompt:`You are a Recursive Prompt Codex Engineer. Your mission: generate or update \`PROMPTS.md\` at the root of my GitHub repository — a curated registry of every prompt I used to **build, maintain, and document this project**, including the prompts in my vibe-coding toolbox itself.
 
 The audience is **future-me** (returning in 6 months wanting to extend the project in the same style) and **AI assistants** I'll re-prime so their output matches the existing voice and structure. This file is the project's **style fingerprint**: paste the right prompt back into a new chat and you get code/docs that look like they came from the same hand.
@@ -935,7 +951,7 @@ When done: update \`CONTEXT.md\` §7 "Current State" in 1–2 lines.
     ].join('\n');
   }
 
-  // Loaded as a plain script (no userscript manager), e.g. by scripts/export-vibe-prompts.js:
+  // Loaded as a plain script (no userscript manager), e.g. by scripts/sync-vibe-prompts.js:
   // hand over the prompts and stop before touching the page.
   if (typeof GM_addStyle === 'undefined' && typeof window !== 'undefined' && typeof window.__PGV_EXPORT__ === 'function') {
     window.__PGV_EXPORT__({ prompts: BUILTIN_PROMPTS, groups: GROUP_LABELS });
