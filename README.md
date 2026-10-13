@@ -13,7 +13,7 @@ It comes as three separate userscripts. Install only the ones you want; they run
 | Userscript | Shortcut | What's inside |
 |---|---|---|
 | **[General](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/general.user.js)** | `Ctrl+Shift+P` / `⌘⇧P` | 16 everyday prompts (thinking coaches, the Feynman technique, negotiation, photo restoration for Google Labs Flow…) **plus your own, loaded from your GitHub fork** |
-| **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | 31 prompts that work as one system for building software with AI (Claude Code, Codex, Cursor, Antigravity…). [How it works →](./docs/vibe-coding-system.md) |
+| **[Vibe Coding](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/vibe-coding.user.js)** | `Alt+V` / `⌥V` | the 6 Vibe Coding 101 prompts (CONTEXT.md, CHANGELOG.md…) plus 7 everyday helpers for coding with AI |
 | **[Médical](https://github.com/achma-learning/prompt-genius/raw/refs/heads/main/userscripts/medical.user.js)** | `Alt+M` / `⌥M` | 226 French prompts for 21 health jobs |
 
 You can add your own prompts, and they stay in your browser. No account, no server, no tracking, nothing to build.
@@ -79,33 +79,22 @@ If `Ctrl+Shift+P` does something else in your browser (on Firefox it opens a pri
 
 **Works on:** ChatGPT, Claude, Gemini, Google Labs (Flow, Whisk, ImageFX), DeepSeek, Perplexity, Mistral, Grok, Copilot, You.com, Poe.
 
-## Vibe Coding: prompts that work as one system
+## Vibe Coding: your project's memory in plain files
 
-Most prompt lists overlap: three prompts each write the stack into a different file, and the files soon disagree. In the Vibe Coding script, every prompt **owns one project file** and names the **next step**:
+The Vibe Coding script (`Alt+V`) keeps the simple **Vibe Coding 101** system. Paste a prompt into your AI coding assistant (Claude Code, Codex, Cursor, Antigravity…) with your repo open, and it writes or updates one file:
 
-| File | Answers only |
+| File | What it holds |
 |---|---|
-| `AGENTS.md` | How must any AI work here? (commands, rules, landmines). It's read by Codex, Cursor, Copilot and Antigravity; Claude Code and Gemini CLI get a one-line `@AGENTS.md` pointer. |
-| `docs/PRD.md` | What are we building, for whom, and when is it done? |
-| `docs/ARCHITECTURE.md` | How is it built and why? (stack, structure, data model, decisions) |
-| `MEMORY.md` | Where are we now? (current task, next step) |
-| `CHANGELOG.md` | What changed, and when? |
+| `CONTEXT.md` | the **present**: what the project is, how to run it, the code map, rules, landmines, current state |
+| `CHANGELOG.md` | the **past**: what changed and why, decoded from git history |
+| `TRAJECTORY.md` | the **future**: decisions, work in progress, ideas killed |
+| `README.md` | the page for humans |
+| `TROUBLESHOOTING.md` | every bug already fixed, searchable by its exact error |
+| `PROMPTS.md` | the prompts that built the repo |
 
-Optional: `TRAJECTORY.md` (where it's going: now / next / later / never, with the reason each idea was killed), `TROUBLESHOOTING.md`, `README.md`, `MANAGER.md`.
+Below them are **helpers** for everyday coding: Plan Before Code, Debug, Review the Diff, Refactor Safely, Security Check, Manager (several agents at once, one file per agent) and Handoff (summarizes the chat into `HANDOFF.md`). Each one reads `CONTEXT.md` and ends by updating `CONTEXT.md` and `CHANGELOG.md`. They create no other files.
 
-The prompts are grouped as **Start → Loop → Harden → Sync → Craft**:
-- **Start:** a quick start for small projects, or the four-step research → PRD → tech design → agent setup workflow.
-- **Loop:** plan → build → verify → review, one slice at a time.
-- **Harden:** security, performance, errors, mobile, accessibility, launch.
-- **Sync:** keep the docs true to the code.
-- **Craft:** sharper prompts.
-
-Each inserted prompt ends with a short footer stating these rules once, so no prompt repeats them. You can turn it off under ⚙️. After you insert one, a toast tells you which prompt comes next.
-
-- **Several prompts at once:** press `Tab` on each prompt you want (✓), then `Enter`. They're inserted as one numbered session, in workflow order, with a single footer. Example: *Plan the Change → Build One Slice → Verify*.
-- **Several agents at once:** the **Manager** prompt creates `MANAGER.md`, a roster plus file leases, so no file is ever edited by two agents at the same time.
-
-Full design: [`docs/vibe-coding-system.md`](./docs/vibe-coding-system.md). The four Vibe Workflow prompts come from [KhazP/vibe-coding-prompt-template](https://github.com/KhazP/vibe-coding-prompt-template) (MIT).
+**Several prompts at once:** press `Tab` on each prompt you want (✓), then `Enter`. They're inserted as one numbered session, in list order.
 
 ## No install? Just copy
 
@@ -120,7 +109,7 @@ The **Vibe Coding 101** section at the top has six prompts, in order, each with 
 5. `TROUBLESHOOTING.md`: every bug you already fixed, searchable by its exact error message
 6. `PROMPTS.md`: the prompts that built the repo
 
-The full-length versions live in [`vibe-coding-tools-101/`](./vibe-coding-tools-101). All 31 prompts of the Vibe Coding script are also there as ready-to-copy `.md` files, in [`vibe-coding-tools-101/system/`](./vibe-coding-tools-101/system/README.md), including [`manager.md`](./vibe-coding-tools-101/system/manager.md).
+The full-length versions live in [`vibe-coding-tools-101/`](./vibe-coding-tools-101), and the helpers in [`vibe-coding-tools-101/helpers/`](./vibe-coding-tools-101/helpers/README.md).
 
 ## Médical: 226 prompts for health workers (in French)
 
@@ -166,5 +155,5 @@ MIT. See [`LICENSE`](./LICENSE).
 ## See also
 
 - [`CONTEXT.md`](./CONTEXT.md) is for AI assistants joining the project
-- [`docs/vibe-coding-system.md`](./docs/vibe-coding-system.md) explains the vibe coding prompt system
+- [`HANDOFF.md`](./HANDOFF.md) summarizes the latest working session
 - [`CHANGELOG.md`](./CHANGELOG.md) lists what shipped when
