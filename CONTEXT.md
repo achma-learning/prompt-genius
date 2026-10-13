@@ -1,8 +1,8 @@
 # Prompt Genius — AI Context File
-_Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.md, written with this file)_
+_Last synced: 2026-10-13 @ a405fc6_
 
 ## 1. What This Is (Plain English)
-- **In one sentence:** Browser add-on scripts that pop a search box over ChatGPT, Claude, Gemini and other AI chats so you can drop a saved prompt into the chat in two keystrokes. Three scripts in `userscripts/`: general prompts, a 30-prompt vibe coding system, and 226 French prompts for health workers. The original all-in-one script stays at the root for existing installs. There's also a one-page website showing the same prompts with copy buttons.
+- **In one sentence:** Browser add-on scripts that pop a search box over ChatGPT, Claude, Gemini and other AI chats so you can drop a saved prompt into the chat in two keystrokes. Three scripts in `userscripts/`: general prompts, a 30-prompt vibe coding system, and 226 French prompts for health workers. The original all-in-one script stays at the root for existing installs. There's also a one-page website that reads the prompts from those scripts and shows them with copy buttons.
 - **Why it exists:** Good prompts get lost in notes and retyped from memory. This keeps them one shortcut away on whichever AI site is open. The medical script adds a form so you fill the `[brackets]` (patient age, motive…) without editing the prompt by hand.
 - **Who uses it:** Public. The main script is on Greasy Fork (script 571159) and both install from GitHub. Strangers run this on their AI chat tabs, so treat selectors, injected HTML and stored data carefully. The medical prompts are used by health professionals: never encourage pasting identifying patient data.
 - **Vibe:** Polished personal tool. Zero build step, zero npm. Each script is one drop-in file, and the website is one HTML file.
@@ -11,7 +11,7 @@ _Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.
 - **Setup once:** Install Tampermonkey or Violentmonkey. On Chrome-based browsers, also turn on Developer mode on `chrome://extensions` and **Allow User Scripts** in the extension's Details (README §Install explains this step by step for non-coders).
 - **Run dev:** No dev server.
   - Userscripts: paste the file into the Tampermonkey editor (or install from the raw GitHub URL) and reload a chat tab. Main script: `Ctrl+Shift+P`. Medical: `Alt+M`.
-  - Website: open `index.html` directly in a browser (`file://` works). The medical section loads `userscripts/medical.user.js` by relative path, so keep the folder layout.
+  - Website: open `index.html` directly in a browser (`file://` works). It loads all three files in `userscripts/` by relative path, so keep the folder layout.
   - Quick headless check: `for f in userscripts/*.user.js "Prompt generator.user.js"; do node --check "$f"; done`. There is no test suite in the repo. Changes have been verified with throwaway Playwright scripts that inject the userscript into a fake `chatgpt.com` page with GM_* stand-ins; Chromium is preinstalled in cloud sessions.
 - **Build / deploy:** None.
   - Original script auto-updates from Greasy Fork (`Prompt generator.user.js:27-28`).
@@ -32,7 +32,8 @@ _Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.
 - **External services:** Only the AI chat hosts in the `@match` lists. The main script and `index.html` pull Google Fonts; the medical script uses system fonts on purpose. No analytics, no telemetry.
 
 ## 4. Code Map (The Important Files Only)
-- `userscripts/general.user.js` — **General** (v1.0.0, `Ctrl/⌘+Shift+P`, prefix `pgg-`). The 16 non–vibe coding prompts. Split from the original script, so the engine is the same as below.
+- `userscripts/general.user.js` — **General** (v1.1.0, `Ctrl/⌘+Shift+P`, prefix `pgg-`). 17 prompts: the non–vibe coding prompts of the original script, with the landing page's fuller texts, plus the Photoshop guide. Split from the original script, so the engine is the same as below.
+  - `__PGG_EXPORT__` hook (line 419) — hands `BUILTIN_PROMPTS` to `index.html` when loaded without GM APIs.
   - GITHUB PROMPTS section: `ghSync()` reads a repo folder (one git-trees API call plus raw downloads, 6 h cache in `pgg_github_cache`; config in `pgg_github`). `openGithubDialog()` runs once after install (`pgg_github_asked`) and from ⚙️. Needs `GM_xmlhttpRequest` and both `@connect` lines.
 - `userscripts/vibe-coding.user.js` — **Vibe Coding** (v1.2.0, `Alt+V`, prefix `pgv-`). Seven doc prompts (cat `Docs`, text copied from `vibe-coding-tools-101/*.md`): the six Vibe Coding 101 prompts plus RELEASE (`vc-release`). Eight helpers (cat `Helpers`) that only read/update CONTEXT.md and CHANGELOG.md; the first, Stabilize a Prototype (`vc-stabilize`), turns an AI-drafted prototype into a documented, known-good baseline.
   - `Tab` picks several prompts (`picked` set); `fullText()` joins them as numbered steps in list order.
@@ -54,12 +55,13 @@ _Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.
   - `injectText()` (8794) — appends after the user's draft instead of replacing it.
   - Settings tabs: `renderFiltersTab()` (8901, « Mes filtres »), `renderPromptsTab()` (9014, on/off), then « Mes prompts » and « Préférences ».
   - Global keydown (9317).
-- `index.html` — Landing page, one file, CSS + JS inline.
-  - Own `PROMPTS` array (line 481): 21 entries.
-  - `renderVibe()` (1240) — Vibe Coding 101 steps with copy buttons.
-  - `loadMedical()` (1295) — lazy-loads `userscripts/medical.user.js` for the « Prompts médicaux » section.
-  - `copyToClipboard()` (1212) has a `file://` fallback.
-- `vibe-coding-tools-101/*.md` — the source of the seven Vibe Coding doc prompts. The Vibe Coding script gets them through `sync-vibe-prompts.js`; the original script and `index.html` still carry the older copies of the first six (ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/helpers/` is generated (see above).
+- `index.html` — Landing page, one file, CSS + JS inline. **No prompt text of its own.**
+  - `SOURCES` (line 491) + `loadPrompts()` (576) — load General and Vibe Coding at startup through `loadScript()` (554) and their `__PGG_EXPORT__` / `__PGV_EXPORT__` hooks. A missing file shows an error with "Try again".
+  - `DESCRIPTIONS` / `VIBE_STEPS` (498) — page copy only: card blurbs and "when to run it" lines, by prompt id. A prompt without a blurb gets its first line.
+  - `renderVibe()` (832) — the seven doc prompts as numbered steps, then the helpers.
+  - `loadMedical()` (872) — lazy-loads `userscripts/medical.user.js` for the « Prompts médicaux » section.
+  - `copyToClipboard()` (784) has a `file://` fallback.
+- `vibe-coding-tools-101/*.md` — the source of the seven Vibe Coding doc prompts. The Vibe Coding script gets them through `sync-vibe-prompts.js`; the original script still carries the older copies of the first six (ids `vc-*`), plus `101.md`/`102.md` (planning notes). `vibe-coding-tools-101/helpers/` is generated (see above).
   - `changelogs builder.md` follows [Keep a Changelog](https://keepachangelog.com/en/) 1.1.0 (bucket order + `Broken`, `## [track vX.Y.Z] — date` headings, link references at the bottom) and has three modes: Quick, Full rebuild, and **Rescue** (`git bisect` from the newest ✅ known-good marker or release tag; never rewrites history).
   - `generate-release.md` — the RELEASE prompt (GitHub Release Manager): works on any repo and in any AI: 🤖 Agent mode does the release itself, 🧭 Manual mode (chatbot) guides me with file cards and GitHub-website steps. Asks which files ship (`apk`, `zip`, `js`, `pdf`…), then tracks, bump, tags, release with those files attached, `RELEASE.md`. Stops for my OK before shipping.
 - `all_prompts/` — older prompt archive, plus the bilingual source of the Image Restoration prompts (`google-labs-flow-photo-restoration.md`).
@@ -84,9 +86,8 @@ _Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.
 - **Medical prompt text is verbatim catalogue content.** Don't reword prompts while touching the engine. Only `[brackets]` inside « **MON CONTEXTE** » become form fields, by design (brackets elsewhere are output templates for the AI).
 
 ## 6. Fragile Bits & Landmines
-- **Prompt lists exist in three places.**
-  - Main `BUILTIN_PROMPTS` (22) and `index.html` `PROMPTS` (21) are hand-synced copies. The page has 4 ids the script lacks (`average-search`, `focus-recovery`, `chatgpt-codes`, `photoshop-chatgpt`). The script has 5 the page lacks (`honest-search`, `focus`, `prompt-codes`, `userscript-engineer`, `structured-agent`). The first three of each look like the same prompts under different ids.
-  - Medical prompts are **not** copied: `index.html` loads the userscript file itself. Keep the `__PGM_EXPORT__` hook *before* any `GM_*` call (`userscripts/medical.user.js:7837`), or the landing page breaks.
+- **`index.html` runs the userscripts as plain scripts.** It has no prompt copy: all three scripts hand their data over through `__PGG_EXPORT__` / `__PGV_EXPORT__` / `__PGM_EXPORT__`. Keep each hook *before* any `GM_*` call and before the script touches the page (`userscripts/general.user.js:419`, `vibe-coding.user.js:1261`, `medical.user.js:7837`), or the landing page breaks. Prompt colours must stay `#rrggbb`: the page appends `22` for a tinted background.
+  - The only other copy left is the original `Prompt generator.user.js` (22 prompts, older texts), frozen for Greasy Fork users.
 - **Synthetic paste is duct tape.** Rich editors (ProseMirror on ChatGPT/Claude, Quill on Gemini) ignore `textContent` changes. Original symptom: the text showed but Send stayed disabled. Both scripts fire a fake `ClipboardEvent('paste')`.
   - The medical script falls back to `execCommand('insertText')`, then `textContent`.
   - The main script still falls back straight to `textContent`, which replaces the draft.
@@ -101,9 +102,9 @@ _Last synced: 2026-10-13 @ 8fd07fc (+ the Keep a Changelog rebuild of CHANGELOG.
 
 ## 7. Current State
 - **Last shipped:** the three userscripts in `userscripts/` (PRs #11 and #12, merged as `d61dfc0`).
-- **Last merged:** PR #13 (Rescue mode, RELEASE prompt + `RELEASE.md` draft, Stabilize helper, Vibe Coding v1.1.0).
-- **Working on now:** branch `ccr-0cda3c17-2e9hg5`: the CHANGELOG prompt and `CHANGELOG.md` follow [Keep a Changelog](https://keepachangelog.com/en/) (one section per version per track, link references), Vibe Coding v1.2.0.
-- **After merge:** on "release", backfill the historic tags and create the GitHub Releases for Original v1.5.0, Medical v3.1.0 and Vibe Coding v1.2.0 (plan in `RELEASE.md` §Release history), then mark the CHANGELOG headings ✅.
+- **Last merged:** PR #15 (RELEASE prompt for any repo, Agent and Manual modes, Vibe Coding v1.3.0).
+- **Working on now:** branch `claude/lucid-einstein-5x4nxp`: `index.html` loads its prompts from the userscripts (T016), General v1.1.0.
+- **After merge:** on "release", backfill the historic tags and create the GitHub Releases for Original v1.5.0, Medical v3.1.0 and Vibe Coding v1.3.0 (plan in `RELEASE.md` §Release history), then mark the CHANGELOG headings ✅.
 - **To-do list and next up:** `TRAJECTORY.md`.
 
 ## 8. Update Protocol (Verbatim)
