@@ -83,6 +83,7 @@ _Nothing yet._
 ## 2026-10-13 — three userscripts, repo docs
 
 ### Added
+- `CHANGELOG.md` rebuilt in [Keep a Changelog](https://keepachangelog.com/en/) shape: one section per version per track, link references, SemVer statement. `(e4e00c5)`
 - `RELEASE.md` draft: the three tracks (`original-v`, `medical-v`, `vibe-v`), pinned install links, rollback steps, release checklist and the planned historic tags. No tag exists yet. `(c261733)`
 - README: "Releases & older versions" section. `(c261733)`
 - `TRAJECTORY.md` for this repo, made with the new prompt. `(c4646f5)`
